@@ -16,5 +16,11 @@ public class Employee {
 	public void setName(String name) {
 		this.name = name;
 	}
+	@Override
+	public String toString() {
+		return "Employee [id=" + id + ", name=" + name + ", getId()=" + getId() + ", getName()=" + getName()
+				+ ", getClass()=" + getClass() + ", hashCode()=" + hashCode() + ", toString()=" + super.toString()
+				+ "]";
+	}
 	
 }

@@ -26,7 +26,7 @@
     	<div style="clear:both">
     		<%@include file="/WEB-INF/jsp/footer.jsp" %>
     	</div>
-
+    	
 </body>
 </html>
 

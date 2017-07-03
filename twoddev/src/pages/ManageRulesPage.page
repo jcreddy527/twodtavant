@@ -1,0 +1,67 @@
+<apex:page standardController="Warranty_Rule__c"
+    extensions="ManageRuleCtrl" tabstyle="Warranty_Rule__c">
+    <!--====================================================================-->
+    <!--Name: CoreManageRulesPage                                           -->
+    <!--Copyright © 2014 Tavant Technology Inc                                        -->
+    <!--====================================================================-->
+    <!--====================================================================-->
+    <!-- Purpose:                                                           -->
+    <!--                                                                    -->
+    <!--====================================================================-->
+    <!--====================================================================-->
+    <!-- History                                                            -->
+    <!-- -------                                                            -->
+    <!-- VERSION  AUTHOR           DATE              DETAIL                 -->
+    <!--   1.0 -  Praveen KH                         INITIAL DEVELOPMENT    -->
+    <!--====================================================================-->
+
+    <apex:pageMessages />
+    <apex:sectionHeader subtitle="{!IF(edit,newRule.Name, 'New Rule')}"
+        title="Rule Edit" />
+    <apex:form >
+
+        <apex:pageBlock title="Rule Edit" mode="edit">
+
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Save" action="{!saveRule}"
+                    rendered="{!$ObjectType.Warranty_Rule__c.Createable}" />
+                <apex:commandButton value="Save and New" action="{!saveAndNewRule}"
+                    rendered="{!$ObjectType.Warranty_Rule__c.Createable}" />
+                <apex:commandButton value="Cancel" action="{!cancel}" />
+            </apex:pageBlockButtons>
+
+            <apex:pageBlockSection title="Information" columns="2">
+
+                <apex:inputField value="{!newrule.name}" required="True" />
+                <apex:inputField value="{!newrule.Logical_Grouping__c}" />
+
+                <apex:pageBlockSectionItem rendered="{!!edit}">
+
+                    <apex:outputLabel value="Object Type" />
+
+                    <apex:outputPanel layout="block" styleClass="requiredInput">
+                        <apex:outputPanel layout="block" styleClass="requiredBlock" />
+                        <apex:selectList value="{!objType}" size="1"
+                            rendered="{!$ObjectType.Warranty_Rule__c.fields.Object_API_Name__c.Accessible}">
+                            <apex:selectOptions value="{!objOptions}" />
+                        </apex:selectList>
+                    </apex:outputPanel>
+
+
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem rendered="{!edit}">
+                    <apex:outputLabel value="Object Type" />
+                    <apex:outputText value="{!objType}"
+                        rendered="{!$ObjectType.Warranty_Rule__c.fields.Object_API_Name__c.Accessible}" />
+                </apex:pageBlockSectionItem>
+
+                <apex:inputField value="{!newrule.Rule_Type__c}" />
+                <!-- <apex:inputField value="{!newrule.Enabled__c}"/>  -->
+
+            </apex:pageBlockSection>
+
+        </apex:pageBlock>
+
+    </apex:form>
+</apex:page>

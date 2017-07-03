@@ -1,0 +1,168 @@
+<!--/////////////////////////////////////
+
+Copyright � 2016  Tavant Technology Inc
+Name - QuestionnaireCmp
+Purpose - component used for PDI functionality in excel
+Date - 12/27/2016
+Last Edited by - AMAN SAWHNEY
+
+/////////////////////////////////////-->
+
+<aura:component extends="c:CruderCmp">
+   <aura:handler name="init" value="{!this}" action="{!c.initialize}" description="init handeler"/>
+   <aura:attribute type="String" name="reportStatusId" default="null" description="id of report status record"/>
+   <aura:attribute type="String" name="parentId" default="null" description="to get questionnaire information"/>
+   <aura:attribute type="String" name="recordId" default="null" description="to save answers to this record"/>
+   <aura:attribute type='boolean' name='isReset' default='false' description='to check if the request is for resetting'/>
+   <aura:attribute type='boolean' name='isRelaunch' default='false' description='to check if the request from relaunch link'/>
+   <aura:attribute type="Integer" name="maxQuestionsOnPage" default="0" description="max questions allowed on a page"/>
+   <aura:attribute type="Boolean" name="displaySpinner" default="false" description="a boolean which decides when to display spinner"/>
+   <aura:attribute type="Object[]" name="currentPageAnswerList" default="[]" description="after click of next, answers will be saved from this array"/>
+   <aura:attribute type="Object[]" name="sectionListToDisplay" default="[]" description="to show current set of displayable sections"/>
+   <aura:attribute type="Boolean" name="isInitialLoad" default="true" description="marker that tells whether the current page is first or not"/>
+   <aura:attribute type="Object[]" name="currentSQMarkList" default="[]" description="currentpage markerarray for latest expected answer which contains to question"/>
+   <aura:attribute type="String[]" name="toSuccessfulSQIdList" default="[]" description="next page successful dependent toSequenceQuestions Id list"/>
+   <aura:attribute type="String[]" name="currentPageAnsweredSQIdList" default="[]" description="answered sequence question Id list of current page"/>
+   <aura:attribute type="String" name="currentReportStatus" default="" description="current filled status of questionnaire"/>
+   <aura:attribute type="String" name="questionnaireHeading" default="" description="page heading of questionnaire"/>
+   <aura:attribute type="String" name="sitePrefix" default="" description="site prefix"/>
+   <aura:attribute type="String" name="errorString" default="" description="error string"/>
+
+   <div class="alert-container">{!v.body}</div>
+
+   <!--if reset case -->
+   <aura:if isTrue="{!v.isReset}">
+
+     <div>
+         <div aria-hidden="false" aria-labelledby="prompt-heading-id" aria-describedby="prompt-message-wrapper" role="alertdialog" class="slds-modal slds-modal--prompt slds-fade-in-open">
+             <div class="slds-modal__container slds-modal--prompt" role="document" id="prompt-message-wrapper" tabindex="0">
+                 <div class="{!'slds-modal__header slds-theme--info slds-theme--alert-texture'}">
+                     <h2 class="slds-text-heading--medium" id="prompt-heading-id">Wait</h2>
+                 </div>
+                 <div class="slds-modal__content slds-p-around--medium">
+                     <div>
+                         <p>{!$Label.c.Resetting_The_Questionnaire}</p>
+                     </div>
+                 </div>
+             </div>
+         </div>
+         <div class="slds-backdrop slds-backdrop--open"></div>
+     </div>
+
+   </aura:if>
+   <!--/if reset case -->
+   <!--if error case -->
+   <aura:if isTrue="{!v.errorString}">
+   <div>
+       <div aria-hidden="false" aria-labelledby="prompt-heading-id" aria-describedby="prompt-message-wrapper" role="alertdialog" class="slds-modal slds-modal--prompt slds-fade-in-open">
+           <div class="slds-modal__container slds-modal--prompt" role="document" id="prompt-message-wrapper" tabindex="0">
+               <div class="{!'slds-modal__header slds-theme--error slds-theme--alert-texture'}">
+                   <h2 class="slds-text-heading--medium" id="prompt-heading-id">{!$Label.c.Questionnaire_Page_Says}</h2>
+               </div>
+               <div class="slds-modal__content slds-p-around--medium">
+                   <div>
+                       <p>{!v.errorString}</p>
+                   </div>
+               </div>
+               <div class="slds-modal__footer slds-theme--default">
+                   <div class="slds-button-group slds-align--absolute-center" role="group">
+                            <button class="slds-button slds-button--neutral" onclick="{!c.redirectToTarget}">{!$Label.c.Return_To_Inventory}</button>
+                   </div>
+               </div>
+           </div>
+       </div>
+       <div class="slds-backdrop slds-backdrop--open"></div>
+   </div>
+ </aura:if>
+   <!--if error case -->
+
+   <div class="containerC">
+      <aura:if isTrue="{!(v.sectionListToDisplay!='null' &amp;&amp; v.sectionListToDisplay.length!=0)}">
+         <div class="page-headerC">
+            <div class="slds-grid  slds-wrap slds-grid--pull-padded slds-grid--vertical-align-center">
+               <div class="slds-col slds-size--1-of-1 slds-medium-size--2-of-12 slds-large-size--2-of-12">
+               <aura:if isTrue="{!(v.sitePrefix=='' || v.sitePrefix==null || v.sitePrefix==undefined)}">
+                  <img src="/resource/Excel_Logo" class="transitionC growC" style="max-width:178px;min-width:178px;"/>
+               	 <aura:set attribute="else">
+                  <img src="{!(v.sitePrefix + '/resource/Excel_Logo')}" class="transitionC growC" style="max-width:178px;min-width:178px;"/>
+                 </aura:set>
+               </aura:if>
+               </div>
+               <div class="slds-col slds-size--1-of-1 slds-medium-size--10-of-12 slds-large-size--10-of-12">
+                  <div class="slds-grid">
+                     <div class="slds-col slds-size--1-of-1 slds-align--absolute-center">
+                        <p class="slds-text-heading--large media-marginC transitionC growC page-heading-textC">{!$Label.c.Pre_Delivery_Inspection}</p>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <div class="page-bodyC slds-p-around--x-large">
+            <aura:iteration items="{!v.sectionListToDisplay}" var="section">
+               <div class="sectionC">
+                  <div class="slds-text-heading--large section-headerC">{!section.sectionHeading}</div>
+                  <div class="heading-breakC"></div>
+                  <div class="section-bodyC slds-p-left--small slds-p-right--small">
+                     <aura:iteration items="{!section.questionList}" var="questionItem">
+                        <div class="question-textC">
+                           <aura:if isTrue="{!questionItem.Question__r.Is_Mandatory__c}">
+                              <span class="redC">*
+                              </span>
+                           </aura:if>
+                           {!questionItem.Question__r.Question_Value__c}
+                        </div>
+                        <div class="question-answer-breakC"></div>
+                        <aura:if isTrue="{!questionItem.Question__r.Expected_Answers__r}">
+                           <div class="options-containerC">
+                              <aura:iteration items="{!questionItem.Question__r.Expected_Answers__r}" var="option">
+                                 <aura:if isTrue="{!(questionItem.Question__r.Type_of_Question__c == 'Single select')}">
+                                    <div class="question-optionC">
+                                       <label class="slds-radio">
+                                          <ui:inputRadio name="{!questionItem.Name}" change="{!c.markAnswer}" updateOn="change" labelClass="{!questionItem}" text="{!(option.Id)}"/>
+                                          <span class="slds-radio--faux"></span>
+                                          <span class="slds-form-element__label expected-textC">&nbsp;&nbsp;{!option.Expected_Answer_Value__c}</span>
+                                       </label>
+                                    </div>
+                                 </aura:if>
+                                 <aura:if isTrue="{!(questionItem.Question__r.Type_of_Question__c == 'Multiple select')}">
+                                    <div class="question-optionC">
+                                       <label class="slds-checkbox">
+                                          <ui:inputCheckbox name="{!questionItem.Name}" change="{!c.markAnswer}" updateOn="change" labelClass="{!questionItem}" text="{!(option.Id)}"/>
+                                          <span class="slds-checkbox--faux"></span>
+                                          <span class="slds-form-element__label expected-textC">&nbsp;&nbsp;{!option.Expected_Answer_Value__c}</span>
+                                       </label>
+                                    </div>
+                                 </aura:if>
+                              </aura:iteration>
+                           </div>
+                           <aura:set attribute="else">
+                              <div class="textAnswer-container">
+                                 <div class="slds-form-element">
+                                    <div class="slds-form-element__control">
+                                       <ui:inputTextArea class="slds-textarea" rows="5" keyup="{!c.markAnswer}" labelClass="{!questionItem}" updateOn="keyup"/>
+                                    </div>
+                                 </div>
+                              </div>
+                           </aura:set>
+                        </aura:if>
+                        <div class="question-breakC"></div>
+                     </aura:iteration>
+                  </div>
+               </div>
+               <div class="section-breakC"></div>
+            </aura:iteration>
+            <div class="slds-align--absolute-center">
+               <button class="slds-button slds-button--brand button-largeC button-smallC" onclick="{!c.next}">{!$Label.c.Save}</button>
+            </div>
+         </div>
+      </aura:if>
+   </div>
+   <aura:renderIf isTrue="{!(v.displaySpinner == true)}">
+      <div class="slds-spinner_container" style="position:fixed">
+         <div class="slds-spinner--brand slds-spinner slds-spinner--large" aria-hidden="false" role="alert">
+            <div class="slds-spinner__dot-a"></div>
+            <div class="slds-spinner__dot-b"></div>
+         </div>
+      </div>
+   </aura:renderIf>
+</aura:component>

@@ -1,0 +1,52 @@
+.THIS .InputDateSize{
+  width:200px;
+}
+.THIS .TabColor{
+  background-color: yellowgreen;
+}
+.THIS .TabColor a:link {
+    color: white ;
+}
+.THIS .activeTabColor{
+  background-color: green;
+}
+.THIS .activeTabColor a:link {
+    color: white ;
+}
+.THIS .legendColor{
+  border-width: 2px;
+  border-color: aqua;
+  background: #C0C0C0;
+}
+.THIS .claim-form{
+    border: outset;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: white;
+}
+.THIS .claim-grid{
+  background-color: #EDEBEB;
+    padding: 10px;
+}
+.THIS .richText{
+  height:100px;
+}
+
+@media all and (max-width: 100px) {
+
+    .THIS .datePicker-openIcon {
+
+                left: 225px;
+                top: 54%;
+} 
+}
+
+@media all and (min-width: 258px) {
+
+    .THIS .datePicker-openIcon {
+                position: absolute;
+                left: 225px;
+                top: 54%;
+} 
+
+}

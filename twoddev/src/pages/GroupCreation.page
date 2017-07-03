@@ -1,0 +1,18 @@
+<apex:page Controller="GroupCreation"  sidebar="false">
+    <apex:includeLightning />
+        
+    <div id="lightning" />
+    <script>
+      
+        
+        $Lightning.use("c:GroupCreationApp", function() {
+          $Lightning.createComponent("c:GroupCreation",
+               {"groups":"{!JSENCODE(HTMLENCODE(ListOfIds))}" ,"objectName":"{!JSENCODE(HTMLENCODE(objectName))}"},
+          "lightning",
+          function(cmp) {
+          });
+
+        });
+
+    </script> 
+</apex:page>

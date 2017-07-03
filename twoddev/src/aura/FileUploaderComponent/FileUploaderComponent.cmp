@@ -1,0 +1,98 @@
+<aura:component controller="UploaderComponentCntrl" extends="c:GenericComponent" implements="force:appHostable">
+  <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css"/>
+  <aura:attribute name="parentId" type="Id"/>
+  <aura:attribute name="attachments" type="sObject[]"/>
+  <aura:attribute name="attachmentId" type="String"/>
+  <aura:attribute name="totalAttachments" type="String"/>
+    <aura:attribute name="BaseURL" type="String" />
+  <aura:handler name="init" value="{!this}" action="{!c.readAndUpdateAllAttachments}"/>
+  <aura:attribute name="show" type="boolean"/>
+
+  <aura:if isTrue="{!v.show}">
+    <div class="renderedComponent">
+		
+      <input type="file" class="file" aura:id="file" id="fileUploader" onchange="{!c.display}" multiple="false"/>
+      <br/>
+		
+      <div id="saveButtonHider1" style="display:none">
+      <ui:button class="slds-button slds-button--neutral slds-button--small" label="Save" press="{!c.save}" aura:id="saveButton"/>
+      </div>
+          <br/><br/>
+
+      <div id="message"></div>
+
+  <center>
+      <div class="slds-spinner--large slds-hide" aura:id="SpinnerDiv">
+          <img src="{!v.BaseURL + '/resource/slds/assets/images/spinners/slds_spinner_brand.gif'}" alt="Loading...'}" />
+      </div>
+    </center>
+
+     <div class="slds-active slds-show" aura:id="filesTable">
+      <table  class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal" >
+        <thead>
+          <tr class="slds-text-heading--label">
+            <td class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+              <h3>File name</h3>
+            </td>
+            <td class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+              <h3>File type</h3>
+            </td>
+            <td class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+              <h3>File size</h3>
+            </td>
+            <td class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+              <h3>Delete</h3>
+            </td>
+          </tr>
+        </thead>
+        <tbody>
+          <aura:iteration items="{!v.attachments}" var="item">
+            <tr class="slds-hint-parent">
+              <td class="slds-truncate slds-cell-wrap" scope="row" data-label="File name">
+                  <div class="slds-form-element">
+                                <div class="slds-form-element__control" >
+                                    <ui:outputText class="form-element__help" value="{!item.Name}"/>
+                                </div>
+                  </div>
+              </td>
+              <td class="slds-truncate slds-cell-wrap" scope="row" data-label="File type">
+                  <div class="slds-form-element slds-is-required">
+                                <div class="slds-form-element__control">
+                                    <ui:outputText class="form-element__help" value="{!item.ContentType}"/>
+                                </div>
+                            </div>
+               </td>
+              <td class="slds-truncate slds-cell-wrap" scope="row" data-label="File size">
+                  <div class="slds-form-element slds-is-required">
+                                <div class="slds-form-element__control">
+                                    <ui:outputText class="form-element__help" value="{!item.BodyLength + ' KB'}"/>
+                                </div>
+                            </div>
+      
+              </td>
+              <td class="slds-truncate slds-cell-wrap" scope="row" data-label="Delete">
+                  <div class="slds-form-element slds-is-required">
+                                <div class="slds-form-element__control">
+                                    <a class="slds-button slds-button--destructive slds-button--small" href="{! '#/sObject/' + item.Id +'/view'}" data-record="{!item.Id}" onclick="{!c.deleteAttachment}">
+                  <p>X</p>
+                </a>
+                      </div>
+                  </div>
+
+              </td>
+            </tr>
+          </aura:iteration>
+        </tbody>
+      </table>
+    </div>
+      <br/><br/>
+    </div>
+    <aura:set attribute="else">
+      <input type="file" class="fileUploaderGenericElement" aura:id="fileUp" multiple="true"/>
+      <br/>
+      <ui:button label="Save Attachment" press="{!c.save}" aura:id="saveButtonGenericElement" class="saveButtonGenericElement"/>
+      <br/>
+      <span>{!v.totalAttachments} attachments</span>
+    </aura:set>
+  </aura:if>
+</aura:component>

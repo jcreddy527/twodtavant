@@ -1,0 +1,71 @@
+<apex:page Controller="WRCtrl" tabStyle="Warranty_Registration__c">
+    <title>Warranty Registration</title>
+    <!--====================================================================-->
+    <!--Name: CreateWarantyRegistration                                 -->
+    <!--Copyright © 2014 Tavant Technology Inc                              -->
+    <!--====================================================================-->
+    <!--====================================================================-->
+    <!-- Purpose:                                                           -->
+    <!--                                                                    -->
+    <!--====================================================================-->
+    <!--====================================================================-->
+    <!-- History                                                            -->
+    <!-- -------                                                            -->
+    <!-- VERSION  AUTHOR           DATE              DETAIL                 -->
+    <!--   1.0 -  Bhanu           07/11/2014         INITIAL DEVELOPMENT  -->
+    <!--====================================================================-->
+
+    <apex:form id="form1">
+        <apex:pageMessages />
+
+        <apex:pageBlock id="wrData">
+
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton value=" Search " reRender="form1,pdData"
+                    action="{!insertWR}"
+                    rendered="{!$ObjectType.Warranty_Registration__c.Createable}" />
+                <apex:commandButton disabled="{!isRegisterButtonDisabled}"
+                    value=" Register" action="{!doRegister}"
+                    rendered="{!$ObjectType.Warranty_Coverages__c.Updateable}" />
+                <apex:commandButton value="Cancel" action="{!doCancel}"
+                    rendered="{!$ObjectType.Warranty_Registration__c.Deletable}" />
+            </apex:pageBlockButtons>
+
+            <apex:pageBlockSection title="Warranty Registration Information"
+                columns="2" collapsible="false">
+                <apex:repeat value="{!fields}" var="f">
+                    <!-- FLS Not Required. We are using inputField -->
+                    <apex:inputField value="{!wRegistration[f.fieldPath]}"
+                        required="{!OR(f.required, f.dbrequired)}" />
+                </apex:repeat>
+            </apex:pageBlockSection>
+
+        </apex:pageBlock>
+
+
+        <apex:outputpanel id="pdData" rendered="{!showBlock}">
+
+            <apex:pageBlock >
+
+                <apex:pageBlockSection title="Select Policy Definations"
+                    collapsible="false" />
+
+                <apex:pageBlockTable value="{!policyDefList}" var="fd">
+
+                    <apex:column headerValue="Action">
+                        <apex:inputCheckbox id="checkedone" value="{!fd.selected}"></apex:inputCheckbox>
+                    </apex:column>
+
+                    <apex:repeat value="{!$ObjectType.Policy_Definition__c.FieldSets.PolicyDefination_In_Warranty_Reg}"
+                        var="f">
+                        <apex:column headerValue="{!f.Label}" value="{!fd.pd[f]}" />
+                    </apex:repeat>
+
+                </apex:pageBlockTable>
+
+            </apex:pageBlock>
+
+        </apex:outputpanel>
+
+    </apex:form>
+</apex:page>

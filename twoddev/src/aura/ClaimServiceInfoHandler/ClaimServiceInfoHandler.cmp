@@ -1,0 +1,79 @@
+<aura:component extends="c:GenericComponent">
+    <aura:attribute name="clainServiceInfo" type="sObject" default="{
+                                                                       'sobjectType': 'Claim_Part__c',
+                                                                       'Name': '',
+                                                                 	   'Warranty_Product_Pricebook__c':'a0T15000007xbkv',
+                                                                 	   'Type__c':'Installed Part'
+                                                                       }" />
+   <aura:attribute name="tempInstalledPart" type="sObject" default="{
+                                                                       'sobjectType': 'Claim_Part__c',
+                                                                       'Name': '',
+                                                                        'Warranty_Product_Pricebook__c':'a0T15000007xbkv',
+                                                                    	'Type__c':'Installed Part'
+                                                                       }" />
+    <aura:attribute name="claimId" 				type="string" default=""/>
+    <aura:attribute name="partId" 				type="string" default=""/>
+    <aura:attribute name="serviceJobId" 			type="string" />
+    <aura:attribute name="serviceJobName" 		type="string" />
+    <aura:attribute name="warrantyProductId" 	type="string" />
+    <aura:attribute name="warrantyProductName"	type="string" />
+    <aura:attribute name="isDisabledWarranty"	type="boolean" default="false"/>
+    <aura:attribute name="isDisabledInventory"	type="boolean" default="false"/>
+    <aura:attribute name="isNewRecord"			type="boolean" default="false"/>
+    <aura:attribute name="dmlErrors" 			type="String[]" 				default="" />
+    <aura:handler name="init" 					value="{!this}" 				action="{!c.doInit}"/>
+    <aura:handler name="change" 				value="{!v.inventoryId}" 		action="{!c.disableWarrantyProduct}"/>
+    <aura:handler name="change" 				value="{!v.warrantyProductId}" 	action="{!c.disableInventory}"/>
+
+    <c:container class="demo-container" size="large" align="center">
+        <aura:if isTrue="{!v.dmlErrors.length > 0}" >
+			<ui:message title="Error" severity="error" closable="false">
+                <aura:iteration items="{!v.dmlErrors}" var="item">
+					{!item} <br/>
+				</aura:iteration>
+			</ui:message>
+        </aura:if>
+        <form class="slds-form--stacked">
+            <div class="slds-form-element slds-is-required">
+                <div class="slds-form-element__control">
+                    <ui:inputText aura:id="partName" label="Name"
+                                  class="slds-input"
+                                  labelClass="slds-form-element__label"
+                                  value="{!v.installedPart.Name}"
+                                  required="true"/>
+                </div>
+            </div>
+            <div class="slds-form-element slds-is-required">
+                <div class="slds-form-element__control">
+                    <span class="slds-form-element__label">{!$Label.c.Warranty_Product}{!v.warrantyProductId}</span>
+                    <c:LookupWithoutSpinner isDisabled="{!v.isDisabledWarranty}"  aura:id="warrantyProductId" 	labelVal="Warranty"        selectedValue="{!v.warrantyProductName}"   value="{!v.warrantyProductId}"     selectedId="{!v.warrantyProductId}"        selSobject="Warranty_Product__c"        QuerySOQL="Select Id,Name from Warranty_Product__c" condition=" Track_Type__c = 'Non-Serialized'"/>
+                </div>
+            </div>
+            <div class="slds-form-element slds-is-required">
+                <div class="slds-form-element__control">
+                    <span class="slds-form-element__label">{!$Label.c.Inventory} {!v.inventoryId}</span>
+                    <c:LookupWithoutSpinner isDisabled="{!v.isDisabledInventory}" aura:id="inventoryId"  value="{!v.inventoryId}"		labelVal="Inventory" selectedValue="{!v.inventoryName}" selectedId="{!v.inventoryId}" selSobject="Inventory__c" QuerySOQL="Select Id,Name from Inventory__c" condition="Asset_Type__c = 'Warrantable'"/>
+                </div>
+            </div>
+            <div class="slds-form-element slds-is-required">
+                <div class="slds-form-element__control">
+                    <ui:inputText aura:id="quantity" label="{!$Label.c.Quantity}"
+                                  class="slds-input"
+                                  labelClass="slds-form-element__label"
+                                  value="{!v.installedPart.Quantity__c}"
+                                  />
+                </div>
+            </div>
+            <div class="slds-form-element slds-is-required">
+                <div class="slds-form-element__control">
+                    <ui:inputCurrency aura:id="price" labelClass="slds-form-element__label" label="{!$Label.c.Price}" class="slds-input" value="{!v.installedPart.Price__c}"/>
+                </div>
+            </div>
+            <div class="slds-modal__footer">
+                <div class="slds-x-small-buttons--horizontal">
+                  <button class="slds-button slds-button--neutral" onclick = "{!c.saveRecord}" >{!$Label.c.Save}</button>
+                </div>
+            </div>
+        </form>
+    </c:container>
+</aura:component>

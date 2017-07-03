@@ -1,0 +1,191 @@
+<!--/////////////////////////////////////
+
+Copyright � 2016  Tavant Technology Inc
+Name - D2DTransfer
+Purpose - component used for D2D transfer of inventory.
+Date - 12/27/2016
+Last Edited by - AMAN SAWHNEY
+
+/////////////////////////////////////-->
+
+<aura:component extends="c:GenericCrudComponent">
+    <ltng:require styles="/resource/SLDS0122/assets/styles/salesforce-lightning-design-system.min.css"/>
+    <aura:attribute name="inventoryId" type="string"/>
+    <aura:attribute name="dealerId" type="string"/>
+   <aura:attribute name="dealerName" type="string"/>
+    <aura:attribute name="comments" type="string"/>
+    <aura:attribute name="date" type="date"/>
+    <aura:attribute name="ProceedURL" type="string"/>
+    <aura:attribute name="BaseURL" type="string"/>
+    <aura:attribute name="unitsRun" type="decimal"/>
+    <aura:attribute name="isUnitRun" type="boolean" default="false"/>
+    <aura:attribute name="isRMT" type="boolean" default="false"/>
+
+    <aura:attribute name="resultMessage" type="String"/>
+    <aura:attribute name="truthy" type="Boolean" default="false"/>
+    <aura:attribute name="transaction"
+        type="sobject"
+        default="{
+                                                               'sobjectType' : 'Inventory_Transaction_History__c',
+                                                               'Name':'',
+                                                               'From__c':'',
+                                                               'Inventory__c.Type__c ':'',
+                                                               'Inventory__c':'',
+                                                               'Transaction_Type__c':'',
+                                                               'To__c':'',
+                                                               'Transfer_Date__c':'',
+                                                               }"/>
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="inventory" type="sobject"/>
+    <aura:attribute name="inventoryList" type="sobject[]"/>
+    <aura:attribute name="policyInactive" type="sobject[]"/>
+    <aura:attribute name="alertBoxData" type="Object"/>
+    <aura:attribute name="scrappedOrStolen" type="Boolean"/>
+
+
+    <aura:if isTrue="{!v.scrappedOrStolen}">
+        <div class="pageBlocker">
+
+            <div role="alertdialog" tabindex="-1" aria-labelledby="prompt-heading-id" aria-describedby="prompt-message-wrapper" class="slds-modal slds-fade-in-open slds-modal--prompt">
+                <div class="slds-modal__container">
+                    <div class="slds-modal__header slds-theme--error slds-theme--alert-texture">
+                        <h2 class="slds-text-heading--medium" id="prompt-heading-id">{!v.alertBoxData.title}</h2>
+                    </div>
+                    <div class="slds-modal__content slds-p-around--medium">
+                        <div>
+                            <p>{!v.alertBoxData.message}</p>
+                        </div>
+                    </div>
+                    <div class="slds-modal__footer slds-theme--default">
+                        <button class="slds-button slds-button--neutral" onclick="{!c.Cancel}">{!v.alertBoxData.okayButtonTitle}</button>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-backdrop slds-backdrop--open"></div>
+
+        </div>
+
+    </aura:if>
+
+    <aura:if isTrue="{!(!v.scrappedOrStolen)}">
+        <div>
+
+          <header class="slds-text-heading--large slds-align--absolute-center header" style="background: #1a315b;color: white;padding: 30px;">
+              {!$Label.c.CustomerTransfer_Header}
+          </header>
+
+            <div class="accordion-body tab-open" Style="background: white;color: black;display: block;padding: 17px 9px 17px 9px; width: 80%; margin: 0px auto auto auto;box-shadow: #302e2e -3px 4px 25px;">
+                <div class="accordion-container">
+                    <!-- Accordion 1-->
+                    <div class="accordion">
+                        <div style="padding:10px">
+                            <div class="HeaderStyle" style="width: 100%;height: 50px;">
+                                {!$Label.c.CustomerTransfer_InventoryDetails}
+                            </div>
+
+                            <div class="slds-grid slds-wrap slds-grid">
+                                <div Style="width: 50%;padding: 0.7rem;" class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                                    <span class="dataHeaderLabel">{!$Label.c.INVENTORY_NAME}</span><br/><ui:outputText class="HeaderValueStyle" value="{!v.inventory.Name}"/>
+                                </div>
+                                <div Style="width: 50%;padding: 0.7rem;" class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                                    <span class="dataHeaderLabel">{!$Label.c.Serial_Number}</span><br/><ui:outputText class="HeaderValueStyle" value="{!v.inventory.Serial_Number__c}"/>
+
+                                </div>
+                            </div>
+                            <div class="slds-grid slds-wrap slds-grid">
+                                <div Style="width: 50%;padding: 0.7rem;" class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                                    <span class="dataHeaderLabel">{!$Label.c.TYPE}</span><br/><ui:outputText class="HeaderValueStyle" value="{!v.inventory.Type__c}"/>
+                                </div>
+                                <div Style="width: 50%;padding: 0.7rem;" class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                                    <span class="dataHeaderLabel">{!$Label.c.Warranty_Product}</span><br/><ui:outputText class="HeaderValueStyle" value="{!v.inventory.Item__r.Name}"/>
+                                </div>
+                            </div>
+                            <aura:if isTrue="{!v.isRMT}">
+                                <!--<div class="slds-grid slds-wrap slds-grid">
+                                                                                                <div Style="width: 50%;padding: 0.7rem;" class="slds-size-12-of-12 slds-medium-size-6-of-12 slds-large-size-6-of-12 slds-p-around-large">
+                                                                                                                <span class="dataHeaderLabel">{!$Label.c.Dealer}</span><br/><ui:outputText class="HeaderValueStyle" value="{!v.inventory.Account__r.Name}"/>
+                                                                                                </div>
+                                                                                                <div Style="width: 50%;padding: 0.7rem;" class="slds-size-12-of-12 slds-medium-size-6-of-12 slds-large-size-6-of-12 slds-p-around-large">
+
+                                                                                                </div>
+                                                                                </div>-->
+                            </aura:if>
+
+                        </div>
+                        <!-- Accordion 2-->
+                        <div class="accordion">
+                            <div class="HeaderStyle" style="width: 100%;height: 50px;">
+
+                                {!$Label.c.CustomerTransfer_TransferDetails}
+
+                            </div>
+                            <aura:if isTrue="{!v.truthy}">
+                                <div id="onsuccess" style="display: bold ;width: 100%;">
+                                    <div style="background: #DC143C !important;" class="slds-notify slds-notify--alert slds-theme--inverse-text slds-theme--alert-texture" role="alert">
+                                        <span class="slds-assistive-text">Info</span>
+                                        <button id="successBtn" class="slds-button slds-button--icon-inverse slds-notify__close" onclick="{!c.hideSuccessAlert}">
+                                            <c:svgIcon svgPath="/resource/slds/assets/icons/utility-sprite/svg/symbols.svg#close" category="standard" size="x-small" name="close"/>
+                                            <span class="slds-assistive-text">Close</span>
+                                        </button>
+                                        <h2>{!v.resultMessage}</h2>
+                                    </div>
+                                </div>
+                            </aura:if>
+
+                            <div class="slds-grid slds-wrap slds-grid">
+                                <div Style="width: 50%;padding: 0.7rem;" class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                                    <span class="dataHeaderLabel">{!$Label.c.Dealer}</span><br/><ui:outputText class="HeaderValueStyle" value="{!v.inventory.Account__r.Name}"/>
+                                </div>
+                                <div Style="width: 50%;padding: 0.7rem;" class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                                    <span class="dataHeaderLabel">{!$Label.c.TRANSFER_TO}</span><br/><c:LookupWithoutClose selectedId="{!v.dealerId}" selSobject="Account" QuerySOQL="Select Id,Name from Account" condition="{!'Warranty_Account_Type__c = \'Dealer\' and Id !=\'' + v.inventory.Account__c + '\''}"/>
+                                </div>
+                            </div>
+                            <div class="slds-grid slds-wrap slds-grid">
+                                <div Style="width: 50%;padding: 0.7rem;" class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                                    <span class="dataHeaderLabel">{!$Label.c.TRANSFER_DATE}</span><br/><ui:inputDate aura:id="TransDate" class="slds-input form-element__help dateInput" value="{!v.date}" displayDatePicker="true"/>
+                                </div>
+                                <div Style="width: 50%;padding: 0.7rem;" class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                                    <!-- <span class="dataHeaderLabel">{!$Label.c.UNITS_USED_DURING_TRANSFER}</span><br/><ui:inputnumber disabled="true" class="slds-input form-element__help" value="{!v.unitsRun}" placeholder="{!v.inventory.Item__r.Units_of_Measure__c}"/> -->
+                                    <!-- Below line added by Chethan -->
+                                    <span class="dataHeaderLabel">{!$Label.c.UNITS_USED_DURING_TRANSFER}</span><br/>
+                                    <ui:inputnumber disabled="true" class="slds-input form-element__help" value="{!v.unitsRun}"/>
+                                </div>
+                            </div>
+                            <div class="slds-grid slds-wrap slds-grid">
+                                <div Style="width: 50%;padding: 0.7rem;" class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                                    <span class="dataHeaderLabel">{!$Label.c.Comments}</span><br/><ui:inputTextArea class="slds-input form-element__help HeaderValueStyle" value="{!v.comments}"/>
+                                </div>
+                                <div Style="width: 50%;padding: 0.7rem;" class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large"></div>
+                            </div>
+
+                        </div>
+                        <br></br>
+                        <center>
+                            <aura:if isTrue="{!v.isRMT}">
+                                <a style="padding: 12px;" href="{!v.ProceedURL}" onclick="{!c.inventoryTransferRMT}">
+                                    <span class="slds-button slds-button--brand ">
+                                        {!$Label.c.Confirm_RMT_Button}
+                                    </span>
+                                </a>
+                            </aura:if>
+                            <aura:if isTrue="{!!v.isRMT}">
+                                <a style="padding: 12px;" href="{!v.ProceedURL}" onclick="{!c.inventoryTransfer}">
+                                    <span class="slds-button slds-button--brand ">
+                                        {!$Label.c.Confirm_Button}
+                                    </span>
+                                </a>
+                            </aura:if>
+                            <a href="{!v.ProceedURL}" onclick="{!c.Cancel}">
+                                <span class="slds-button slds-button--neutral ">
+                                    {!$Label.c.Cancel_Button}
+                                </span>
+                            </a>
+                        </center>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </aura:if>
+</aura:component>

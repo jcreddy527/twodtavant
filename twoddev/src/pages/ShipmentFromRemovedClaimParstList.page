@@ -1,0 +1,14 @@
+<apex:page standardController="Removed_Claim_Part__c">
+     <!-- Begin Default Content REMOVE THIS -->
+    <flow:interview name="Shipment_From_Removed_Part_List_Flow" finishLocation="{!URLFOR($Action.Removed_Claim_Part__c.List, $ObjectType.Removed_Claim_Part__c)}" rendered="{!if($Site.prefix== '',true,false)}" >
+        <apex:param name="VarTRemovedPartId" value="{!Removed_Claim_Part__c.Id}"/>     
+    </flow:interview>
+    <flow:interview name="Shipment_From_Removed_Part_List_Flow" finishLocation="{!URLFOR($Action.Removed_Claim_Part__c.List, $ObjectType.Removed_Claim_Part__c)}" rendered="{!if(NOT($Site.prefix== ''),true,false)}">
+        <apex:param name="VarTRemovedPartId" value="{!Removed_Claim_Part__c.Id}"/>
+    </flow:interview>
+  <!-- End Default Content REMOVE THIS -->
+  <apex:form >
+  <apex:commandButton action="{!URLFOR($Action.Removed_Claim_Part__c.List, $ObjectType.Removed_Claim_Part__c)}" value="{!$Label.Back_To_Main_Page}" id="theButton"/>
+  </apex:form>
+  <!-- End Default Content REMOVE THIS -->
+</apex:page>

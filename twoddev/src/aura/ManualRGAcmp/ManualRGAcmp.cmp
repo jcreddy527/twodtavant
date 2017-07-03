@@ -1,0 +1,138 @@
+<!--/////////////////////////////////////
+
+Copyright � 2016  Tavant Technology Inc
+Name - CustomerTransfer
+Purpose - component used for warranty registration of inventory.
+Date - 12/27/2016
+Last Edited by - AMAN SAWHNEY
+
+/////////////////////////////////////-->
+
+<aura:component extends="c.CruderCmp" controller="ManualRGACntrl">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    <aura:attribute name="claimId" type="String"/>
+    <aura:attribute name="class" type="string" default="opaque"/>
+    <aura:attribute name="spinner" type="Object"/>
+    <aura:attribute name="claim" type="Object"/>
+    <aura:attribute name="paymentConditionList" type="Object[]"/>
+    <aura:attribute name="removedPartListHandelerObject" type="Object"/>
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+
+    <aura:if isTrue="{!v.spinner.pageSpinner}">
+        <lightning:spinner aura:id="main-pageload-spinner" variant="brand"/>
+    </aura:if>
+    <aura:if isTrue="{!v.spinner.actionSpinner}">
+        <lightning:spinner aura:id="main-pageload-spinner" variant="brand"/>
+    </aura:if>
+
+    {!v.body}
+    <div class="main-body" style="{!(v.spinner.pageSpinner==true? 'opacity:0':'opacity:1')}">
+        <header class="slds-text-heading--large slds-align--absolute-center header">
+            {!$Label.c.Manual_RGA}
+        </header>
+        <div class="containerC">
+            <div class="form">
+                <div class="form-body">
+                    <div class="slds-grid slds-wrap slds-grid">
+                        <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                            <ui:inputText value="{!v.claim.Name}" class="slds-input output" disabled="true" label="{!$Label.c.Claim_Number}"/>
+                        </div>
+                        <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                            <ui:inputText value="{!v.claim.Claim_Record_Type__c}" class="slds-input output" disabled="true" label="{!$Label.c.Claim_Type}"/>
+                        </div>
+                    </div>
+                    <div class="slds-grid slds-wrap slds-grid">
+                        <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                            <ui:inputText value="{!v.claim.Causal_Part_Number__r.Name}" class="slds-input output" disabled="true" label="{!$Label.c.Causal_Part}"/>
+                        </div>
+                        <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                            <ui:inputText value="{!v.claim.Approved_Claim_Cost__c}" class="slds-input output" disabled="true" label="{!$Label.c.Approved_Claim_Cost}"/>
+                        </div>
+                    </div>
+
+                    <div class="form-heading">{!$Label.c.Parts_To_Be_Shipped}</div>
+                    <div class="form-body">
+                        <div class="removed-part-container">
+                            <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                                <thead>
+                                    <tr class="slds-text-title--caps">
+                                        <th scope="col" class="slds-is-resizable">
+                                            <div class="slds-resizable" title=""></div>
+                                        </th>
+                                        <th scope="col" class="slds-is-resizable">
+                                            <div class="slds-resizable" title="dedf">{!$Label.c.Part_Number}</div>
+                                        </th>
+                                        <th scope="col" class="slds-is-resizable">
+                                            <div class="slds-resizable" title="sdfcsdc">{!$Label.c.Serial_Number}</div>
+                                        </th>
+
+                                        <th scope="col" class="slds-is-resizable">
+                                            <div class="slds-resizable" title="sdcfc">{!$Label.c.Remaining_Quantity}</div>
+                                        </th>
+                                        <th scope="col" class="slds-is-resizable">
+                                            <div class="slds-resizable" title="">{!$Label.c.Return_Location}</div>
+                                        </th>
+                                        <th scope="col" class="slds-is-resizable">
+                                            <div class="slds-resizable" title="">{!$Label.c.Payment_Condition}</div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <aura:iteration items="{!v.removedPartListHandelerObject.DOM}" var="obj" indexVar="index">
+                                        <tr>
+                                            <td data-label="{!$Label.c.Part_Number}" class="slds-cell-wrap">
+                                                <label class="slds-checkbox">
+                                                    <ui:inputCheckbox aura:id="selector" text="{!index}" value="{!obj.selected}" change="{!c.fillSubmittableDetails}"/>
+                                                    <span class="slds-checkbox--faux"></span>
+                                                </label>
+                                            </td>
+                                            <td data-label="{!$Label.c.Part_Number}" class="slds-cell-wrap">
+                                                <div title="{!$Label.c.Part_Number}">{!obj.Warranty_Product__r.Name}</div>
+                                            </td>
+                                            <td data-label="{!$Label.c.Serial_Number}" class="slds-cell-wrap">
+                                                <div title="{!$Label.c.Serial_Number}">{!obj.Inventory__r.Name}</div>
+                                            </td>
+
+                                            <td data-label="{!$Label.c.Quantity}">
+                                                <div title="{!$Label.c.Quantity}">{!obj.Remaining_Quantity__c}</div>
+                                            </td>
+                                            <td scope="row" data-label="">
+                                                <div title="">
+                                                    <c:LookupCmp aura:id="returnLocation"
+                                                        disabled="{!obj.selected==false}"
+                                                        iterableId="{!(index)}"
+                                                        objectType="Warehouse__c"
+                                                        class="slds-input"
+                                                        label=''
+                                                        onLookupSelect="{!c.fillSubmittableDetails}"
+                                                        minCharacters="2"
+                                                        placeholder="{!$Label.c.Return_Location_Placeholder}"/>
+                                                </div>
+                                            </td>
+                                            <td scope="row" data-label="">
+                                                <div title="">
+                                                    <ui:inputSelect aura:id="paymentCondition" labelClass="{!(index)}" change="{!c.fillSubmittableDetails}" class="slds-input" disabled="{!obj.selected==false}">
+                                                        <aura:iteration items="{!v.paymentConditionList}" var="pc">
+                                                            <ui:inputSelectOption text="{!pc.value}" value="{!pc.label}"/>
+                                                        </aura:iteration>
+                                                    </ui:inputSelect>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </aura:iteration>
+                                </tbody>
+                            </table>
+                            <div class="padder">
+                                <lightning:button name="accordion-c-1-cancel" variant="destructive" label="{!$Label.c.Cancel}" onclick="{!c.cancel}"/>
+                                <ui:button class="slds-button--brand" press="{!c.submitReturnLocation}" label="{!$Label.c.Submit}"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</aura:component>

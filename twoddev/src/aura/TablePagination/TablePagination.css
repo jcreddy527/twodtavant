@@ -1,0 +1,12 @@
+@media all and (min-width: 170px) {
+.THIS .ClassShowEntry {
+padding: 2px 4px 2px 2px;
+width: 50%;
+float: none;
+}
+    .THIS .ClassShowSearch {
+padding: 2px 4px 2px 2px;
+width: 60%;
+float: none;
+    }
+}

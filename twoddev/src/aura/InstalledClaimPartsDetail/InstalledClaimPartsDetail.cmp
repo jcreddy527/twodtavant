@@ -1,0 +1,115 @@
+<!--
+  THIS COMPONENT NOT IN USE. CONTACT KALI IF U NEED ANY QUERIES
+-->
+
+<aura:component extends="c:GenericComponent">
+    <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" />
+    <aura:attribute name="laborType" type="String[]" default="Replacement,Paint,Housewrap" />
+    <aura:attribute name="quantity" type="Decimal" default="" />
+    <aura:attribute name="laborRate" type="Decimal" default="" />
+    <aura:attribute name="totalCost" type="Decimal" default="" />
+    <aura:attribute name="isEdit" type="Boolean" default="True" />
+    <aura:attribute name="isDelete" type="Boolean" default="False" />
+    <aura:attribute name="ClaimId" type="String" default="" />
+    <aura:attribute name="errors" type="String[]" default="" />
+    <aura:attribute name="claimLaborDetail_SObj" type="sObject" default="{'sobjectType':'Claim_Part__c',
+                                                              	'Id' : null,
+                                                                'Claim__c' : 'a0p36000000MfVV'
+                                                            }"/>
+    <aura:attribute name="myURL" type="String" default=""/>
+    <aura:attribute name="inventoryId" 			type="string" />
+    <aura:attribute name="inventoryName" 		type="string" />
+    <aura:attribute name="warrantyProductId" 	type="string" />
+    <aura:attribute name="warrantyProductName"	type="string" />
+    <aura:attribute name="isDisabledWarranty"	type="boolean" default="false"/>
+    <aura:attribute name="isDisabledInventory"	type="boolean" default="false"/>
+    <aura:handler name="change" 				value="{!v.claimLaborDetail_SObj.Inventory__c}" 		action="{!c.disableWarrantyProduct}"/>
+    <aura:handler name="change" 				value="{!v.claimLaborDetail_SObj.Warranty_Product__c}" 	action="{!c.disableInventory}"/>
+
+    <aura:method name="sampleMethod1" action="{!c.disableWarrantyProduct}" access="PUBLIC" >
+	</aura:method>
+
+    <aura:method name="sampleMethod2" action="{!c.disableInventory}" access="PUBLIC" >
+	</aura:method>
+
+    <aura:attribute name="sObjectList" type="sObject[]" />
+ 	<aura:if isTrue="{!v.isDelete == False}" >
+    	<aura:if isTrue="{!v.isEdit == True}">
+                 <tr class="slds-text-heading--label">
+
+                     <td class="slds-row-select">
+                        Name <br/>
+            			<ui:inputText value="{!v.claimLaborDetail_SObj.Name}" aura:id="name" />
+        			 </td>
+
+                     <td class="slds-row-select">
+                         <span class="slds-form-element__label">Inventory</span>
+                    	 <c:LookupwithoutStyle isDisabled="{!v.isDisabledInventory}" aura:id="inventoryId"  value="{!v.claimLaborDetail_SObj.Inventory__c}"		labelVal="Inventory" selectedValue="{!v.inventoryName}" selectedId="{!v.claimLaborDetail_SObj.Inventory__c}" selSobject="Inventory__c" QuerySOQL="Select Id,Name from Inventory__c"/>
+                     </td>
+
+                     <td class="slds-row-select">
+                         Warranty <br/>
+                         <span class="slds-form-element__label">{!v.warrantyProductId}</span>
+                    	 <c:LookupwithoutStyle isDisabled="{!v.isDisabledWarranty}"  aura:id="warrantyProductId" 	labelVal="Warranty"        selectedValue="{!v.warrantyProductName}"   value="{!v.claimLaborDetail_SObj.Warranty_Product__c}"     selectedId="{!v.claimLaborDetail_SObj.Warranty_Product__c}"        selSobject="Warranty_Product__c"        QuerySOQL="Select Id,Name from Warranty_Product__c"/>
+
+                     </td>
+                     <td class="slds-row-select">
+                         Quantity <br/>
+                             <ui:inputNumber value="{!v.claimLaborDetail_SObj.Quantity__c}" aura:id="Quantity" format=".00" />
+                     </td>
+                     <td class="slds-row-select">
+                         Price <br/>
+                             <ui:inputCurrency value="{!v.claimLaborDetail_SObj.Price__c}" aura:id="Price" />
+
+                     </td>
+
+            <td>
+                <ui:button label="Save" press="{!c.saveClaimLaborRecords}" />
+                <ui:button label="Cancel" press="{!c.cancelClaimLaborRecords}"/>
+            </td>
+   </tr>
+    </aura:if>
+
+    <aura:if isTrue="{!v.isEdit == False}" >
+                 <tr class="slds-text-heading--label">
+                     <td class="slds-row-select">
+                        Name <br/>
+            			<ui:outputText value="{!v.claimLaborDetail_SObj.Name}" aura:id="name" />
+        			 </td>
+                     <td class="slds-row-select">
+                        Invnetory <br/>
+            			<ui:outputText value="{!v.claimLaborDetail_SObj.Inventory__r.Name}" aura:id="invnetoryId" />
+        			 </td>
+
+        			 <td class="slds-row-select">
+                         Warranty Product <br/>
+            			 <ui:outputText value="{!v.claimLaborDetail_SObj.Warranty_Product__r.Name}" aura:id="warrantyId" />
+
+                    </td>
+                    <td class="slds-row-select">
+                        Price <br/>
+                        <ui:outputText aura:id="laborType" value="{!v.claimLaborDetail_SObj.Standard_Part_Cost__c}" >
+                        </ui:outputText>
+                    </td>
+                    <td class="slds-row-select">
+                        Price <br/>
+                        <ui:outputText aura:id="laborType" value="{!v.claimLaborDetail_SObj.Total_Amount__c}" >
+                        </ui:outputText>
+                    </td>
+                     <td class="slds-row-select">
+                         Quantity<br/>
+                         <ui:outputText aura:id="totalLaborCost" value="{!v.claimLaborDetail_SObj.Quantity__c}" />
+                    </td>
+
+        <td>
+            <ui:button label="Edit" press="{!c.editClaimLaborRecords}"/>
+            <ui:button label="Delete" press="{!c.deleteClaimLaborRecords}"/>
+   		 </td>
+        </tr>
+
+    </aura:if>
+
+
+    </aura:if>
+
+</aura:component>

@@ -1,0 +1,4 @@
+<aura:event type="APPLICATION" description="Event template" >
+    <aura:attribute name="response" type="Boolean" />
+    <aura:attribute name="isPopup" type="Boolean" />
+</aura:event>

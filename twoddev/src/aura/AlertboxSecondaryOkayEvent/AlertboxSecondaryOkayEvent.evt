@@ -1,0 +1,1 @@
+<aura:event type="COMPONENT" description="secondary okay event for second button in alert box" />

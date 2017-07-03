@@ -1,0 +1,141 @@
+<aura:component extends="c:GenericComponent">
+    <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" />
+	<aura:attribute name="claimId" 				type="String" 		default="a061500000X9djt"/>
+    <aura:attribute name="claimName" 			type="String" 		default="CLm001"/>
+    <aura:attribute name="serviceJobId"			type="String" 		/>
+    <aura:attribute name="serviceJobName"		type="String" 		/>
+    <aura:attribute name="claimServiceInfoIds"	type="String[]" 	default=""/>
+    <aura:attribute name="JobCodeList" 			type="sObject[]" />
+    <aura:attribute name="claimServiceInfos" 	type="sObject[]" 	/>
+    <aura:attribute name="deleteClaimService"   type="sObject[]" 	default=""/>
+    <aura:attribute name="claimServiceInfo" 	type="sObject" 		default="{  'sobjectType': 'Claim_Service_Information__c' ,
+                                                                             	'Name' : ''}"/>
+    <aura:attribute name="deleteRecordNumbers"	type="String[]" 	default=""/>
+    <aura:attribute name="isNewRecord"			type="boolean" default="false"/>
+    <aura:attribute name="jobCodeDescription"		type="String" 		/>
+
+    <aura:handler name="init" 				value="{!this}" 	action="{!c.doInit}" />
+    <aura:attribute name="isEnableModal" type="boolean" default="false"/>
+    <aura:handler event="c:ModalCloseEvent" 	 action="{!c.changeModalClose}"/>
+    <!--<aura:handler event="c:ConfirmationEvent"  action="{!c.deleteConfirmation}"/>-->
+    <aura:attribute name="BaseURL" type="String"/>
+    <aura:attribute name="showStandardHours"	 type="boolean"  default="false"/>
+
+    <aura:method name="sampleMethod" action="{!c.doInit}" access="PUBLIC" >
+    </aura:method>
+	<aura:attribute name="isDeleteClicked" 			 type="Boolean" default="false"/>
+    <aura:attribute name="isDeleteDisabled" 			 type="Boolean" default="false"/>
+
+    <aura:attribute name="isDeletable" type="Boolean" default="false" />
+	<aura:handler event="c:ConfirmationModelEvent" 	action="{!c.deleteRecordsByResponse}"/>
+
+
+    <div class="slds-form--inline">
+        <br></br>
+        	<center>
+        		<button class="slds-button slds-button--brand" onclick = "{!c.addNewRow}">{!$Label.c.Add_New_Record}</button>
+                <button class="slds-button slds-button--brand" onclick = "{!c.deleteRecords}" disabled="{!v.isDeleteDisabled}">{!$Label.c.Delete_All_Records}</button>
+        	</center>
+        <br></br>
+    </div>
+
+        <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal">
+            <!-- Header to the table header -->
+            <thead>
+                <tr class = "slds-text-heading--label">
+
+                    <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+                        <div class="slds-truncate">{!$Label.c.Job_Code}
+                        </div>
+                    </th>
+                    <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">{!$Label.c.Job_Code_Description}</th>
+
+                    <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">{!$Label.c.Additional_Labor_Hours}</th>
+                    <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">{!$Label.c.Reason_for_Labor_Hour}</th>
+                    <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">{!$Label.c.Total_Labor_Hours}</th>
+                    <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col"></th>
+                </tr>
+            </thead>
+ 
+            <!-- Body iteration to add the data in the table format -->
+            <tbody aura:id="tbody">
+                <aura:iteration items="{!v.claimServiceInfos}" var="item" indexVar="i">
+                    <tr>
+                        <!-- To get the id value of the record added the check box -->
+
+                        <td class="slds-truncate" scope="row" data-label="{!$Label.c.Job_Code}">
+                            <div class="slds-form-element slds-is-required" disabled = "true">
+                                <div class="slds-form-element__control" >
+                                    <ui:outputText class="form-element__help" value="{!item.Service_Job_Code__r.Name}"/>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="slds-truncate" scope="row" data-label="{!$Label.c.Job_Code_Description}">
+                            <div class="slds-form-element slds-is-required" disabled = "true">
+                                <div class="slds-form-element__control" >
+                                    <ui:outputText class="form-element__help" value="{!item.Service_Job_Code__r.Description__c}"/>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="slds-truncate" scope="row" data-label="{!$Label.c.Additional_Labor_Hours}">
+                            <div class="slds-form-element slds-is-required">
+                                <div class="slds-form-element__control">
+                                    <ui:outputText class="form-element__help" value="{!item.Additional_Labor_Hour__c}"/>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="slds-truncate" scope="row" data-label="{!$Label.c.Reason_for_Labor_Hour}">
+                            <div class="slds-form-element slds-is-required">
+                                <div class="slds-form-element__control">
+                                    <ui:outputText class="form-element__help" value="{!item.Reason_Additional_Labor_hour__c}"/>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="slds-truncate" scope="row" data-label="{!$Label.c.Total_Labor_Hours}">
+                            <div class="slds-form-element slds-is-required">
+                                <div class="slds-form-element__control">
+                                    <ui:outputText class="form-element__help" value="{!item.Total_Labor_hours__c}"/>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="slds-truncate">
+                            <span class="slds-icon__container" onclick = "{!c.editClaimPart}" value = "{!i}" tabIndex="{!i}">
+						 		<c:svg class="slds-icon slds-icon--x-small slds-icon-text-default " xlinkHref="{!v.BaseURL + '/resource/slds/assets/icons/utility-sprite/svg/symbols.svg#edit'}" ariaHidden="false"/>
+                    		</span>
+                            &nbsp;&nbsp;
+                            <span class="slds-icon__container" onclick = "{!c.deleteClaimServiceInfo}" value = "{!i}" tabIndex="{!i}">
+						 		<c:svg class="slds-icon slds-icon--x-small slds-icon-text-default " xlinkHref="{!v.BaseURL + '/resource/slds/assets/icons/utility-sprite/svg/symbols.svg#delete'}" ariaHidden="false"/>
+                    		</span>
+                        </td>
+
+                    </tr>
+                </aura:iteration>
+            </tbody>
+        </table>
+
+
+    <!--
+		Enable modal to create new record or to edit the record
+	-->
+    <aura:if isTrue="{!v.isEnableModal}">
+        <c:ModalCmp isLarge="true" isShowCancel="false" BaseURL="{!v.BaseURL}">
+            <aura:set attribute="body">
+                <c:ClaimServiceInformation JobCodeList="{!v.JobCodeList}" jobCodeDescription="{!v.jobCodeDescription}" standardHours="{!v.standardHours}" showStandardHours="{!v.showStandardHours}" claimName="{!v.claimName}" claimId="{!v.claimId}" serviceJobName="{!v.serviceJobName}" serviceJobId="{!v.serviceJobId}" isNewRecord="{!v.isNewRecord}" claimServiceInfo="{!v.claimServiceInfo}"/>
+            </aura:set>
+    	</c:ModalCmp>
+    </aura:if>
+	<aura:if isTrue="{!v.isDeleteClicked}">
+            <SPAN>
+                <c:Confirmation isPopup="{!v.isDeleteClicked}" response="{!v.isDeletable}">
+                    <aura:set attribute="body">
+                        <h1> Are you sure you want to delete? </h1>
+                    </aura:set>
+                </c:Confirmation>
+            </SPAN>
+    </aura:if>
+</aura:component>

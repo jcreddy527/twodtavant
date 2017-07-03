@@ -1,0 +1,370 @@
+<aura:component controller="WarrantyRegistrationController" extends="c:GenericCrudComponent">
+    <ltng:require styles="/resource/SLDS0122/assets/styles/salesforce-lightning-design-system.min.css"/>
+
+    <aura:attribute name="formHeading" type="String" default="Warranty Registration"/>
+    <aura:attribute name="type" type="String" default=""/>
+    <aura:attribute name="additionalFields"
+        type="String[]"
+        default="id,Install_Date__c,D2D_Comments__c,Customer__c,Account__c,Warranty_End_Date__c,Item__c,Units_Run__c"
+        description="Additional fields to query other than fieldset which are not to display but necessary"/>
+    <aura:attribute name="allFieldsToQuery"
+        type="String[]"
+        default="id,Install_Date__c,D2D_Comments__c,Customer__c,Account__c,Warranty_End_Date__c,Item__c,Units_Run__c"
+        description="Additional fields to query other than fieldset which are not to display but necessary"/>
+    <aura:attribute name="Inventory" type="sObject[]" description="Inventory from which the page is loaded and dynamic fiedset data is displayed"/>
+    <aura:attribute name="inventoryForDate" type="sObject" description="Inventory from which the page is loaded"/>
+    <aura:attribute name="customer" type="sObject" description="Customer related to the inventory" default="{}"/>
+    <aura:attribute name="inventoryId" type="string" description="Inventory Id from which the page is loaded"/>
+    <aura:attribute name="inventoryfieldset" type="fieldset[]" description="list of field labels from fieldset to display on inventory details section"/>
+    <aura:attribute name="policyfieldset" type="fieldset[]" description="list of field labels from fieldset to display on policy details section"/>
+    <aura:attribute name="selectedInventoryId" type="String" description="currently selected inventory id from lookup"/>
+    <aura:attribute name="selectedInventory" type="sObject[]" description="currently selected inventory from lookup"/>
+    <aura:attribute name="CurrentInventory" type="sObject[]" description="currently selected inventory from lookup"/>
+    <aura:attribute name="selectedInventories" type="sObject[]" description="List of inventories selected"/>
+    <aura:attribute name="PolicyDefinitionWrapperList" type="twod.PolicyDefinitionWrapper[]"/>
+    <aura:attribute name="PolicyDefinitionWrapperListclon" type="twod.PolicyDefinitionWrapper[]"/>
+    <aura:attribute name="PolicyDefinitionWrap" type="twod.PolicyDefinitionWrapper[]"/>
+    <aura:attribute name="BaseURL" type="String" default="https://wod31dev-dev-ed.my.salesforce.com"/>
+    <aura:attribute name="lstSelectedInventories" type="String[]"/>
+    <aura:attribute name="cancelUrl" type="String"/>
+    <aura:attribute name="CurrentInventoryDetails" type="String"/>
+    <aura:attribute name="isWRCreated" type="Boolean" default="false"/>
+    <aura:attribute name="isAddInvClicked" type="Boolean" default="false"/>
+    <aura:attribute name="isSearchPolicyExecuting" type="Boolean" default="false"/>
+    <aura:attribute name="WarrantyRegistration" type="Warranty_Registration__c"/>
+    <aura:attribute name="isDeleted" type="Boolean" default="false"/>
+    <aura:attribute name="isAddInventoryClicked" type="Boolean" default="false"/>
+    <aura:attribute name="isSearchPolicyClicked" type="Boolean" default="false"/>
+    <aura:attribute name="dmlErrors" type="String[]"/>
+    <aura:attribute name="fieldArr" type="String[]"/>
+    <aura:attribute name="policyFieldArr" type="String[]"/>
+    <aura:attribute name="mapFieldApi_Reference" type="map" default="{}"/>
+    <aura:attribute name="mapPolicyFieldApi_Reference" type="map" default="{}"/>
+    <aura:attribute name="mapInventoryPolicies" type="map" default="{}"/>
+    <aura:attribute name="mapInventories" type="map" default="{}"/>
+    <aura:attribute name="isError" type="boolean"/>
+    <aura:attribute name="message" type="String"/>
+    <aura:attribute name="isRegistrationError" type="boolean"/>
+    <aura:attribute name="registrationErrorMessage" type="String"/>
+    <aura:attribute name="customerId" type="String"/>
+    <aura:attribute name="inventoryInstallDate" type="Date"/>
+    <aura:attribute name="ismultipleWarrantyRegistration" type="Boolean" default="false"/>
+    <aura:attribute name="isRegisterDisabled" type="Boolean" default="false"/>
+    <aura:attribute name="lookupInventoryWhereClause" type="String" default="Type__c = 'Stock'"/>
+    <aura:attribute name="currentUrl" type="String"/>
+    <aura:attribute name="showCreateCustomerModal" type="Boolean"/>
+    <aura:attribute name="wrExistingId" type="String" default=""/>
+    <aura:attribute name="formNewAccount" type="Object" description="used to create new customer"/>
+    <aura:attribute name="showSpinner" type="Boolean" description="used to display spinner"/>
+    <aura:attribute name="coverageEndDate" type="Date"/>
+    <aura:attribute name="sitePrefix" type="String" default=""/>
+    <aura:registerEvent name="inventoryDelete" type="c:InventoryDelete"/>
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler name="change" value="{!v.customerId}" action="{!c.fetchselectedcustomerdata}"/>
+    <aura:method name="policysearch" action="{!c.searchPolicy}" access="PUBLIC"/>
+
+    <aura:attribute name="usageTypeList" type="String[]"/>
+    <aura:attribute name="usageType" type="String"/>
+    <aura:attribute name="scrappedOrStolen" type="Boolean"/>
+    <aura:attribute name="alertBoxData" type="Object"/>
+    
+    <aura:if isTrue="{!v.scrappedOrStolen}">
+        <div class="pageBlocker">
+
+            <div role="alertdialog" tabindex="-1" aria-labelledby="prompt-heading-id" aria-describedby="prompt-message-wrapper" class="slds-modal slds-fade-in-open slds-modal--prompt">
+                <div class="slds-modal__container">
+                    <div class="slds-modal__header slds-theme--error slds-theme--alert-texture">
+                        <h2 class="slds-text-heading--medium" id="prompt-heading-id">{!v.alertBoxData.title}</h2>
+                    </div>
+                    <div class="slds-modal__content slds-p-around--medium">
+                        <div>
+                            <p>{!v.alertBoxData.message}</p>
+                        </div>
+                    </div>
+                    <div class="slds-modal__footer slds-theme--default">
+                        <button class="slds-button slds-button--neutral" onclick="{!c.cancelclick}">{!v.alertBoxData.okayButtonTitle}</button>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-backdrop slds-backdrop--open"></div>
+
+        </div>
+
+    </aura:if>
+    
+    <aura:if isTrue="{!(!v.scrappedOrStolen)}">
+    <c:container class="demo-container" size="large" align="center">
+        <div class="slds-grid">
+            <div class="slds-col--padded slds-size--1-of-1 claim-grid">
+                <div class="slds-container--center slds-container--medium claim-form">
+                    <div class="slds slds-p-around--large">
+
+                        <div class="page-header pageheader" role="banner">
+                            {!v.formHeading}
+                        </div>
+
+                        <div class="center">
+                            <aura:if isTrue="{!v.isError}">
+                                <div class="slds-box slds-theme--error">
+                                    <p>{!v.message}</p>
+                                </div>
+                                <br/>
+                            </aura:if>
+                        </div>
+
+                        <div class="slds-form-element__label slds-text-heading--small pageBlockSection">{!$Label.c.Inventory_Information}</div>
+                        <div class="center">
+                            <div class="inventory-info slds-align--absolute-center" aura:id="divid">
+                                <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal">
+                                    <thead>
+                                        <tr class="slds-text-heading--label">
+                                            <aura:iteration items="{!v.inventoryfieldset}" var="fieldset">
+                                                <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+                                                    <div class="slds-truncate">{!fieldset.label}</div>
+                                                </th>
+                                            </aura:iteration>
+                                        </tr>
+                                    </thead>
+                                    <tbody aura:id="tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="spacer slds-p-around--small"></div>
+
+                        <div class="slds-form-element__label slds-text-heading--small pageBlockSection">{!$Label.c.End_Customer_Information}</div>
+                        <div class="center">
+                            <aura:if isTrue="{!v.customer.Id == null}">
+                                <SPAN>
+
+                                    <div class="slds-col ">
+                                        <span class="slds-form-element__helper  slds-text-heading--label labelCol">Customer Name</span>
+                                    </div>
+                                    <div class="slds-col " style="width:40%">
+                                        <c:LookupWithoutSpinner selectedId="{!v.customerId}" selSobject="Account" QuerySOQL="Select Id,Name from Account" condition="Warranty_Account_Type__c='Customer'"/>
+                                        <a onclick="{!c.setCreateCustomerModal}">{!$Label.c.Add_Customer}</a>
+
+                                        <!--***************User Creation Modal****************-->
+                                        <aura:if isTrue="{!v.showCreateCustomerModal}">
+
+                                            <div role="dialog" tabindex="-1" aria-labelledby="header43" class="slds-modal slds-fade-in-open">
+                                                <div class="slds-modal__container">
+                                                    <div class="slds-modal__header">
+                                                        <button class="slds-button slds-modal__close slds-button--icon-inverse">
+                                                            <c:svg xlinkHref="/assets/icons/utility-sprite/svg/symbols.svg#close" class="slds-button__icon slds-button__icon--large"/>
+                                                            <span class="slds-assistive-text">{!$Label.c.Close}</span>
+                                                        </button>
+                                                        <h2 id="header43" class="slds-text-heading--medium">{!$Label.c.Create_Customer}</h2>
+                                                    </div>
+                                                    <div class="slds-modal__content slds-p-around--medium">
+                                                        <div class="slds-grid">
+
+                                                            <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12">
+                                                                <ui:inputText class="slds-input" label="Customer Name" required="true" value="{!v.formNewAccount.Name}"/>
+                                                                <br/>
+                                                                <ui:inputText class="slds-input" label="{!$Label.c.State}" value="{!v.formNewAccount.ShippingState}"/>
+                                                                <br/>
+                                                                <ui:inputText class="slds-input" label="{!$Label.c.Street}" value="{!v.formNewAccount.ShippingStreet}"/>
+                                                                <br/>
+                                                                <ui:inputText class="slds-input" label="{!$Label.c.Country}" value="{!v.formNewAccount.ShippingCountry}"/>
+                                                                <br/>
+                                                                <ui:inputText class="slds-input" label="{!$Label.c.Zip_Code}" value="{!v.formNewAccount.ShippingPostalCode}"/>
+                                                                <br/>
+                                                                <ui:inputText class="slds-input" label="{!$Label.c.Phone}" value="{!v.formNewAccount.Phone}"/>
+                                                                <br/>
+                                                                <ui:inputText class="slds-input" label="{!$Label.c.Website}" value="{!v.formNewAccount.Website}"/>
+                                                                <br/>
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+                                                    <div class="slds-modal__footer">
+                                                        <aura:if isTrue="{!v.showSpinner}">
+                                                            <div class="spinner-container">
+                                                                <img src="/resource/SLDS0122/assets/images/spinners/slds_spinner_brand.gif"/>
+                                                            </div>
+                                                        </aura:if>
+                                                        <button class="slds-button slds-button--neutral" onclick="{!c.cancelCustomermake}">{!$Label.c.Cancel}</button>
+                                                        <button class="slds-button slds-button--neutral slds-button--brand" onclick="{!c.saveCustomer}">{!$Label.c.Save}</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="slds-backdrop slds-backdrop--open"></div>
+                                        </aura:if>
+                                        <!--***********************************************-->
+
+                                    </div>
+                                </SPAN>
+                            </aura:if>
+                            <aura:if isTrue="{!v.customer.Id != null}">
+                                <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal">
+                                    <tr class="slds-hint-parent  slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                        <td class="slds-text-heading--label slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2" scope="col">Customer Name</td>
+                                        <td class="slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                            <aura:if isTrue="{!v.sitePrefix!=''}">
+                                                <a href="{!v.sitePrefix+'/'+v.customer.Id}"><ui:outputText value="{!v.customer.Name}"/></a>
+                                                <aura:set attribute="else">
+                                                    <a href="{!'/'+v.customer.Id}"><ui:outputText value="{!v.customer.Name}"/></a>
+                                                </aura:set>
+                                            </aura:if>
+                                        </td>
+                                    </tr>
+                                    <tr class="slds-hint-parent slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                        <td class="slds-text-heading--label slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2" scope="col">State</td>
+                                        <td class="slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                            <ui:outputText value="{!v.customer.ShippingState}"/>
+                                        </td>
+                                    </tr>
+                                    <tr class="slds-hint-parent ">
+                                        <td class="slds-text-heading--label slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2" scope="col">Street</td>
+                                        <td class="slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                            <ui:outputText value="{!v.customer.ShippingStreet}"/>
+                                        </td>
+                                    </tr>
+                                    <tr class="slds-hint-parent  slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                        <td class="slds-text-heading--label slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2" scope="col">Country</td>
+                                        <td class="slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                            <ui:outputText value="{!v.customer.ShippingCountry}"/>
+                                        </td>
+                                    </tr>
+                                    <tr class="slds-hint-parent  slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                        <td class="slds-text-heading--label slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2" scope="col">Zip</td>
+                                        <td class="slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                            <ui:outputText value="{!v.customer.ShippingPostalCode}"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </aura:if>
+                        </div>
+
+                        <div class="spacer slds-p-around--small"></div>
+
+                        <div class="slds-form-element__label slds-text-heading--small pageBlockSection">{!$Label.c.Warranty_Registration_Information}</div>
+                        <div class="center">
+                            <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal">
+                                <tr class="slds-hint-parent  slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                    <td class="slds-text-heading--label slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2" scope="col">Purchase Date</td>
+                                    <td class="slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                        <ui:inputDate aura:id="shipmentdate" displayDatePicker="true" class="slds-input " value="{!v.inventoryInstallDate}" required="true"/>
+                                    </td>
+                                </tr>
+
+                                <aura:if isTrue="{!v.type == 'Goodwill'}">
+                                    <tr class="slds-hint-parent  slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                        <td class="slds-text-heading--label slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2" scope="col">Coverage End Date</td>
+                                        <td class="slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                            <ui:inputDate aura:id="coverageEndDate" displayDatePicker="true" class="slds-input " value="{!v.coverageEndDate}" required="true"/>
+                                        </td>
+                                    </tr>
+                                </aura:if>
+
+                                <tr class="slds-hint-parent slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                    <td class="slds-text-heading--label slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2" scope="col">Units Usage</td>
+                                    <td class="slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                        <ui:inputNumber value="{!v.inventoryForDate.Units_Run__c}" class="slds-input "/>
+                                    </td>
+                                </tr>
+
+                                <tr class="slds-hint-parent ">
+                                    <td class="slds-text-heading--label slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2" scope="col">Comments</td>
+                                    <td class="slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                        <ui:inputTextArea value="{!v.CurrentInventoryDetails}" class="slds-input"/>
+
+                                    </td>
+                                </tr>
+                                <!--
+										Usage Type removed by Aman
+								-->
+                                <tr class="slds-hint-parent slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+                                    <td class="slds-text-heading--label slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2" scope="col">Usage Type</td>
+                                    <td class="slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2">
+
+                                        <ui:inputSelect aura:id="usagetypeId" change="{!c.onChangeUsageType}" class="slds-input select-box-padder" value="{!v.usageType}">
+                                            <aura:if isTrue="{!v.usageTypeList.length!=0}">
+												<aura:iteration items="{!v.usageTypeList}" var="usagetypevar">
+                                                    <ui:inputSelectOption text="{!usagetypevar}" label="{!usagetypevar}" value="{!(v.usageType!=null &amp;&amp; v.usageType==usagetypevar)}"/>
+                                                </aura:iteration>
+                                            </aura:if>
+                                        </ui:inputSelect>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <br/>
+                        <aura:if isTrue="{!v.isAddInventoryClicked}">
+                            <SPAN>
+                                <div class="center">
+                                    <div class="inventory-info slds-align--absolute-center" aura:id="divid">
+                                        <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal">
+                                            <thead>
+                                                <tr class="slds-text-heading--label">
+                                                    <aura:iteration items="{!v.inventoryfieldset}" var="fieldset">
+                                                        <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+                                                            <div class="slds-truncate">{!fieldset.label}</div>
+                                                        </th>
+                                                    </aura:iteration>
+                                                    <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+                                                        <div class="slds-truncate">Units Usage</div>
+                                                    </th>
+                                                    <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+                                                        <div class="slds-truncate">Delete</div>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+
+                                        </table>
+                                    </div>
+                                </div>
+                                <br/>
+                            </SPAN>
+                        </aura:if>
+                        <center>
+                            <button class="slds-button slds-button--brand" onclick="{!c.searchPolicy}">{!$Label.c.Search_Policy}</button>
+                        </center>
+                        <br/>
+                        <aura:if isTrue="{!v.isRegistrationError}">
+                            <SPAN>
+                                <div class="slds-box slds-theme--error">
+                                    <p>{!v.registrationErrorMessage}</p>
+                                </div>
+                                <br/>
+                            </SPAN>
+                        </aura:if>
+                        <aura:if isTrue="{!v.isSearchPolicyClicked}">
+                            <SPAN>
+                                <div class="inventory-info slds-align--absolute-center" aura:id="divid">
+                                    <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal" id="inventoryWithPolicyTable">
+                                        <thead>
+                                            <tr class="slds-text-heading--label">
+                                                <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">Action
+                                                </th>
+                                                <aura:iteration items="{!v.policyfieldset}" var="fieldset">
+                                                    <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">{!fieldset.label}</th>
+                                                </aura:iteration>
+                                            </tr>
+                                        </thead>
+                                        <tbody aura:id="tInventorywithpolicy" id="tInventorywithpolicy"></tbody>
+                                    </table>
+                                </div>
+                            </SPAN>
+                        </aura:if>
+                        <center>
+                            <aura:if isTrue="{!v.isSearchPolicyClicked}">
+                                <span>
+                                    <button class="slds-button slds-button--brand" onclick="{!c.registerInv}" disabled="{!v.isRegisterDisabled}">{!$Label.c.Register}</button>
+                                </span>
+                            </aura:if>
+                            <a href="{!v.cancelUrl}" onclick="{!c.cancelclick}">
+                                <span class="slds-button slds-button--brand ">
+                                    Cancel
+                                </span>
+                            </a>
+                        </center>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </c:container>
+    </aura:if>
+</aura:component>

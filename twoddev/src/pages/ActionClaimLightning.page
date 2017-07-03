@@ -1,0 +1,36 @@
+<!--====================================================================------>
+    <!--Name: ActionClaim                                                   -->
+    <!--Copyright © 2016 Tavant Technology Inc                              -->
+    <!--====================================================================-->
+    <!--====================================================================-->
+    <!-- Purpose:                                                           -->
+    <!--                                                                    -->
+    <!--====================================================================-->
+    <!--====================================================================-->
+    <!-- History                                                            -->
+    <!-- -------                                                            -->
+    <!-- VERSION  AUTHOR            DATE             DETAIL                 -->
+    <!--   1.0 -  Shambhvi          5/10/2016        INITIAL DEVELOPMENT    -->
+    <!--====================================================================-->
+    <apex:page standardController="Claim__c" standardStylesheets="false" sidebar="false" extensions="ActionClaimController" showHeader="false">
+ 
+    <apex:includeLightning />
+    
+    
+    <div id="ClaimDiV" />
+      <script>
+          var totalPageURL = window.location.toString();
+          var protocalType= totalPageURL.split("//")[0];
+          var tempbaseURL = totalPageURL.split("//")[1].split("/");
+          var finalBaseURL = protocalType+'//'+tempbaseURL[0] + "{!$Site.Prefix}";
+          
+         $Lightning.use("c:actionClaimApp", function() {
+            $Lightning.createComponent("c:actionClaim",{"ClaimSobj":"{!Claim__c.id}","currClaimStatus":"{!Claim__c.Claim_Status__c}",BaseURL:finalBaseURL },                      
+              "ClaimDiV",
+              function(cmp) {
+                // do some stuff
+              });
+            });
+    </script>
+   
+    </apex:page>

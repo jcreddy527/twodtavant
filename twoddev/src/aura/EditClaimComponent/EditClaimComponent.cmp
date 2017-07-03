@@ -1,0 +1,32 @@
+<aura:component extends="c:GenericComponent" >
+    <aura:attribute name="dealerAccount" type="string" 	default=""/>
+    <aura:attribute name="isDealer"		 type="boolean" />
+    <aura:attribute name="claimId"  	 type="String" 	/>
+    <aura:attribute name="claimStatus"  	 type="String" 	/>
+    <aura:attribute name="claimRecord"	 type="Claim__c" />
+    <aura:attribute name="isSysAdmin"		 type="boolean" />
+    <aura:attribute name="warrantyProductName"			type="String" default="" description="save the warranty product name"/>
+    <aura:attribute name="causalPartName"				type="String" default="" description="save the causal part name"/>
+    <aura:attribute name="dealerName"					type="String" default="" description="save the dealer name"/>
+    <aura:attribute name="policyName"					type="String" default="" description="save the policy name"/>
+    <aura:attribute name="faultCode"					type="String" default="" description="save the fault code"/>
+    <aura:attribute name="casualPartNumber"				type="String" default="" description="save the casual part number"/>
+    <aura:attribute name="inventoryName"				type="String"/>
+    <aura:attribute name="campaignMembers"				type="String" default=""/>
+    <aura:attribute name="isSerialized"					type="boolean" default="false"/>
+    <aura:attribute name="isClaimTemplate"				type="boolean" default="false"/>
+    <aura:attribute name="isNonSerialized"				type="boolean" default="false"/>
+    <aura:attribute name="isFieldModification"			type="boolean" default="false"/>
+    <aura:attribute name="isServiceInfoActivated"	type="boolean" default="false"/>
+    <aura:attribute name="BaseURL" type="String"/>
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+  	<center>
+    <div class="slds-spinner--large slds-hide" aura:id="SpinnerDiv">
+	          <img src="{!v.BaseURL + '/resource/slds/assets/images/spinners/slds_spinner_brand.gif'}" alt="Loading..." />
+		</div>
+  	</center>
+    <div aura:id="ContainerDiv" class="slds-form-element slds-hide">
+    	<c:EditComponent claimId="{!v.claimId}" BaseURL="{!v.BaseURL}" isServiceInfoActivated="{!v.isServiceInfoActivated}" ApplicablePolicyName="{!v.policyName}" campaignMembers="{!v.campaignMembers}" inventoryName="{!v.inventoryName}" casualPartNumber="{!v.casualPartNumber}" faultCode="{!v.faultCode}" policyName="{!v.policyName}" dealerName="{!v.dealerName}"  causalPartName="{!v.causalPartName}" warrantyProductName="{!v.warrantyProductName}" claimRecord="{!v.claimRecord}" dealerAccount="{!v.dealerAccount}" isSysAdmin="{!v.isSysAdmin}" isDealer="{!v.isDealer}" isClaimTemplate="{!v.isClaimTemplate}" isSerialized="{!v.isSerialized}" isNonSerialized="{!v.isNonSerialized}" isFieldModification="{!v.isFieldModification}"/>
+  </div>
+</aura:component>

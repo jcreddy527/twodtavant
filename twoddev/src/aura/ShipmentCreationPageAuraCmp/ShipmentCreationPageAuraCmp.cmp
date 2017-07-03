@@ -1,0 +1,160 @@
+<aura:component extends="c:GenericCrudComponent" >
+<ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css"/>
+    
+    <aura:attribute name="ShipmentRecordList" type="sobject[]" />
+    <aura:attribute name="ShipmentRecordType" type="String[]" />
+    <aura:attribute name="ShipmentRecord" 	  type="sObject" default="{'sobjectType':'Shipment_Detail__c', 'Id' : null }"/>
+    <aura:attribute name="ShipmentRecordId"   type="String" />
+    <aura:attribute name="ReturnLocation" type="String" />
+    <aura:attribute name="NewShipmentNumber" type="String" />
+    <aura:attribute name="searchsymbolURL" type="String" />
+    <aura:attribute name="baseURL" type="String" />
+    <aura:attribute name="ReturnLocationName" type="String"/>
+    <aura:attribute name="ShipmentDate" type="Date"/>
+    <aura:attribute name="PageError" type="String" default="" />
+    <aura:attribute name="SupplyRecoveryClaim"    type="sObject" default="{'sobjectType':'Supplier_Recovery_Claim__c', 'Id' : null }"/> 
+    <aura:attribute name="RecoveryClaimId"    type="String" />
+    <aura:attribute name="ShowShipmentRecords" type="Boolean"/>
+    <aura:attribute name="ShowStartingPage" type="Boolean"/>
+    <aura:attribute name="OpenSelectedShipment" type="Boolean"/>
+    <aura:attribute name="CreateNewShipment" type="Boolean"/>
+    <aura:attribute name="ShowShipmentCreationPage" type="Boolean"/>
+    <aura:attribute name="ShowAddpartsToShipmentComponent" type="Boolean"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" ></aura:handler>
+
+<aura:if isTrue="{!v.ShowStartingPage == true}">    
+<c:container class="demo-container"  align="center">
+  <div class="slds-grid slds-wrap slds-grid--pull-padded slds-table--bordered CustomGridClas">  
+      <aura:if isTrue="{!v.ShowShipmentRecords == true}">
+          <div class="slds-col--padded slds-size--1-of-1">
+              <div class="slds-container--center slds-container--medium claim-form">    
+                  <div class="slds-text-heading--small slds-truncate">
+                     Return Location - {!v.ShipmentRecordList[0].Return_Location__r.Name}
+                  </div>
+                  <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal" >
+                      <thead>
+                          <tr class = "slds-text-heading--label">
+                              <th  class="slds-cell-wrap  slds-truncate slds-is-sortable " scope="col">{!$Label.c.ShipmentName}</th>
+                              <th  class="slds-cell-wrap  slds-truncate slds-is-sortable " scope="col">{!$Label.c.Carrier}</th>
+                              <th  class="slds-cell-wrap  slds-truncate slds-is-sortable " scope="col">{!$Label.c.ReturnLocation}</th>
+                              <th  class="slds-cell-wrap  slds-truncate slds-is-sortable " scope="col">{!$Label.c.TrackingNumber}</th>
+                              <th  class="slds-cell-wrap  slds-truncate slds-is-sortable " scope="col">{!$Label.c.OpenTheShipment}</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <aura:iteration items="{!v.ShipmentRecordList}" var="item1" indexVar="j" >    
+                              <tr class="slds-hint-parent">
+                                  <td  class="slds-truncate slds-cell-wrap" scope="row" data-label="shipmentName"><h1><ui:outputText value="{!item1.Name}" /></h1></td>
+                                  <td  class="slds-truncate slds-cell-wrap" scope="row" data-label="Carrier"><ui:outputText value="{!item1.Carrier__c}"/></td>
+                                  <td  class="slds-truncate slds-cell-wrap" scope="row" data-label="ReturnLocation"><ui:outputText value="{!item1.Return_Location__r.Name}"/></td>
+                                  <td  class="slds-truncate slds-cell-wrap" scope="row" data-label="TrackingNumber">
+                                      <ui:outputText value="{!item1.Tracking_Number__c}"/>
+                                  </td>
+                          <!--      <td width="25%" class="slds-cell-shrink" data-label="Select Row">
+                                      <span class="slds-checkbox&faux" ><ui:inputCheckbox class="slds-checkbox slds-checkbox&faux" text="{!item1}"  aura:id="checkbox"  change="{!c.onShipmentCheck}"/> </span>
+                                  </td>  -->
+                                  <td  class="slds-truncate slds-cell-wrap" scope="row" data-label="Open Shipment">
+                                  <span class="slds-icon__container"  onclick = "{!c.onShipmentCheck}" value="{!j}"  tabIndex="{!j}">
+                                      <c:svg ariahidden="true" class="slds-icon slds-icon--small slds-icon-text-default"
+                                             xlinkHref="{!v.searchsymbolURL}"/>
+                                  </span>
+                                  </td>    
+                              </tr>
+                          </aura:iteration>
+                      </tbody>
+                  </table>
+                  <div class="row">
+                      <div class="col">
+                          <a  href="{!v.RecoveryClaimURL}"><button class="buttonclass slds-button slds-button--brand" >Previous</button></a>
+                      </div>
+                      <div class="col">
+    
+                          <aura:if isTrue="{!v.CreateNewShipment == true}">
+                              <button class="slds-button slds-button--neutral slds-button--small slds-button--brand" onclick = "{!c.CreateNewShipmentRecord}">Create</button>
+                          </aura:if>
+                          
+                      </div>
+                      
+                  </div>
+              </div>	
+          </div>    
+      </aura:if>
+      
+      <aura:if isTrue="{!v.ShowShipmentCreationPage == true}">    
+         
+             	 <div class="slds-col--padded slds-size--1-of-1">	
+                  <div class="slds-container--center slds-container--medium claim-form">    
+                      <div class="slds-text-heading--small slds-truncate">
+                          Create Shipment Record
+                      </div>
+                      <aura:if isTrue="{!v.PageError != ''}" >
+                          <ui:message title="Error" severity="error" closable="false">
+                              {!v.PageError}
+                          </ui:message>
+                      </aura:if>
+                      
+                      <table>
+                          
+                              <tr height="15%">
+                                  <td>
+                                      <label class="slds-form-element__label" for="input-01">Shipment Detail Number*</label>
+                                  </td>
+                                  <td>        
+                                      <ui:inputText required="true" class="input-box-size" aura:id="ShipmentNumber"  value="{!v.NewShipmentNumber}"/>
+                                  </td>
+                                  
+                              </tr>
+                              
+                              <tr height="15%">
+                                  <td>
+                                      <label class="slds-form-element__label" for="input-02">Shipment Date*</label>
+                                  </td>
+                                  <td>
+                                      <ui:inputDate required="true" aura:id="dateField" value="{!v.ShipmentDate}" displayDatePicker="true"/>
+                                  </td>
+                              </tr>
+                          	  
+                          	  <tr>
+                                  <td>
+                                  	 <label class="slds-form-element__label" for="input-02">Shipment Type</label>
+                                  </td>
+                                  <td>
+                                  <ui:inputSelect required="true" aura:id="ShipmentType"  multiple="false">
+                                      <ui:inputSelectOption text="OEM to Supplier" label="OEM to Supplier" value="true"/>
+                                      <ui:inputSelectOption text="Dealer To OEM" label="Dealer To OEM"/>
+                                  </ui:inputSelect>
+                                  </td>    
+                          	  </tr>
+                          	
+                              
+                              <tr height="15%">
+                                  <td>
+                                      <label class="slds-form-element__label" for="input-02">Return Location:</label>
+                                  </td>
+                                  <td>
+                                      <ui:outputText value="{!v.ReturnLocationName}" />
+                                  </td>
+                              </tr>    
+                         	  <tr>
+                                  <td>
+                                      <button class="slds-button slds-button--neutral slds-button--small slds-button--brand"  onclick = "{!c.GobackTotheCreateShipmentLightningPage}" >Go Back</button>
+                                  </td>
+                                   <td>
+                          		      <button class="slds-button slds-button--neutral slds-button--small slds-button--brand"  onclick = "{!c.CreateShipmentRecord}" >Create Shipment Record</button>
+ 								   </td>
+                              </tr>
+                     </table>
+                  </div>
+          </div>
+      </aura:if>    
+   
+  </div>  
+</c:container>    
+</aura:if>
+    
+
+<aura:if isTrue="{!v.ShowAddpartsToShipmentComponent == true}">
+<c:SupplyRecoveryClaimPartShipment baseURL="{!v.baseURL}"   />
+</aura:if>    
+</aura:component>

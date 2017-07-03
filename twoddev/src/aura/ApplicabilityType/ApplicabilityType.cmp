@@ -1,0 +1,208 @@
+<aura:component controller="ApplicabilityTypeController" >
+    <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" /> 
+    
+    <aura:attribute name="id" type="string"/>
+    <aura:attribute name="PAT" type="Policy_Applicability_Term__c"  default="{ 'sobjectType': 'Policy_Applicability_Term__c' }"/>
+    <aura:attribute name="ApplicabilityTypes" type="List"/>    
+    <aura:attribute name="ApplicabilitySubTypes" type="List"/>
+    <aura:attribute name="ApplicabilitySubTypeSelected" type="string"/>
+    <aura:attribute name="WRFieldMappings" type="List"/>
+    <aura:attribute name="records" type="account[]"/>
+    <aura:attribute name="headingLabels" type="string[]"/>
+    <aura:attribute name="headingLabelsSelected" type="string[]"/>
+    <aura:attribute name="fieldApiNames" type="string[]"/>
+    <aura:attribute name="RelatedTo" type="String"/>
+    <aura:attribute name="RelatedToText1" type="Boolean" default="false"/>
+    <aura:attribute name="RelatedToText2" type="Boolean" default="false"/>
+    <aura:attribute name="RelatedToInput" type="String"/> 
+    <aura:attribute name="RenderSelected" type="Boolean"/>
+    <!--<aura:attribute name="selectedRecordswrapper" type="PATLookUpWrapper" />-->
+    <aura:attribute name="lookUpRecordswrapper" type="SObjectFieldValueWrapper[]"/>
+    <aura:attribute name="selectedRecordswrapper" type="SObjectFieldValueWrapper[]" /> 
+    <aura:attribute name="error" type="String"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler event="c:SearchKeyChange" action="{!c.searchKeyChange}"/>   
+    
+    <center><ui:spinner aura:id="spinner" isVisible="false"/></center>    
+    <center>
+        <div class="slds-form-element main-body" aura:id="group" >
+            <header class="slds-text-heading--large slds-align--absolute-center heading" >
+                New Policy Applicability Term
+            </header>
+            <br />
+            <div class = "slds-box slds-theme--default slds-container--large  form">
+                <br />
+                <table class="slds-table  slds-table--cell-buffer" style="width:100%">            
+                    <tbody>                
+                        <tr > 
+                            <td width="50%">    
+                                <div class="inline label" >
+                                    <label class="slds-form-element__label" >{!$Label.c.Applicability_Type}  </label>
+                                </div>
+                                <div class=" inline select">
+                                    <ui:inputSelect aura:id="ApplicabilityType" change="{!c.onATypeChange}" class=" select">
+                                        <aura:iteration items="{!v.ApplicabilityTypes}" var="at" >
+                                            <ui:inputSelectOption text="{!at}"  label="{!at}"/>
+                                        </aura:iteration>
+                                    </ui:inputSelect> 
+                                </div>   
+                            </td>
+                            <td width="50%">    
+                                <div class="inline label" >
+                                    <label class="slds-form-element__label" >{!$Label.c.Aplicability_Sub_Type}</label>
+                                </div>
+                                <div class=" inline select">
+                                    <select id="ApplicabilitySubType" size="1" onchange="{!c.onASTChange}" class=" select">
+                                        <aura:iteration items="{!v.ApplicabilitySubTypes}" var="at" >                                            
+                                            <option>{!at}</option>
+                                        </aura:iteration>                                        
+                                    </select>
+                                </div>   
+                            </td>                                         
+                        </tr>
+                        <tr > 
+                            <td width="50%">    
+                                <!-- <div class="inline label" >
+                                    <label class="slds-form-element__label" >{!$Label.c.WR_Field_Mapping}  </label>
+                                </div>
+                                <div class=" inline select">
+                                    <ui:inputSelect aura:id="WRFieldMappings">
+                                        <aura:iteration items="{!v.WRFieldMappings}" var="at" >
+                                            <ui:inputSelectOption text="{!at}"  label="{!at}"/>
+                                        </aura:iteration>
+                                    </ui:inputSelect> 
+                                </div>   --> 
+                            </td>
+                            <td width="50%">
+                                <aura:renderIf isTrue="{!v.RelatedToText1}">
+                                    <div class="inline label" >
+                                        <label class="slds-form-element__label " >{!$Label.c.Related_To}</label>
+                                    </div>
+                                    <div class=" inline select">
+                                        <a onclick="{!c.relatedToPopUp}">
+                                            <ui:outputText value="{! 'Click here to select related '+v.RelatedTo}"  class=" select" />
+                                        </a>
+                                    </div>
+                                </aura:renderIf> 
+                                <aura:renderIf isTrue="{!v.RelatedToText2}">
+                                    <div class="inline label" >
+                                        <label class="slds-form-element__label " >{!$Label.c.Related_To}</label>
+                                    </div>
+                                    
+                                    <div class=" inline select">
+                                        <a >
+                                            <ui:inputText value="{!v.RelatedToInput}"  />
+                                        </a>
+                                    </div>
+                                </aura:renderIf> 
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br /> 
+                <button class="slds-button slds-button--brand" onclick="{!c.saveRecord}">Save</button>
+                <button class="slds-button slds-button--neutral" onclick="{!c.cancel}">Cancel</button>
+            </div>
+            <div style="clear: both;"></div>
+            <div aria-hidden="true" role="dialog" class="slds-modal slds-modal--prompt slds-fade-in-hide" aura:id="modaldialog">
+                <div class="slds-modal__container">
+                    <h2 class="slds-text-heading--medium heading">LookUp</h2>
+                    <div class="slds-modal__header ">
+                        
+                        <c:SearchBar />                        
+                        <br />
+                        <br />
+                        <p class="alignleft">{!$Label.c.Search_Results}</p>
+                        <p class="aligncenter"></p>
+                        <p class="alignright">                           
+                            <button class="slds-button slds-button--brand" onclick="{!c.hidePopup}">Done</button>
+                        </p>
+                    </div>                    
+                    <div class="slds-modal__content slds-p-around--medium">                        
+                        <div>
+                            <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                                <thead>
+                                    <tr class="slds-text-title--caps">
+                                        <th scope="col">
+                                            <div class="slds-truncate"><b>Select</b></div>
+                                        </th>
+                                        <aura:iteration items="{!v.headingLabels}" var="hL" >
+                                            <th scope="col">
+                                                <div class="slds-truncate"><b>{!hL}</b></div>
+                                            </th>
+                                        </aura:iteration>  
+                                    </tr>                      
+                                </thead>         
+                                <tbody>
+                                    <aura:iteration items="{!v.lookUpRecordswrapper}" var="wrap">
+                                        <tr>
+                                            <td class="cell">
+                                                <ui:inputCheckbox value="{!wrap.isSelected}" />
+                                            </td>
+                                            <aura:iteration items="{!v.fieldApiNames}" var="fName">
+                                                <td class="cell">                                                    
+                                                    <c:SObjectAndFieldName SObject="{!wrap.objMap}" fieldName="{!fName}"/>
+                                                </td>
+                                            </aura:iteration>                                                                                            
+                                        </tr>                                            
+                                    </aura:iteration>
+                                    
+                                </tbody>
+                            </table> 
+                        </div>
+                    </div>
+                </div>
+            </div>           
+            <div class="slds-backdrop slds-backdrop--hide" aura:id="backdrop">
+            </div>
+            
+            <br />
+            <br />
+            <br />            
+            <aura:renderIf isTrue="{!v.RenderSelected}">
+                <div class = "slds-box slds-theme--default slds-container--large form">
+                    <div class="slds-text-heading--medium slds-float--left">                        
+                        {!$Label.c.Selected_Records}                       
+                    </div>
+                    <br />
+                    <br />
+                    <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                        <thead>
+                            <tr class="slds-text-title--caps">
+                                <th scope="col">
+                                    <div class="slds-truncate"><b>Select</b></div>
+                                </th>
+                                <aura:iteration items="{!v.headingLabels}" var="hL" >
+                                    <th scope="col">
+                                        <div class="slds-truncate"><b>{!hL}</b></div>
+                                    </th>
+                                </aura:iteration>  
+                            </tr>                      
+                        </thead>         
+                        <tbody>
+                            <aura:iteration items="{!v.selectedRecordswrapper}" var="wrap">
+                                <tr>
+                                    <td class="cell">
+                                        <ui:inputCheckbox value="{!wrap.isSelected}" />
+                                    </td>
+                                    <aura:iteration items="{!v.fieldApiNames}" var="fName">
+                                        <td class="cell">                                                    
+                                            <c:SObjectAndFieldName SObject="{!wrap.objMap}" fieldName="{!fName}"/>
+                                        </td>
+                                    </aura:iteration>                                                                                            
+                                </tr>                                            
+                            </aura:iteration>
+                        </tbody>
+                    </table>
+                    <br />
+                    <br /> 
+                    <button class="slds-button slds-button--brand" onclick="{!c.deleteRecords}">Delete</button>
+                </div>
+            </aura:renderIf>
+        </div>
+        
+        <ui:message severity="error" closable="true" aura:id="errorMessage" class="hide">{!v.error}            
+        </ui:message>
+    </center>
+</aura:component>

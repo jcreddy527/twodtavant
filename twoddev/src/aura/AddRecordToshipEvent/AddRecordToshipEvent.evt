@@ -1,0 +1,3 @@
+<aura:event type="APPLICATION" description="Fired when a add method is called in the Recoverylineitemrecordcomponent">
+    <aura:attribute name="ShipmentRecordList" type="sobject[]" description="The shipment records are stored here"/>
+</aura:event>

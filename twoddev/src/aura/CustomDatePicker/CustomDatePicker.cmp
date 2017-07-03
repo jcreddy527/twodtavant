@@ -1,0 +1,224 @@
+<aura:component >
+  <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css"/>
+  <aura:attribute name="selectedDate" type="Map" default="{ day : '' , month : '', year: '', date: '', id: ''}"/>
+  <aura:attribute name="startDate" type="Date" default="2010-02-12"/>
+  <aura:attribute name="endDate" type="Date" default="2050-01-30"/>
+  <aura:attribute name="value" type="Date" default="null"/>
+  <aura:attribute name="context" type="String" default=""/>
+  <aura:attribute name="dateValue" type="String" default=""/>
+  <aura:attribute name="dateValueFormat" type="String" default=""/>
+  <aura:attribute name="today" type="Date" default="2025-01-30"/>
+  <aura:attribute name="days" type="Integer[]" default="[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42]"/>
+  <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+
+  <aura:handler name="change" value="{!v.dateValue}" action="{!c.handleDateValueChange}"/>
+  <div class="slds-form-element slds-dropdown-trigger">
+    <label class="slds-form-element__label" for="date">
+    </label>
+    <div class="slds-form-element__control">
+      <div class="slds-input-has-icon slds-input-has-icon--right">
+        <c:svg ariahidden="true" class="slds-input__icon input-text-default" xlinkHref="/resource/slds/assets/icons/utility-sprite/svg/symbols.svg#event"/>
+
+        <input class="slds-input" aura:id="date" type="text" placeholder="Pick a Date" value="{!v.dateValueFormat}" />
+      </div>
+    </div>
+    <div class="slds-dropdown slds-dropdown--left slds-datepicker" aria-hidden="false" data-selection="single">
+      <div class="slds-datepicker__filter slds-grid">
+        <div class="slds-datepicker__filter--month slds-grid slds-grid--align-spread slds-size--3-of-4">
+          <div class="slds-align-middle">
+            <a href="javascript:void(0)" class="slds-button slds-button--icon-container anchor-pos" onclick="{!c.previousMonth}">
+              <c:svg ariahidden="true" class="slds-button__icon slds-button__icon--small" xlinkHref="/resource/slds/assets/icons/utility-sprite/svg/symbols.svg#left"/>
+
+              <span class="slds-assistive-text">Previous Month</span>
+            </a>
+          </div>
+          <h2 id="month" class="slds-align-middle" aria-live="assertive" aria-atomic="true">{!v.selectedDate.month}</h2>
+          <div class="slds-align-middle">
+            <a href="javascript:void(0)" class="slds-button slds-button--icon-container anchor-pos" onclick="{!c.nextMonth}">
+              <c:svg ariahidden="true" class="slds-button__icon slds-button__icon--small" xlinkHref="/resource/slds/assets/icons/utility-sprite/svg/symbols.svg#right"/>
+
+              <span class="slds-assistive-text">Next Month</span>
+            </a>
+          </div>
+        </div>
+        <div class="slds-picklist slds-picklist--fluid slds-shrink-none ">
+           <div class="slds-select_container">
+          <ui:inputSelect class="slds-select" aura:id="InputSelectDynamic" change="{!c.selectYear}"/>
+        </div>
+        </div>
+      </div>
+      <table class="datepicker__month" role="grid" aria-labelledby="month">
+        <thead>
+          <tr id="weekdays">
+            <th id="Sunday">
+              <abbr title="Sunday">Sun</abbr>
+            </th>
+            <th id="Monday">
+              <abbr title="Monday">Mon</abbr>
+            </th>
+            <th id="Tuesday">
+              <abbr title="Tuesday">Tue</abbr>
+            </th>
+            <th id="Wednesday">
+              <abbr title="Wednesday">Wed</abbr>
+            </th>
+            <th id="Thursday">
+              <abbr title="Thursday">Thu</abbr>
+            </th>
+            <th id="Friday">
+              <abbr title="Friday">Fri</abbr>
+            </th>
+            <th id="Saturday">
+              <abbr title="Saturday">Sat</abbr>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td onclick="{!c.selectDate}" aura:id="day0" class="slds-disabled-text" headers="Sunday" role="gridcell" aria-disabled="true">
+              <span class="slds-day" value="0">{!v.days[0]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day1" headers="Monday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="1">{!v.days[1]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day2" headers="Tuesday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="2">{!v.days[2]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day3" headers="Wednesday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="3">{!v.days[3]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day4" headers="Thursday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="4">{!v.days[4]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day5" headers="Friday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="5">{!v.days[5]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day6" headers="Saturday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="6">{!v.days[6]}</span>
+            </td>
+          </tr>
+          <tr>
+            <td onclick="{!c.selectDate}" aura:id="day7" headers="Sunday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="7">{!v.days[7]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day8" headers="Monday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="8">{!v.days[8]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day9" headers="Tuesday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="9">{!v.days[9]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day10" headers="Wednesday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="10">{!v.days[10]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day11" headers="Thursday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="11">{!v.days[11]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day12" headers="Friday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="12">{!v.days[12]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day13" headers="Saturday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="13">{!v.days[13]}</span>
+            </td>
+          </tr>
+          <tr>
+            <td onclick="{!c.selectDate}" aura:id="day14" headers="Sunday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="14">{!v.days[14]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day15" headers="Monday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="15">{!v.days[15]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day16" headers="Tuesday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="16">{!v.days[16]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day17" headers="Wednesday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="17">{!v.days[17]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day18" headers="Thursday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="18">{!v.days[18]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day19" headers="Friday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="19">{!v.days[19]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day20" headers="Saturday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="20">{!v.days[20]}</span>
+            </td>
+          </tr>
+          <tr>
+            <td onclick="{!c.selectDate}" aura:id="day21" headers="Sunday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="21">{!v.days[21]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day22" headers="Monday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="22">{!v.days[22]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day23" headers="Tuesday" role="gridcell" aria-selected="true">
+              <span class="slds-day" value="23">{!v.days[23]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day24" headers="Wednesday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="24">{!v.days[24]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day25" headers="Thursday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="25">{!v.days[25]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day26" headers="Friday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="26">{!v.days[26]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day27" headers="Saturday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="27">{!v.days[27]}</span>
+            </td>
+          </tr>
+          <tr>
+            <td onclick="{!c.selectDate}" aura:id="day28" headers="Sunday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="28">{!v.days[28]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day29" headers="Monday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="29">{!v.days[29]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day30" headers="Tuesday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="30">{!v.days[30]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day31" class="slds-disabled-text" headers="Wednesday" role="gridcell" aria-disabled="true">
+              <span class="slds-day" value="31">{!v.days[31]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day32" class="slds-disabled-text" headers="Thursday" role="gridcell" aria-disabled="true">
+              <span class="slds-day" value="32">{!v.days[32]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day33" class="slds-disabled-text" headers="Friday" role="gridcell" aria-disabled="true">
+              <span class="slds-day" value="33">{!v.days[33]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day34" class="slds-disabled-text" headers="Saturday" role="gridcell" aria-disabled="true">
+              <span class="slds-day" value="34">{!v.days[34]}</span>
+            </td>
+          </tr>
+          <tr>
+            <td onclick="{!c.selectDate}" aura:id="day35" headers="Sunday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="35">{!v.days[35]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day36" headers="Monday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="36">{!v.days[36]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day37" headers="Tuesday" role="gridcell" aria-selected="false">
+              <span class="slds-day" value="37">{!v.days[37]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day38" class="slds-disabled-text" headers="Wednesday" role="gridcell" aria-disabled="true">
+              <span class="slds-day" value="38">{!v.days[38]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day39" class="slds-disabled-text" headers="Thursday" role="gridcell" aria-disabled="true">
+              <span class="slds-day" value="39">{!v.days[39]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day40" class="slds-disabled-text" headers="Friday" role="gridcell" aria-disabled="true">
+              <span class="slds-day" value="40">{!v.days[40]}</span>
+            </td>
+            <td onclick="{!c.selectDate}" aura:id="day41" class="slds-disabled-text" headers="Saturday" role="gridcell" aria-disabled="true">
+              <span class="slds-day" value="41">{!v.days[41]}</span>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="7" role="gridcell">
+              <a href="javascript:void(0)" class="slds-show--inline-block slds-p-bottom--x-small" onclick="{!c.setValueAsToday}">Today</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</aura:component>

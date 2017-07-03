@@ -1,0 +1,17 @@
+<apex:page standardController="Claim__c">
+  <!-- Begin Default Content REMOVE THIS -->
+    <flow:interview name="Submit_Approval_Flow" finishLocation="{!URLFOR( '/' + Claim__c.Id )}" rendered="{!if($Site.prefix== '',true,false)}">
+        <apex:param name="VarTClaimID" value="{!Claim__c.Id}"/>
+        <apex:param name="VarNPartPengingApproval" value="{!Claim__c.Claim_Parts_Pending_Approval__c}"/>
+        <apex:param name="SOVCLaim" value="{!Claim__c}"/>
+        <apex:param name="varCClaimCost" value="{!Claim__c.Final_Claim_Cost__c}"/>
+        
+    </flow:interview>
+    <flow:interview name="Submit_Approval_Flow" finishLocation="{!URLFOR( '/TWOD3/' + Claim__c.Id )}" rendered="{!if(NOT($Site.prefix== ''),true,false)}">
+        <apex:param name="VarTClaimID" value="{!Claim__c.Id}"/>
+        <apex:param name="VarNPartPengingApproval" value="{!Claim__c.Claim_Parts_Pending_Approval__c}"/>
+        <apex:param name="SOVCLaim" value="{!Claim__c}"/>
+        <apex:param name="varCClaimCost" value="{!Claim__c.Final_Claim_Cost__c}"/>
+    </flow:interview>
+  <!-- End Default Content REMOVE THIS -->
+</apex:page>

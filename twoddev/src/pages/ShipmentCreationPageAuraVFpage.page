@@ -1,0 +1,32 @@
+<apex:page standardController="Supplier_Recovery_Claim__c" sidebar="false" showHeader="false" >
+<style>
+.AppClass{
+    padding-top: 20px;
+    padding-bottom: 20px;
+    padding-left: 40px;
+    border: darkgray;
+    padding-right: 40px;    
+}
+</style>    
+    <apex:includeLightning />
+            
+    <div id="lightning"/>
+    <script>
+    var totalPageURL = window.location.toString();
+    var protocalType= totalPageURL.split("//")[0];
+    var tempbaseURL = totalPageURL.split("//")[1].split("/");
+    var finalBaseURL = protocalType+'//'+tempbaseURL[0] + "{!$Site.Prefix}";
+    var RecordId = "{!$CurrentPage.parameters.id}";
+        $Lightning.use("c:ShipmentCreationPageAuraApp", function() {
+          $Lightning.createComponent("c:ShipmentCreationPageAuraCmp",
+                  { RecoveryClaimId : RecordId,
+                    baseURL : finalBaseURL },
+                  "lightning",
+                  function(cmp) {
+               });
+        });
+    
+    
+    </script>
+    
+</apex:page>

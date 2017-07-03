@@ -1,0 +1,34 @@
+<apex:page standardController="Inventory__c" sidebar="false" showHeader="false">   
+    <apex:includeLightning />
+    
+    <div id="lightning"/>
+    <script>
+    var totalPageURL = window.location.toString();
+    var protocalType= totalPageURL.split("//")[0]; 
+    var tempbaseURL = totalPageURL.split("//")[1].split("/");
+    var finalBaseURL = protocalType+'//'+tempbaseURL[0] + "{!$Site.Prefix}";
+    var sitePrefix = "{!$Site.Prefix}";
+    var scrappedOrStolen = '{!Inventory__c.Stolen_inventory__c || Inventory__c.Scrapped__c}' === 'true'
+    ? true
+    : false;
+    
+    $Lightning.use("c:WarrantyRegistrationApplication", function() {
+        $Lightning.createComponent("c:WarrantyRegistrationPage",
+                                   { inventoryId: "{!Inventory__c.Id}" , 
+                                    
+                                    formHeading : "{!$Label.Goodwill_Warranty_Registration}",
+                                    BaseURL:finalBaseURL,
+                                    type: "Goodwill",
+                                    sitePrefix : sitePrefix,
+                                    pageBlockerBooleanObject : {
+                                        isScrappedOrStolen : scrappedOrStolen,
+                                        visualCheckListNotcompleted : {!(!Inventory__c.Visual_Checklist_Completed__c)}
+                                    },
+                                    
+                                   },
+                                   "lightning",
+                                   function(cmp) {});
+    });   
+    </script>
+    
+</apex:page>

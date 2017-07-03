@@ -1,0 +1,11 @@
+<apex:page standardController="Claim__c">
+  <!-- Begin Default Content REMOVE THIS -->
+    <flow:interview name="Updating_Policy_Definition_in_Claim" finishLocation="{!URLFOR( '/' + Claim__c.Id )}" rendered="{!if($Site.prefix== '',true,false)}">
+        <apex:param name="VarClaimId" value="{!Claim__c.Id}"/>
+    </flow:interview>
+    <flow:interview name="Updating_Policy_Definition_in_Claim" finishLocation="{!URLFOR( '/TWOD3/' + Claim__c.Id )}" rendered="{!if(NOT($Site.prefix== ''),true,false)}">
+        <apex:param name="VarClaimId" value="{!Claim__c.Id}"/>
+    </flow:interview>
+   
+  <!-- End Default Content REMOVE THIS -->
+</apex:page>

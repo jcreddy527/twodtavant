@@ -1,0 +1,10 @@
+<apex:page showHeader="false">
+
+    <!-- Add your help styles -->
+
+    <h1>Help for {YourObjectName} Object</h1>
+
+    <p>Your custom help message here.</p>
+    
+
+</apex:page>

@@ -1,0 +1,41 @@
+<apex:page controller="ProcessBulkUpload">
+   <apex:form >
+        <apex:pageMessages />
+        <apex:pageblock >
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton action="{!StartBatchProcess}" value="Test"/>
+            </apex:pageBlockButtons>
+            <apex:outputPanel rendered="{!value}" id="batchBlock">
+               <apex:pageBlockSection title="Batch Status" columns="2"> 
+                  <apex:pageblocktable value="{!asyncApec}" var="t" align="center" CELLSPACING="30" CELLPADDING="10">
+                    <apex:column value="{!t.id}" headerValue="Job Id"/>
+                    <apex:column value="{!t.TotalJobItems }" headerValue="Total no of Batches"/>
+                    <apex:column value="{!t.JobItemsProcessed}" headerValue="Succesfully Processed"/>                    
+                    <apex:column value="{!t.NumberOfErrors}" headerValue="Failed Batches"/>
+                    <apex:column value="{!t.Status}" headerValue="Batch status"/>
+                  </apex:pageblocktable>
+               </apex:pageBlockSection>
+            
+               <apex:pageBlockSection title="Record details"> 
+
+                    <apex:outputText value="{!totRec }" label="Total Records"/><br/>
+                    <apex:outputText value="{!succRec}" label="Succesfully proccessed "/><br/>
+                    <apex:outputText value="{!FailRec}" label="Total failed"/><br/>
+               </apex:pageBlockSection>
+               <apex:pageBlockSection title="Failure records details">
+
+               
+                  <apex:pageblocktable value="{!bulkUpload}" var="t" align="center" CELLSPACING="30" CELLPADDING="0" >
+                    <apex:column value="{!t.Batch_Id__c}" headerValue="Job Id"/>
+                    <apex:column value="{!t.Errors__c}" headerValue="Failed reason"/>
+                    <apex:column value="{!t.Row_Detail__c}" headerValue="Json value"/>
+                    
+                  </apex:pageblocktable>               
+               
+               
+               </apex:pageBlockSection>
+               <apex:actionPoller action="{!GetStatus}" reRender="batchBlock" interval="5"/>
+            </apex:outputpanel>
+        </apex:pageblock>
+   </apex:form>
+</apex:page>

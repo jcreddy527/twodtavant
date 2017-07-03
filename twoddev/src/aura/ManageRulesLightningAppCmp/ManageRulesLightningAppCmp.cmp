@@ -1,0 +1,85 @@
+<aura:component controller="ManageRuleLightningCtrl" >
+	<ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" /> 
+    
+    <aura:attribute name="WarrantyRuleName" type="string"/>
+    <aura:attribute name="LogicalGroupingList" type="List"/>
+    <aura:attribute name="RuleTypeList" type="List"/>
+    <aura:attribute name="ObjectTypeList" type="List"/>
+    <aura:attribute name="ObjectTypeMap" type="Map"/>
+    <aura:attribute name="error" type="String"/>
+    <aura:attribute name="customerId" type="String" default="a0j28000003fiqs"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />       
+    
+    <center><ui:spinner aura:id="spinner" isVisible="false"/></center>    
+    <center>
+        <div  class="slds-form-element main-body" aura:id="group" >
+            <header class="slds-text-heading--large slds-align--absolute-center heading" >
+                {!$Label.c.WarrantyRuleLightningLabelHeader}
+            </header>
+            <br />
+            <div class = "slds-box slds-theme--default slds-container--large  form">
+                <br /> 
+                <table class="slds-table  slds-table--cell-buffer" style="width:100%">            
+                    <tbody>                
+                        <tr > 
+                            <td width="50%">                                    
+                                <div class="inline label" >
+                                    <label class="slds-form-element__label" >{!$Label.c.WarrantyRuleLightningLabel1}  </label>
+                                </div>
+                                <div class=" inline select">                                     
+                                    <ui:inputText value="{!v.WarrantyRuleName}"  class="slds-input select required" />                                     
+                                </div> 
+                            </td>
+                            <td width="50%">    
+                                <div class="inline label" >
+                                    <label class="slds-form-element__label" >{!$Label.c.WarrantyRuleLightningLabel2}</label>
+                                </div>
+                                <div class=" inline select">                                    
+                                    <ui:inputSelect aura:id="LogicalGrouping" class="slds-input select">
+                                        <aura:iteration items="{!v.LogicalGroupingList}" var="at" >                                            
+                                            <option>{!at}</option>
+                                        </aura:iteration> 
+                                    </ui:inputSelect>
+                                    
+                                </div>   
+                            </td>                                         
+                        </tr>
+                        <tr > 
+                           <td width="50%">    
+                                <div class="inline label" >
+                                    <label class="slds-form-element__label" >{!$Label.c.WarrantyRuleLightningLabel3}  </label>
+                                </div>
+                                <div class=" inline select">
+                                    <ui:inputSelect aura:id="ObjectType" class="slds-input select required">
+                                        <aura:iteration items="{!v.ObjectTypeList}" var="at" >
+                                            <ui:inputSelectOption text="{!at}"  label="{!at}"/>
+                                        </aura:iteration>
+                                    </ui:inputSelect> 
+                                </div>   
+                            </td>
+                            <td width="50%">    
+                                <div class="inline label" >
+                                    <label class="slds-form-element__label" >{!$Label.c.WarrantyRuleLightningLabel4}</label>
+                                </div>
+                                <div class=" inline select">                                    
+                                    <ui:inputSelect aura:id="RuleType" class="slds-input select">
+                                        <aura:iteration items="{!v.RuleTypeList}" var="at" >
+                                            <ui:inputSelectOption text="{!at}"  label="{!at}"/>
+                                        </aura:iteration>
+                                    </ui:inputSelect> 
+                                </div>   
+                            </td> 
+                        </tr>
+                    </tbody>
+                </table>
+                <br /> 
+                <button class="slds-button slds-button--brand" onclick="{!c.save}">Save</button>
+                <button class="slds-button slds-button--neutral" onclick="{!c.cancel}">Cancel</button>
+            </div>
+        </div>
+        
+        <ui:message severity="error" closable="true" aura:id="errorMessage" class="slds-hide">{!v.error}            
+        </ui:message>
+    </center>
+</aura:component>

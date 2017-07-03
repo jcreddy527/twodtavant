@@ -1,0 +1,5 @@
+<aura:event type="APPLICATION" description="Fired when a contract is selected and shows in the recovery claim line item section">
+    <aura:attribute name="ProductId" type="String" description=""/>
+    <aura:attribute name="ContractId" type="String" description=""/>
+    <aura:attribute name="IsContractDeleted" type="Boolean" description=""/>
+</aura:event>

@@ -1,0 +1,3 @@
+<aura:event type="APPLICATION" description="Event template">
+	<aura:attribute name="isModalEnabled"  default="False"	type="boolean" />
+</aura:event>

@@ -1,0 +1,59 @@
+.THIS .alignleft {
+    float: left;
+    width:33.33333%;
+    text-align:left;
+}
+.THIS .aligncenter {
+    float: left;
+    width:33.33333%;
+    text-align:center;
+}
+.THIS .alignright {
+    float: left;
+    width:33.33333%;
+    text-align:right;
+}
+.THIS .hide{
+    Display : none;
+}
+/*.THIS .group{
+    background-color: #f2f2f2;       
+    width:100%;   
+} */    
+.THIS .spinner{
+    background-color: #333;
+    opacity: 0.8;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    z-index: 100;
+    height: 200%;
+    width: 100%;
+    overflow: hidden;    	
+    background-position: center;
+    background-repeat: no-repeat;
+}
+.THIS .heading {
+    background: #1a315b;
+    color: white;
+    padding: 25px;
+}
+.THIS .main-body {
+    font-family: "Salesforce Sans", Arial, sans-serif;    
+}
+.THIS .inline {
+    display:inline;
+    float:left;
+    
+}
+.THIS .label {
+    width:30%;
+}
+.THIS .select {
+    width:70%;
+}
+.THIS .form {
+    background: white;
+    box-shadow: #302e2e -3px 4px 25px;
+    padding: 10px;
+}

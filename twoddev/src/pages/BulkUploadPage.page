@@ -1,0 +1,62 @@
+<apex:page controller="BulkUploadController" >
+    <apex:sectionHeader title="{!$Label.Bulk_Upload}" />
+    <apex:form >
+        <apex:pageMessages />    
+        <apex:pageblock >
+            <apex:outputPanel rendered="{!(!batchStatus)}">
+                <apex:pageBlockSection title="Process Type">
+                    <apex:inputField label="Select a process type from the list" value="{!bulkUpload.Process_Type__c}">
+                        <apex:actionSupport event="onchange" action="{!displayProcessSelection}"/>
+                    </apex:inputField>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection title="Process Selection" rendered="{!showProcessSelection}">
+                    <apex:selectList value="{!selectedProcess}" multiselect="false" size="1" label="What would you like to process?">
+                        <apex:selectOption itemValue="NONE" itemLabel="--None--" />
+                        <apex:selectOption itemValue="NEW" itemLabel="New Upload" />
+                        <apex:selectOption itemValue="OLD" itemLabel="Existing Batch" />
+                        <apex:actionSupport event="onchange" action="{!displayNewUpload}"/>
+                    </apex:selectList>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection rendered="{!newUpload}">
+                    <apex:selectRadio label="Would you like the Customer Info to be saved in the Warranty Registration or create a new Account?" value="{!customerInfo}">
+                        <apex:selectOptions value="{!custInfoOptions}">
+                        </apex:selectOptions>
+                    </apex:selectRadio>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection rendered="{!newUpload}">
+                    <apex:inputFile value="{!contentFile}" filename="{!nameFile}" id="file" />
+                </apex:pageBlockSection>
+            </apex:outputpanel>
+            <apex:outputPanel rendered="{!batchStatus}" id="batchBlock">
+               <apex:pageBlockSection title="Batch Status" columns="2"> 
+                  <apex:pageblocktable value="{!asyncApex}" var="t" align="center" CELLSPACING="30" CELLPADDING="10">
+                    <apex:column value="{!t.id}" headerValue="Job Id"/>
+                    <apex:column value="{!t.TotalJobItems }" headerValue="Total no of Batches"/>
+                    <apex:column value="{!t.JobItemsProcessed}" headerValue="Succesfully Processed"/>                    
+                    <apex:column value="{!t.NumberOfErrors}" headerValue="Failed Batches"/>
+                    <apex:column value="{!t.Status}" headerValue="Batch status"/>
+                    <apex:column value="{!t.ExtendedStatus}" headerValue="Status details"/>
+                  </apex:pageblocktable>
+               </apex:pageBlockSection>
+               <apex:pageBlockSection title="Record details"> 
+                    <apex:outputText value="{!totRec }" label="Total Records"/><br/>
+                    <apex:outputText value="{!succRec}" label="Succesfully proccessed "/><br/>
+                    <apex:outputText value="{!FailRec}" label="Total failed"/><br/>
+               </apex:pageBlockSection>
+               <apex:pageBlockSection title="Failure records details">
+                  <apex:pageblocktable value="{!failBulkUpload}" var="t" align="center" CELLSPACING="30" CELLPADDING="0" >
+                    <apex:column value="{!t.Batch_Id__c}" headerValue="Job Id"/>
+                    <apex:column value="{!t.Errors__c}" headerValue="Failed reason"/>
+                    <apex:column value="{!t.Data_JSON__c}" headerValue="Json value"/>
+                  </apex:pageblocktable>               
+               </apex:pageBlockSection>
+               <apex:actionPoller action="{!GetStatus}" reRender="batchBlock" interval="5"/>
+            </apex:outputpanel>         
+            <apex:pageBlockButtons location="bottom" >
+                <apex:commandButton action="{!Upload}" value="Upload" rendered="{!newUpload}" />
+                <apex:commandButton action="{!Upload}" value="Reprocess" rendered="{!existingUpload}" />
+                <apex:commandButton action="{!Cancel}" value="Cancel" />
+            </apex:pageBlockButtons>
+        </apex:pageblock>
+    </apex:form>
+</apex:page>

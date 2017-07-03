@@ -1,0 +1,4 @@
+<aura:event type="APPLICATION" description="Fired when a Product is selected an shows the actove warranty">
+    <aura:attribute name="ProductName" type="String" description=""/>
+    <aura:attribute name="IsCausalPart" type="Boolean" description=""/>
+</aura:event>

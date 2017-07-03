@@ -1,0 +1,18 @@
+<apex:page Controller="CampaignMember"  sidebar="false">
+    <apex:includeLightning />
+        
+    <div id="lightning" />
+    <script>
+      
+        
+        $Lightning.use("c:CampaignMemberApp", function() {
+          $Lightning.createComponent("c:CampaignMember",
+               {"groups":"{!JSENCODE(ListOfIds)}"},
+          "lightning",
+          function(cmp) {
+          });
+
+        });
+
+    </script> 
+</apex:page>

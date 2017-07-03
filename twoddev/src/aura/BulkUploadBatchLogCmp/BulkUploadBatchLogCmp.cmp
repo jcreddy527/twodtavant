@@ -1,0 +1,143 @@
+<aura:component controller="BulkUploadController" >
+   <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css"/>
+   <aura:attribute name="BatchLog" type="Batch_Log__c" default=""/>
+   <aura:attribute name="BatchLogs" type="Batch_Log__c[]" default=""/>
+   <aura:attribute name="UploadStages" type="Bulk_Upload__c[]" default=""/> 
+   <aura:attribute name="BatchId" type="String" default=""/>
+   <aura:attribute name="showSpinner" type="Boolean"/>
+   <aura:attribute name="StageAvailable" type="Boolean"/>
+   <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+   <style>
+      .TdCSS {
+         padding: 6px;
+         border: 1px solid #ccc;
+         text-align: left;
+         font-family: "Salesforce Sans", Arial, sans-serif;
+         font-size: initial;
+         height: 40px;
+      }
+      .ThCSS {
+       	background: #1a315b;
+       	color: white;
+         padding: 6px;
+         border: 1px solid #ccc;
+         text-align: left;
+         font-family: "Salesforce Sans", Arial, sans-serif;
+         font-size: initial;
+         height: 40px;
+      }       
+      .accordion-heading {
+          padding: 17px;
+          border-bottom: solid;
+          border-bottom-width: 9px;
+          border-bottom-color: white;
+          border-top-left-radius: 7px;
+          border-top-right-radius: 7px;
+          text-align: left;
+          display: block;
+          padding-bottom: 20px;
+          color: rgb(99, 101, 109);
+          background: rgb(227, 228, 232);
+          border-color: rgb(99, 101, 109);
+          border-width: 2px;
+      }
+   </style>
+   <aura:if isTrue="{!v.showSpinner}">
+      <div class="slds-form-element spinner" >
+           <center><ui:spinner aura:id="spinner"/></center>
+      </div>
+   </aura:if>
+   <header class="slds-text-heading--large slds-align--absolute-center heading">
+       Batch Detail screen
+   </header>
+   <div class="containerCSS">
+        <div class="accordion">
+            <label class="accordion-heading slds-text-heading--medium" >Batch log data
+               <span></span>
+            </label>  
+            <aura:iteration items="{!v.BatchLogs}" var="BatchLog">
+               <div class="slds-grid slds-wrap slds-grid">
+                   <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                       <ui:inputText label="BatchLog Name" value="{!BatchLog.Name}" class="slds-input output" disabled="true" />
+                   </div>
+                   <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                       <ui:inputText label="BatchLog Name" value="{!BatchLog.JobID__c}" class="slds-input output" disabled="true" />
+                   </div>                   
+               </div>
+               <div class="slds-grid slds-wrap slds-grid">
+                   <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                       <ui:inputText label="BatchLog JobId" value="{!BatchLog.Status__c}" class="slds-input output" disabled="true" />
+                   </div>
+                   <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                       <ui:inputText label="BatchLog Name" value="{!BatchLog.Process_Type__c}" class="slds-input output" disabled="true" />
+                   </div>                   
+               </div> 
+               <div class="slds-grid slds-wrap slds-grid">
+                   <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                       <ui:inputText label="BatchLog JobId" value="{!BatchLog.Total_Record_Count__c}" class="slds-input output" disabled="true" />
+                   </div>
+                   <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                       <ui:inputText label="BatchLog Name" value="{!BatchLog.Success_Record_Count__c}" class="slds-input output" disabled="true" />
+                   </div>                   
+               </div>   
+               <div class="slds-grid slds-wrap slds-grid">
+                   <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                       <ui:inputText label="BatchLog JobId" value="{!BatchLog.Failure_Record_Count__c}" class="slds-input output" disabled="true" />
+                   </div> 
+                   <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                       &nbsp;
+                   </div>                    
+               </div>               
+            </aura:iteration>  
+            <label class="accordion-heading slds-text-heading--medium">Stage Upload Related List
+                  <span></span>
+            </label>
+            <br/>
+            <aura:if isTrue="{!v.StageAvailable}">
+               <tr>
+                  <td class="ThCSS">
+                     Bulk Upload Name
+                  </td>
+                  <td class="ThCSS">
+                     Data JSON
+                  </td>
+                  <td class="ThCSS">
+                     Error Count
+                  </td>
+                  <td class="ThCSS">
+                     Error Message
+                  </td>
+                  <td class="ThCSS">
+                     Process Type
+                  </td>                  
+               </tr>
+               <aura:iteration items="{!v.UploadStages}" var="UploadStage">
+                  <tr>
+                     <td class="TdCSS">
+                        <a href="{!'/' + UploadStage.Id}">
+                           {!UploadStage.Name}
+                        </a>
+                     </td>
+                     <td class="TdCSS">
+                        {!UploadStage.Data_JSON__c}
+                     </td>
+                     <td class="TdCSS">
+                        {!UploadStage.	Error_Count__c}
+                     </td>
+                     <td class="TdCSS">
+                        {!UploadStage.Errors__c}
+                     </td>
+                     <td class="TdCSS">
+                        {!UploadStage.Process_Type__c}
+                     </td>                     
+                  </tr>
+               </aura:iteration>
+               <aura:set attribute="else">
+                 <div class="slds-box slds-theme--shade">
+                   <p> No records available....</p>
+                 </div>                           
+               </aura:set>                
+            </aura:if>
+       </div>
+   </div>
+</aura:component>

@@ -1,0 +1,3 @@
+<aura:event type="APPLICATION" description="Fired when a delete method is called in the SupplyRecoveryClaimPartShipment">
+    <aura:attribute name="ShipmentRecord" type="Recovery_Claim_Shipment__c" description="The shipment records to be updated after delete method is called"/>
+</aura:event>

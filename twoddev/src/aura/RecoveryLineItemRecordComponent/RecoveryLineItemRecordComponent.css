@@ -1,0 +1,11 @@
+.THIS .input-box-size {
+    width : 75px;
+}
+.THIS .hidetr tr {
+    display: 'none';
+}
+
+.THIS .slds-truncate {
+    min-width: 3.25rem;
+    max-width: 0rem;
+}

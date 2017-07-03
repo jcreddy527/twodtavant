@@ -1,0 +1,74 @@
+<aura:component extends="c:GenericCrudComponent">
+<aura:attribute name="RecoveryClaimLineItem" type="sobject" default="{'sobjectType': 'Supply_Recovery_Claim_Line_Items__c' ,
+                                                                           							'Id' : null,
+                                                                                                 	'Name' : '',
+                                                                                                 	'Inventory__c' : '',
+                                                                                                 	'Pending_Shipment_Quantity__c' : 0,
+                                                                                                 	'Quantity__c' : 0,
+                                                                                                  	'Warranty_Product__c' : '',
+                                                                                                 	'Supplier_Recovery_Claim__c' : '',
+                                                                                                 	'Part_Return_Location_Warehouse__c' : '',
+                                                                     'Removed_Claim_Part__c':''
+                                                                     }"/>
+
+
+<aura:attribute name="RecoveryLineItemShippedList" type="sobject[]" />
+<aura:attribute name="ShipmentRecordIdComp" type="String"/> 
+<aura:attribute name="DonotAllowInput" type="Boolean" default="false"/>   
+<aura:attribute name="IsShippedStatus" type="Boolean" default="false"/> 
+<aura:attribute name="shipmentURLcomp" type="String" />
+<aura:attribute name="baseURL" type="String"/>    
+<aura:attribute name="bgcolor" type="String" default="" />        
+<aura:attribute name="AddSymbolURL" type="String" default=""/>       
+<aura:attribute name="SpinnerURL" type="String" default=""/>       
+<aura:attribute name="QuantitySelectedForShipment"  type="Integer"/>
+<aura:attribute name="showSpinner"  type="String" default="No"/>
+<aura:attribute name="RecoveryLineItemShipped"
+      type="sobject"
+      default="{'sobjectType':'Recovery_Claim_Shipment__c', 'Id' : null, Supply_Recovery_Claim_Line_Item__r : { Name : '' } }"/>
+<aura:attribute name="ShipmentRecordIdRowComp" type="String"/>
+<aura:attribute name="dmlErrors" type="String[]"/>
+<aura:attribute name="LineItemComponentVisible" type="boolean" default="True"/>
+<aura:registerEvent name="ShipmentDeleteMethod" type="c:DeleteRecordfromShipmentEvent"/>
+<aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+<aura:handler event="c:DeleteRecordfromShipmentEvent" action="{!c.UpdLineItemAfterSippedItemDeletion}"/>
+
+<tr bgcolor="{!v.bgcolor}" aura:id="LineitemComp" class="slds-hint-parent">
+
+    <td class="slds-size--1-of-4" data-label="Returned Parts">
+		<ui:outputText value="{!v.RecoveryClaimLineItem.Name}" />
+    </td>
+    <td class="slds-size--1-of-4" data-label="Supply Recovery Claim">
+		<ui:outputText value="{!v.RecoveryClaimLineItem.Supplier_Recovery_Claim__r.Name}" />
+    </td>
+    <td class="slds-size--1-of-4" data-label="Part Return Location">
+        <ui:outputText value="{!v.RecoveryClaimLineItem.Part_Return_Location_Warehouse__r.Name}" />
+    </td>
+    <td class="slds-size--1-of-4" data-label="Product Name">
+        <ui:outputText value="{!v.RecoveryClaimLineItem.Warranty_Product__r.Name}" />
+    </td>
+    <td class="slds-size--1-of-4" data-label="Pending">
+        <ui:outputNumber value="{!v.RecoveryClaimLineItem.Pending_Shipment_Quantity__c}" />
+    </td>
+    <td class="slds-size--1-of-4" data-label="Quantity to Add">
+        <ui:inputNumber disabled="{!v.DonotAllowInput}" class="input-box-size" aura:id="num"  value="{!v.QuantitySelectedForShipment}"/>
+    </td>
+    <td class="slds-size--1-of-4" data-label="Add">
+      <aura:if isTrue="{!v.showSpinner == 'No'}">
+      <div aura:id="addicon" >
+         <span class="slds-icon__container" onclick = "{!c.AddPartsToShipment}">
+         <c:svg ariahidden="true" class="slds-icon slds-icon--small slds-icon-text-default"
+           xlinkHref="{!v.AddSymbolURL}"/>
+         </span>
+      </div>
+    </aura:if>
+    <aura:if isTrue="{!v.showSpinner == 'Yes'}">
+      <div class="slds-spinner--small" aura:id="spinner">
+          <img src="{!v.SpinnerURL + '/resource/slds/assets/images/spinners/slds_spinner_brand.gif'}" alt="Loading..." />
+      </div>
+    </aura:if>
+    </td>
+
+</tr>
+
+</aura:component>

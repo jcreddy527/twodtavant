@@ -1,0 +1,60 @@
+<apex:page standardController="Inventory__c" sidebar="false" showHeader="false">   
+    <apex:includeLightning />
+            
+    <div id="lightning"/>
+    <script>
+    
+   //var RecordId = "{!$CurrentPage.parameters.id}";
+    var totalPageURL = window.location.toString();
+    var protocalType= totalPageURL.split("//")[0]; 
+    var tempbaseURL = totalPageURL.split("//")[1].split("/");
+    var finalBaseURL = protocalType+'//'+tempbaseURL[0] + "{!$Site.Prefix}";
+    var typeInURL="{!$CurrentPage.parameters.type}" ;
+    var heading="";
+    var type="";
+    var sitePrefix = "{!$Site.Prefix}";
+    var scrappedOrStolen = '{!Inventory__c.Stolen_inventory__c || Inventory__c.Scrapped__c}' === 'true'
+            ? true
+            : false;
+    
+        switch(typeInURL){                
+            case "Standard":
+            {
+                heading = '{!$Label.Warranty_Registration}';
+                type = 'Standard';
+                break;    
+            }
+            
+            case "Standard,Goodwill":
+            {
+                heading = '{!$Label.Goodwill_Warranty_Registration}';
+                type = 'Goodwill';
+                break;    
+            }
+            
+            case "Extended":
+            {
+                heading = '{!$Label.Extended_Warranty_Registration}';
+                type = 'Extended';
+                break;    
+            }  
+        }
+    
+        $Lightning.use("c:WarrantyRegistrationApplication", function() {
+          $Lightning.createComponent("c:WarrantyRegistrationPage",
+                  { inventoryId: "{!$CurrentPage.parameters.id}" , 
+                    wrExistingId:"{!$CurrentPage.parameters.WRId}",
+                    usageType :"{!$CurrentPage.parameters.usageType}",
+                    formHeading : heading,
+                    BaseURL:finalBaseURL,
+                    type: type,
+                    sitePrefix : sitePrefix,
+                    scrappedOrStolen : scrappedOrStolen
+                  },
+                  "lightning",
+                  function(cmp) {
+               });
+        });   
+    </script>
+    
+</apex:page>

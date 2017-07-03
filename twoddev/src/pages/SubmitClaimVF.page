@@ -1,0 +1,63 @@
+<!--
+    Submit claim which is used to run the flow to update the values in the claim page.
+-->
+<apex:page standardController="Claim__c" standardStylesheets="false" sidebar="false" >
+    <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="/soap/ajax/33.0/connection.js" type="text/javascript"></script>
+    <script src="/soap/ajax/33.0/apex.js" type="text/javascript"></script>
+    <script type='text/javascript'  src="/sforce/one/30.0/api.js" />
+    <script type='text/javascript' src='/canvas/sdk/js/publisher.js'></script>
+    <div id="DivId" > </div>
+    <script type="text/javascript">
+        var ClaimId = "{!Claim__c.Id}"; 
+        console.log('-------------------'+ClaimId);
+        
+        var clmCost = "{!VALUE(TEXT(Claim__c.Final_Claim_Cost__c))}";
+        if(clmCost == 0){
+            alert('{!JSENCODE($Label.ClaimCost)} {!JSENCODE(TEXT(Claim__c.Final_Claim_Cost__c))}');
+            document.getElementById('DivId').innerHTML = '{!JSENCODE($Label.ClaimCost)} {!JSENCODE(TEXT(Claim__c.Final_Claim_Cost__c))}';
+        } else {
+            if('{!JSENCODE(Claim__c.Claim_Status__c) }' != 'Draft' && '{!JSENCODE(Claim__c.Claim_Status__c) }' != 'SMR Approved' && '{!JSENCODE(Claim__c.Claim_Status__c) }' != 'SMR Rejected'){
+                // alert('{!JSENCODE($Label.ReSubmitError)}'); 
+                 document.getElementById('DivId').innerHTML = '{!JSENCODE($Label.ReSubmitError)}'
+            }
+            else if('{!JSENCODE(Claim__c.Claim_Type__c)}' != 'Field Modification' && ('{!JSENCODE(Claim__c.Applicable_Policy__c)}' == '' || '{!JSENCODE(Claim__c.Applicable_Policy__c)}' == null)){
+                //alert('{!JSENCODE($Label.Message_for_Claim_submission)}');
+                document.getElementById('DivId').innerHTML = ' {!JSENCODE($Label.Message_for_Claim_submission)}'
+            }
+            else { 
+                sforce.connection.sessionId = '{!JSENCODE($Api.Session_ID)}';
+                var claimRecords = sforce.connection.query('select Account__r.Name '+'from Claim__c where id = \'' + ClaimId + '\'' );
+                var records = claimRecords.getArray("records"); 
+                if('{!JSENCODE(Claim__c.Inventory__c) }' != '' && '{!JSENCODE(Claim__c.Inventory__c) }' != null && records[0].Account__r.Name != 'Internal Account'){
+                    if("{!JSENCODE($Site.Prefix)}" == '') { 
+                        console.log('-------------------1'+ClaimId);
+                         document.getElementById('DivId').innerHTML = 'Loading...........';
+                        navigateToUrl("/apex/SubmitClaimAction?id="+ClaimId,true); 
+                    }
+                    else{ 
+                        console.log('-------------------2'+ClaimId);
+                        document.getElementById('DivId').innerHTML = 'Loading...........';
+                        navigateToUrl("{!JSENCODE($Site.Prefix)}/SubmitClaimAction?id="+ClaimId,"true"); 
+                    }
+                }
+                else if('{!JSENCODE(Claim__c.Warranty_Product__c) }' != '' && '{!JSENCODE(Claim__c.Warranty_Product__c) }' != null && records[0].Account__r.Name != 'Internal Account'){
+                    if("{!JSENCODE($Site.Prefix)}" == ''){ 
+                        console.log('-------------------3'+ClaimId);
+                        document.getElementById('DivId').innerHTML = 'Loading...........';
+                        navigateToUrl("/apex/SubmitClaimAction?id="+ClaimId,"true"); 
+                    }
+                    else{ 
+                        console.log('-------------------4'+ClaimId);
+                        document.getElementById('DivId').innerHTML = 'Loading...........';
+                        navigateToUrl("{!JSENCODE($Site.Prefix)}/SubmitClaimAction?id="+ClaimId,"true"); 
+                    }
+                }
+                else{
+                    //alert('{!JSENCODE($Label.ClaimTemplateError)}'); 
+                    document.getElementById('DivId').innerHTML = '{!JSENCODE($Label.ClaimTemplateError)}';
+                }
+            }
+        }
+    </script>   
+</apex:page>

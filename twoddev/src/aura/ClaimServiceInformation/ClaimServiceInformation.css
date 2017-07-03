@@ -1,0 +1,9 @@
+.THIS {
+}
+.THIS .slds-modal__header {
+    
+    padding: 0rem 0rem !important;
+}
+.THIS .slds-modal__footer {
+    padding: 0.00rem 1rem;
+}

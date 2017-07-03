@@ -1,0 +1,9 @@
+<aura:component >
+    <!--<aura:attribute name="searchKeyTex" type="String"/>
+    <div class="slds-grid">        
+        <ui:inputText class="form-control"  placeholder="Search" value="{!v.searchKeyTex}" keyup="{!c.searchKeyChange}"/><ui:button aura:id="buttonGo" class="button" label="Go!" press="{!c.searchKeyChange}"/>
+    </div>-->
+    
+     <input type="text" class="form-control" onkeyup="{!c.searchKeyChange}"
+            placeholder="Search" id="SearchKey" aura:id="SearchKey"/>
+</aura:component>

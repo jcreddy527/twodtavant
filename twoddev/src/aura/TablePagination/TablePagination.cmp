@@ -1,0 +1,48 @@
+<aura:component >
+  <ltng:require styles="/resource/slds040/assets/styles/salesforce-lightning-design-system.min.css"/>
+  <aura:attribute name="limitList" type="String[]" default="['5','10','20']"/>
+  <aura:attribute name="limit" type="Integer" default="5"/>
+  <aura:attribute name="offsetLimit" type="Integer" default="5"/>
+  <aura:attribute name="offset" type="Integer" default="1"/>
+  <aura:attribute name="showPrevious" type="String" default="No"/>
+  <aura:attribute name="showNext" type="String" default="No"/>
+  <aura:attribute name="totalRowsOriginal" type="Map" default=""/>
+  <aura:attribute name="totalRowsOriginalCount" type="Integer" default="0"/>
+  <aura:attribute name="totalRows" type="Map" default=""/>
+  <aura:attribute name="visibleRowsIndex" type="Integer[]" default=""/>
+  <aura:handler event="aura:doneWaiting" action="{!c.doneWaiting}"/>
+  <div class="slds-grid slds-text-body--small slds-wrap">
+    <div class="slds-col slds-size--1-of-2 ">
+      <div class="slds-container--right slds-container--small">
+        Show entries:
+        <ui:inputSelect aura:id="limitId" change="{!c.updateView}">
+          <aura:iteration items="{!v.limitList}" var="item">
+            <ui:inputSelectOption class="ClassShowEntry" text="{!item}" label="{!item}"/>
+          </aura:iteration>
+        </ui:inputSelect>
+        
+      </div>
+    </div>
+    <div class="slds-col slds-size--1-of-2 ">
+      Search: <ui:inputText class="ClassShowSearch" aura:id="searchString" updateOn="keyup" keyup="{!c.searchRows}"/>
+    </div>
+  </div>
+  {!v.body}
+  <div class="slds-grid">
+    <div class="slds-col slds-size--1-of-3 slds-text-body--small">
+      Showing {!v.offset} to {!v.offsetLimit - 1} of {!v.totalRows.length - 1} entries
+    </div>
+    <div class="slds-col slds-size--2-of-4">
+      <div class="slds-container--right slds-container--small">
+        <aura:if isTrue="{!v.showPrevious == 'Yes'}">
+          <ui:button buttonTitle="Previous" class="button" label="Previous" press="{!c.goPrevious}"/>
+        </aura:if>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <aura:if isTrue="{!v.showNext == 'Yes'}">
+          <ui:button buttonTitle="Next" class="button" label="Next" press="{!c.goNext}"/>
+        </aura:if>
+      </div>
+    </div>
+  </div>
+
+</aura:component>

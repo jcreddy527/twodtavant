@@ -1,0 +1,71 @@
+/******* Header Section CSS **************/
+.THIS.heading {
+    background: #1a315b;
+    color: white;
+    padding: 25px;
+    text-align: center;
+    font-family: "Salesforce Sans";    
+}
+.THIS .leftAlign {
+    float: left;
+    clear: left;         
+}
+.THIS .Lookup {
+    background: #1a315b;
+    color: white;
+    padding: 25px;
+    text-align: center;
+    font-family: "Salesforce Sans";    
+}
+.THIS .main-body {
+    font-family: "Salesforce Sans";
+}
+.THIS .containerC {
+    padding-left: 10%;
+    padding-right: 10%;
+    padding-top: 25px;
+}
+
+.THIS .form {
+    background: white;
+    box-shadow: #302e2e -3px 4px 25px;
+    padding: 10px;
+}
+
+.THIS .Casual form {
+    background: white;
+    box-shadow: #302e2e -3px 4px 25px;
+    padding: 10px;
+}
+.THIS .inline {
+    display:inline;
+    float:left;
+    
+}
+.THIS .required {
+    border-left: solid red;
+}
+
+.THIS .tooltip {
+    position: relative;
+    display: inline-block;
+    
+}
+
+.THIS .tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1;
+}
+
+.THIS .tooltip:hover .tooltiptext {
+    visibility: visible;
+}

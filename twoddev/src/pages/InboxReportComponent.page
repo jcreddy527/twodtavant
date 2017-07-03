@@ -1,0 +1,16 @@
+<apex:page sidebar="false">
+    <apex:form >
+    <apex:includeLightning />
+       <div id="lightning" />
+        <script>
+            $Lightning.use("c:InboxTestApp", function() {
+              $Lightning.createComponent("c:InboxReportfolder",
+              { },
+              "lightning",
+              function(cmp) {
+                
+              });
+            });
+        </script>
+        </apex:form>
+</apex:page>

@@ -1,0 +1,66 @@
+.THIS .claim-form{
+    border: outset;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: white;
+}
+
+.THIS .claim-form {
+    border: outset;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: floralwhite;
+    margin-top: 10%;
+    border-style: outset;
+}
+
+
+.THIS .slds-input {
+    
+width: 30%;    
+    
+}
+
+.THIS .buttonclass{
+    
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+   
+}
+
+.THIS .buttonclass:hover{
+    background-color: #4CAF50; /* Green */
+    color: white;
+}
+
+.THIS .textarea {
+overflow: auto; 
+width: 70%;
+}
+
+.THIS .row{
+    
+    display: flex;
+}
+
+.THIS .col{
+    
+    width: 50%; /* depends on the number of columns */
+    
+    padding: 1em;
+   
+    
+}
+
+.THIS .GobackButton{
+margin: -5% 12% 12% 69%;  
+float: Right;
+}    
+
+
+.THIS .slds-modal__content {
+    padding: 1rem;
+    overflow: hidden;
+    overflow-y: auto;
+    background-color: ghostwhite;
+}

@@ -1,0 +1,49 @@
+<aura:component implements="force:appHostable" extends="c:GenericComponent">
+    
+    <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" />
+    
+    <aura:attribute name="QuerySOQL"                   type="String" default="Select Id,Name from Account"/>
+    <aura:attribute name="searchKey"                     type="String" default=""/>
+    <aura:attribute name="sobjectList"                         type="SObject[]" default=""/>
+    <aura:attribute name="selSobject"                      type="String" default=""/>
+    <aura:attribute name="condition"                       type="String" default=""/>
+    <aura:attribute name="labelVal"                          type="String" default=""/>
+    <aura:attribute name="selectedValue"              type="String" default=""/>
+    <aura:attribute name="selectedId"                     type="String" default=""/>
+    <aura:attribute name="iselectedId"                    type="String" default=""/>
+    <aura:attribute name="selectedRecord"           type="sObject" default=""/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:method name="sampleMethod" action="{!c.selectSObject}" access="PUBLIC">
+    </aura:method>
+    
+    <div class="slds-lookup" data-select="multi" data-scope="single" data-typeahead="true">
+        <div class="slds-form-element">
+            <!-- <label class="slds-form-element__label" for="lookup">{!v.labelVal}</label>-->
+            <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon--right" style="width:100%">
+                
+                <div  aura:id="lookup_input" class="slds-pill-container slds-show">
+                    <c:svg class="slds-input__icon" xlinkHref="/resource/slds212/assets/icons/utility-sprite/svg/symbols.svg#search" />
+                    <ui:inputText aura:id="lookup" value="{!v.searchKey}" class="slds-input" updateOn="keyup" keyup="{!c.executeSOQL}" />   
+                </div>
+                <div aura:id="selectedSObject" class="slds-pill-container slds-hide">
+                    <a onclick="{!c.resetInput}">
+                        <c:svg class="slds-input__icon" xlinkHref="/resource/slds212/assets/icons/utility-sprite/svg/symbols.svg#close" />
+                    </a>
+                    <ui:outputText value="{!v.selSobject}" class="slds-input" />                       
+                </div>
+                
+            </div>
+        </div>
+        <div class="slds-lookup__menu slds-show" role="listbox" aura:id="SObjectList">
+            <ul class="slds-lookup__list" role="presentation">
+                <aura:iteration items="{!v.sobjectList}" var="record">
+                    <li class="slds-lookup__item">
+                        <a href="" role="option" id="{!record.Id}" onclick="{!c.selectSObject}">
+                            {!record.Name}
+                        </a>
+                    </li>
+                </aura:iteration>
+            </ul>
+        </div>
+    </div>
+</aura:component>

@@ -1,0 +1,20 @@
+<apex:page standardController="Claim__c" standardStylesheets="false" sidebar="false" cache="true">
+    <apex:includeLightning />
+   <div id="lightning" />
+
+    <script>
+    var totalPageURL = window.location.toString();
+    var protocalType= totalPageURL.split("//")[0];
+    var tempbaseURL = totalPageURL.split("//")[1].split("/");
+    var finalBaseURL = protocalType+'//'+tempbaseURL[0] + "{!$Site.Prefix}";
+
+        $Lightning.use("c:NewClaimApp", function() {
+          $Lightning.createComponent("c:EditComponent",
+          {BaseURL:finalBaseURL},
+          "lightning",
+          function(cmp) {
+            // do some stuff
+          });
+        });
+    </script>
+</apex:page>

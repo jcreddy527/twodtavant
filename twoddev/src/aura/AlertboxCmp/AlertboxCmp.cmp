@@ -1,0 +1,47 @@
+<!--/////////////////////////////////////
+
+Copyright � 2016  Tavant Technology Inc
+Name - AlertboxCmp
+Purpose - alert box component for lightning error and info alerts
+Date - 12/27/2016
+Last Edited by - AMAN SAWHNEY
+
+/////////////////////////////////////-->
+<aura:component >
+    <aura:attribute name="message" type="String" default=''/>
+    <aura:attribute name="heading" type="String" default=''/>
+    <aura:attribute name="class" type="String" default='slds-theme--default'/>
+    <aura:attribute name="buttonHeading" type="String" default=''/>
+    <aura:attribute name="secondaryButtonHeading" type="String" default=''/>
+
+    <aura:registerEvent name="onOkay" type="c:AlertboxOkayEvent"/>
+    <aura:registerEvent name="onSecondaryOkay" type="c:AlertboxSecondaryOkayEvent"/>
+
+    <div>
+        <div aria-hidden="false" aria-labelledby="prompt-heading-id" aria-describedby="prompt-message-wrapper" role="alertdialog" class="slds-modal slds-modal--prompt slds-fade-in-open">
+            <div class="slds-modal__container slds-modal--prompt" role="document" id="prompt-message-wrapper" tabindex="0">
+                <div class="{!'slds-modal__header ' + v.class + ' slds-theme--alert-texture'}">
+                    <h2 class="slds-text-heading--medium" id="prompt-heading-id">{!v.heading}</h2>
+                </div>
+                <div class="slds-modal__content slds-p-around--medium">
+                    <div>
+                        <p>{!v.message}</p>
+                    </div>
+                </div>
+
+                <div class="slds-modal__footer slds-theme--default">
+                    <div class="slds-button-group slds-align--absolute-center" role="group">
+                        <aura:if isTrue="{!(v.buttonHeading)}">
+                            <button class="slds-button slds-button--neutral" onclick="{!c.alertAction}">{!v.buttonHeading}</button>
+                        </aura:if>
+                        <aura:if isTrue="{!(v.secondaryButtonHeading)}">
+                            <button class="slds-button slds-button--neutral" onclick="{!c.secondaryAlertAction}">{!v.secondaryButtonHeading}</button>
+                        </aura:if>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="slds-backdrop slds-backdrop--open"></div>
+    </div>
+</aura:component>

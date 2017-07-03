@@ -1,0 +1,21 @@
+<aura:component extends="c:GenericComponent">
+    <aura:attribute name="claimId" 				          type="String" 	 default="a061500000X9djt"/>
+    <aura:attribute name="claimName" 			          type="String" 	 default="CLm001"/>
+    <aura:attribute name="inventoryId"			        type="String" 	 default=""/>
+    <aura:attribute name="inventoryName"		        type="String" 	 default=""/>
+    <aura:attribute name="warrantyProductId"	      type="String" 	 default=""/>
+    <aura:attribute name="warrantyProductName"	    type="String" 	 default=""/>
+    <aura:attribute name="inventoryError"		        type="String" 	 default=""/>
+    <aura:attribute name="isEnableModal"		        type="boolean"	 default="fasle"/>
+    <aura:attribute name="installedParts" 		      type="sObject[]" default=""/>
+    <aura:attribute name="installedPartRecordTypes" type="sObject[]" default=""/>
+    <aura:attribute name="removedPartRecordTypes"   type="sObject[]" default=""/>
+    <aura:attribute name="templateObject" 		      type="sObject" 	 default="{ 'sobjectType': 'Claim_Part__c',
+                                                                            'Name': ''
+                                                                           }"/>
+    <aura:handler name="init" 					            value="{!this}"  action="{!c.doInit}" />
+   <aura:attribute name="BaseURL" type="String"/>
+    <aura:attribute name="avoidIds" 		type="String[]" default=""/>
+    <aura:handler event="c:UpdateInstalledParts" 	  action="{!c.doInit}"/>
+    <c:InstalledClaimPartsHandler BaseURL="{!v.BaseURL}" removedPartRecordTypes="{!v.removedPartRecordTypes}" installedPartRecordTypes="{!v.installedPartRecordTypes}" warrantyProductId="{!v.warrantyProductId}" warrantyProductName="{!v.warrantyProductName}"  installedPart="{!v.templateObject}" installedParts="{!v.installedParts}" claimId="{!v.claimId}" claimName="{!v.claimName}" inventoryId="{!v.inventoryId}" inventoryName="{!v.inventoryName}"/>
+</aura:component>

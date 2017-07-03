@@ -1,0 +1,281 @@
+<apex:page standardController="Warranty_Rule_Criteria__c"
+    extensions="RulesCriteriaCtrl" id="pageId" docType="html-5.0"
+    tabstyle="Warranty_Rule__c">
+    <!--====================================================================-->
+    <!--Name: CoreRuleCriteriaPage                                          -->
+    <!--Copyright © 2014 Tavant Technology Inc                                        -->
+    <!--====================================================================-->
+    <!--====================================================================-->
+    <!-- Purpose:                                                           -->
+    <!--                                                                    -->
+    <!--====================================================================-->
+    <!--====================================================================-->
+    <!-- History                                                            -->
+    <!-- -------                                                            -->
+    <!-- VERSION  AUTHOR           DATE              DETAIL                 -->
+    <!--   1.0 -  Praveen KH                         INITIAL DEVELOPMENT    -->
+    <!--====================================================================-->
+
+    <apex:includeScript value="{!$Resource.JQuery}" />
+
+    <apex:pageMessages id="msgId" />
+    <apex:sectionHeader subtitle="{!IF(edit,newRuleCriteria.Name, 'New Rule Criteria')}"
+        title="Rule Criteria Detail" />
+    <apex:form id="frm">
+
+        <apex:inputHidden id="selectedRecord" value="{!selectedObjectIds}"
+            rendered="{!$ObjectType.Warranty_Rule__c.fields.Name.Accessible}" />
+        <apex:actionFunction name="callBackFunction" reRender="frm"
+            action="{!getSelectedValue}" />
+
+        <apex:pageBlock title="Rule Criteria Detail">
+
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Save" action="{!saveRuleCriteria}"
+                    rendered="{!$ObjectType.Warranty_Rule_Criteria__c.Updateable}" />
+                <apex:commandButton value="Save and New"
+                    action="{!saveAndNewRuleCriteria}"
+                    rendered="{!$ObjectType.Warranty_Rule_Criteria__c.Updateable}" />
+                <apex:commandButton value="Cancel" action="{!cancel}" />
+            </apex:pageBlockButtons>
+
+
+            <apex:pageBlockSection title="Information" columns="2"
+                collapsible="false">
+
+                <apex:outputField value="{!newRuleCriteria.Name}" rendered="{!edit}" />
+                <apex:outputText rendered="{!edit}" />
+                <apex:inputField value="{!newRuleCriteria.Warranty_Rule__c}"
+                    onchange="RelatedfieldNamesList();" />
+                <apex:inputField value="{!newRuleCriteria.Sequence__c}" />
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Field Name" />
+                    <apex:outputPanel id="fieldPanel">
+                        <apex:outputPanel layout="block" styleClass="requiredInput">
+                            <apex:outputPanel layout="block" styleClass="requiredBlock" />
+                            <apex:selectList value="{!selectedfieldName}" size="1"
+                                onchange="setFieldApiName(this.options[this.selectedIndex].value);checkCriteriaType();">
+                                <apex:selectOptions value="{!fieldOption}" />
+                            </apex:selectList>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+
+
+                <apex:inputField value="{!newRuleCriteria.Criteria_Type__c}"
+                    onchange="checkMinMaxVal();checkCriteriaType();"
+                    id="criteriaTypeId" styleClass="criteriaTypeCls" />
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Field Api Name" />
+                    <apex:outputPanel id="fieldApiPanel">
+                        <apex:outputField value="{!newRuleCriteria.Field_API_Name__c}" />
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Field Type"></apex:outputLabel>
+                    <apex:outputPanel id="fieldTypePanel">
+                        <apex:outputField value="{!newRuleCriteria.Field_Type__c}"
+                            id="fieldTypeId" styleClass="fieldTypeCls" />
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Field Related Object Name"></apex:outputLabel>
+                    <apex:outputPanel id="fieldRelatedObjectPanel">
+                        <apex:outputField value="{!newRuleCriteria.Related_Object__c}" />
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Criteria Value"></apex:outputLabel>
+                    <apex:outputPanel id="fieldValuePanel"
+                        rendered="{!IF(AND(OR(newRuleCriteria.Field_Type__c == 'DATE',newRuleCriteria.Field_Type__c == 'DATETIME',newRuleCriteria.Field_Type__c == 'NUMBER',newRuleCriteria.Field_Type__c == 'DOUBLE',newRuleCriteria.Field_Type__c == 'INTEGER',newRuleCriteria.Field_Type__c == 'CURRENCY'),newRuleCriteria.Criteria_Type__c == 'Between'),false,true)}">
+                        <apex:inputText value="{!CValue}"
+                            rendered="{!OR(newRuleCriteria.Field_Type__c == 'ID',newRuleCriteria.Field_Type__c == 'STRING',newRuleCriteria.Field_Type__c == 'ADDRESS',newRuleCriteria.Field_Type__c == 'URL',newRuleCriteria.Field_Type__c == 'PHONE')}"
+                            styleclass="criteriaVal" />
+                        <apex:input type="date" value="{!CValue}"
+                            rendered="{!(newRuleCriteria.Field_Type__c == 'DATE')}"
+                            styleclass="criteriaVal" />
+                        <apex:input type="datetime-local" value="{!CValue}"
+                            rendered="{!(newRuleCriteria.Field_Type__c == 'DATETIME')}"
+                            styleclass="criteriaVal" />
+                        <!-- 
+                    <apex:inputText value="{!CValue}" rendered="{!(newRuleCriteria.Field_Type__c == 'DATE')}"/> 
+                    -->
+                        <apex:inputText value="{!CValue}"
+                            rendered="{!(newRuleCriteria.Field_Type__c == 'CURRENCY')}"
+                            styleclass="criteriaVal" />
+                        <apex:inputCheckbox value="{!CValue}"
+                            rendered="{!(newRuleCriteria.Field_Type__c == 'BOOLEAN')}"
+                            styleclass="criteriaVal" />
+                        <apex:input type="text" value="{!CValue}"
+                            rendered="{!IF(OR(newRuleCriteria.Field_Type__c == 'INTEGER',newRuleCriteria.Field_Type__c == 'NUMBER',newRuleCriteria.Field_Type__c == 'DOUBLE'),true,false)}"
+                            styleclass="criteriaVal" />
+
+                        <apex:selectList value="{!CValue}" size="1"
+                            rendered="{!(newRuleCriteria.Field_Type__c == 'PICKLIST')}"
+                            styleclass="criteriaVal">
+                            <apex:selectOptions value="{!ValuePickList}" />
+                        </apex:selectList>
+
+                        <apex:outputPanel rendered="{!(newRuleCriteria.Field_Type__c == 'REFERENCE')}">
+                            <apex:inputText value="{!CValue}"
+                                rendered="{!(newRuleCriteria.Field_Type__c == 'REFERENCE')}"
+                                id="searchStr" maxlength="18" size="20" styleclass="criteriaVal" />
+                            <a href="#" id="acc3_lkwgt"
+                                onclick="openLookupPopup('{!JSENCODE(newRuleCriteria.Related_Object__c)}');"
+                                tabindex="2" title="Parent Account Lookup (New Window)"
+                                style="text-decoration: none;"> <img src="/s.gif"
+                                alt="Parent Account Lookup (New Window)" class="lookupIcon"
+                                onblur="this.className = 'lookupIcon';"
+                                onfocus="this.className = 'lookupIconOn';"
+                                onmouseout="this.className = 'lookupIcon';this.className = 'lookupIcon';"
+                                onmouseover="this.className = 'lookupIconOn';this.className = 'lookupIconOn';"
+                                title="Parent Account Lookup (New Window)" />
+                            </a>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem id="minValId"
+                    rendered="{!IF(AND(OR(newRuleCriteria.Field_Type__c == 'DATE',newRuleCriteria.Field_Type__c == 'DATETIME',newRuleCriteria.Field_Type__c == 'NUMBER',newRuleCriteria.Field_Type__c == 'DOUBLE',newRuleCriteria.Field_Type__c == 'INTEGER',newRuleCriteria.Field_Type__c == 'CURRENCY'),newRuleCriteria.Criteria_Type__c == 'Between'),true,false)}">
+                    <apex:outputLabel value="Minimum Value"></apex:outputLabel>
+                    <apex:outputPanel >
+                        <apex:input styleClass="minimumValCls"
+                            type="{!IF(AND(newRuleCriteria.Field_Type__c == 'DATE',newRuleCriteria.Criteria_Type__c == 'Between'),'date','text')}"
+                            value="{!MinValue}" onchange="validateDate();"
+                            rendered="{!IF(newRuleCriteria.Field_Type__c == 'DATETIME',false,true)}" />
+                        <apex:input type="datetime-local" styleClass="minimumValCls"
+                            rendered="{!AND(newRuleCriteria.Field_Type__c == 'DATETIME',newRuleCriteria.Criteria_Type__c == 'Between')}"
+                            value="{!MinValue}" onchange="validateDate();" />
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem id="maxValId"
+                    rendered="{!IF(AND(OR(newRuleCriteria.Field_Type__c == 'DATE',newRuleCriteria.Field_Type__c == 'DATETIME',newRuleCriteria.Field_Type__c == 'NUMBER',newRuleCriteria.Field_Type__c == 'DOUBLE',newRuleCriteria.Field_Type__c == 'INTEGER',newRuleCriteria.Field_Type__c == 'CURRENCY'),newRuleCriteria.Criteria_Type__c == 'Between'),true,false)}">
+                    <apex:outputLabel value="Maximum Value"></apex:outputLabel>
+                    <apex:outputPanel >
+                        <apex:input styleClass="maximumValCls"
+                            type="{!IF(AND(OR(newRuleCriteria.Field_Type__c == 'DATE',newRuleCriteria.Field_Type__c == 'DATETIME'),newRuleCriteria.Criteria_Type__c == 'Between'),'date','text')}"
+                            value="{!MaxValue}" onchange="validateDate();"
+                            rendered="{!newRuleCriteria.Field_Type__c != 'DATETIME'}" />
+                        <apex:input type="datetime-local" styleClass="maximumValCls"
+                            rendered="{!AND(newRuleCriteria.Field_Type__c == 'DATETIME',newRuleCriteria.Criteria_Type__c == 'Between')}"
+                            value="{!MaxValue}" onchange="validateDate();" />
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+
+                <!-- 
+            <apex:inputField id="minValId" value="{!newRuleCriteria.Minimum_Value__c}" rendered="{!IF(AND(newRuleCriteria.Field_Type__c == 'DATE',newRuleCriteria.Criteria_Type__c == 'Between'),true,false)}"/>
+            <apex:inputField id="maxValId" value="{!newRuleCriteria.Maximum_Value__c}" rendered="{!IF(AND(newRuleCriteria.Field_Type__c == 'DATE',newRuleCriteria.Criteria_Type__c == 'Between'),true,false)}"/>  
+            -->
+
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        <apex:actionFunction name="RelatedfieldNamesList"
+            action="{!getRelatedObjectName}" reRender="fieldPanel,msgId"></apex:actionFunction>
+
+        <apex:actionFunction name="saveRecord" action="{!saveRuleCriteria}"
+            reRender="frm">
+
+        </apex:actionFunction>
+
+        <apex:actionFunction name="checkMinMaxVal"
+            reRender="minValId,maxValId,frm" />
+        <!--
+     <apex:actionRegion >
+       <apex:actionFunction name="fieldNamesList" action="{!getFieldNames}" reRender="fieldPanel">
+        <apex:param assignTo="{!parentName}" value="" name="parentName"/>
+        </apex:actionFunction>
+     </apex:actionRegion>
+     -->
+        <apex:actionRegion >
+            <apex:actionFunction name="setRuleType" reRender="objectTypeId" />
+        </apex:actionRegion>
+        <apex:actionRegion >
+            <apex:actionFunction name="setFieldApiName"
+                action="{!setFieldApiName}"
+                reRender="fieldApiPanel,fieldTypeApiPanel,fieldTypePanel,fieldRelatedObjectPanel,fieldValuePanel,minValId,maxValId,frm">
+                <apex:param assignTo="{!fieldType}" value="" name="fieldName" />
+            </apex:actionFunction>
+        </apex:actionRegion>
+
+        <script>
+ 
+    j$=jQuery.noConflict();
+        
+    var newWin;
+    function openLookupPopup(ObjectName){ 
+        var criteriaValue = j$(".criteriaVal").val();
+        var url;
+       // alert(ObjectName);
+        url ="/apex/ObjectLookup?oName="+ObjectName+"&searchStr="+criteriaValue+"&displayType=Single";
+        newWin=window.open(url, 'Popup','height=500,width=650,left=400,top=150,resizable=no,scrollbars=yes,toolbar=no,status=no');
+        return false;
+    }
+     
+    function closeLookupPopup(type){
+        
+       if (null!=newWin)
+       {
+          newWin.close();
+       }
+       //alert('obj type is ----> '+type+'---'+newWin);
+       callBackFunction();
+    }
+    
+    function validateDate()
+    {
+        var maximumValue = j$(".maximumValCls").val();
+        var minimumValue = j$(".minimumValCls").val();
+        var flag = 'false';
+        
+        if(minimumValue != ''&& maximumValue != '' && minimumValue > maximumValue)
+        {
+            //alert(minimumValue +'---'+maximumValue);
+            alert('Minimum value should be less than Maximum value.');
+        }
+        
+    } 
+    
+    
+    function checkCriteriaType()
+    {
+        var criteriaTypeValue = j$(".criteriaTypeCls").val();
+        var fieldTypeValue ;
+        
+        var spanElem = document.getElementsByTagName("span");
+        for(var i=0; i<spanElem.length; i++)
+        {
+            if(spanElem[i].id.indexOf("fieldTypeId") != -1)
+            {
+                fieldTypeValue = spanElem[i].innerHTML;
+            }
+        }
+
+        //alert(criteriaTypeValue +'-----'+fieldTypeValue);
+        if(criteriaTypeValue != '' && criteriaTypeValue != null && fieldTypeValue != '' && fieldTypeValue != null)
+        {
+            if((fieldTypeValue == 'CURRENCY' || fieldTypeValue == 'INTEGER' || fieldTypeValue == 'DOUBLE' || fieldTypeValue == 'NUMBER' || fieldTypeValue == 'DATE' || fieldTypeValue == 'DATETIME') && (criteriaTypeValue == 'Contains' || criteriaTypeValue == 'Does Not Contain' || criteriaTypeValue == 'Starts With' || criteriaTypeValue == 'Ends With'))
+            {
+                alert('Crtiteria Type can not be "'+criteriaTypeValue+'" for "'+fieldTypeValue+'" type of field.');
+            }
+            else if((fieldTypeValue == 'PICKLIST' || fieldTypeValue == 'REFERENCE' || fieldTypeValue == 'BOOLEAN') && (criteriaTypeValue != 'Equals' && criteriaTypeValue != 'Not Equal To'))
+            {
+                alert('Crtiteria Type can not be "'+criteriaTypeValue+'" for "'+fieldTypeValue+'" type of field.');
+            }
+            else if(( fieldTypeValue == 'STRING' || fieldTypeValue == 'ID' || fieldTypeValue == 'ADDRESS' || fieldTypeValue == 'URL' || fieldTypeValue == 'PHONE') && (criteriaTypeValue == 'Greater Than' || criteriaTypeValue == 'Greater Or Equal' || criteriaTypeValue == 'Less Than' || criteriaTypeValue == 'Less Or Equal' || criteriaTypeValue == 'Between' ))
+            {
+                alert('Crtiteria Type can not be "'+criteriaTypeValue+'" for "'+fieldTypeValue+'" type of field.');
+            }
+            
+            
+        }
+    } 
+    
+    </script>
+    </apex:form>
+</apex:page>

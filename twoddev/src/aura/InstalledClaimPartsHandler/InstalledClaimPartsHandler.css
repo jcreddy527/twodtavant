@@ -1,0 +1,18 @@
+.THIS {
+}
+.THIS .slds-modal__header {
+    position: relative;
+    border-top-right-radius: 0.25rem;
+    border-top-left-radius: 0.25rem;
+    border-bottom: 2px solid #d8dde6;
+    padding: 0rem 0rem;
+    text-align: center;
+}
+.THIS .slds-modal__footer {
+    border-top: 2px solid #d8dde6;
+    border-bottom-right-radius: 0.25rem;
+    border-bottom-left-radius: 0.25rem;
+    padding: 0.00rem 1rem;
+    background-color: #f4f6f9;
+    text-align: right;
+}

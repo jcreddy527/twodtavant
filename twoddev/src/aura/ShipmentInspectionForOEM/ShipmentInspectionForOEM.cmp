@@ -1,0 +1,147 @@
+<!--/////////////////////////////////////
+
+Copyright � 2016  Tavant Technology Inc
+Name - ShipmentInspection
+Purpose - component for shipment inspection
+Date - 12/27/2016
+Last Edited by - AMAN SAWHNEY
+
+/////////////////////////////////////-->
+
+<aura:component extends="c.CruderCmp" >
+    <ltng:require styles="/resource/slds212/assets/styles/salesforce-lightning-design-system.css" />
+    <aura:attribute name="shipmentInspectionHeading" type="String" default="{!$Label.c.Inspect_Shipment}"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="shipmentObjectList" type="sobject[]"/>
+    <aura:attribute name="shipmentObject" type="sobject" default="{
+                                                                  'sobjectType' : 'Shipment_Detail__c',
+                                                                  }"/>
+    <aura:attribute name="shipmentId" type="String" default="a0a28000002Q0uY"/>
+    <aura:attribute name="isPageLoaded" type="Boolean" default="false"/>
+    <aura:attribute name="claimShipmentPartList" type="sobject[]"/>
+    <aura:attribute name="BaseURL" type="String"/>
+    <aura:attribute name="error" type="Object"/>
+    <aura:attribute name="actionSpinner" type="Boolean" default="false"/>
+    <aura:attribute name="shipmentInspectionDate" type="Date"/>
+    <aura:handler name="change" value="{!v.shipmentInspectionDate}" action="{!c.shipmentInspectionDateChangeHandeler}"/>
+    
+    
+    <aura:if isTrue="{!(!v.isPageLoaded)}">
+        <lightning:spinner variant="brand" size="large"/>
+    </aura:if>
+    <aura:if isTrue="{!(v.actionSpinner)}">
+        <lightning:spinner variant="brand" size="large"/>
+    </aura:if>
+    {!v.body}
+    <div class="main-body">
+        <header class="slds-text-heading--large slds-align--absolute-center header">
+            {!v.shipmentInspectionHeading}
+        </header>
+        <div class="containerC">
+            <div class=".removepart-container">
+                <div class="form">
+                    <div class="form-body">
+                        <div class="slds-grid  slds-wrap">
+                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--xx-small">
+                                <ui:inputText label="{!$Label.c.ShipmentName}" value="{!v.shipmentObject.Name}" disabled="true" class="slds-input output"/>
+                            </div>
+                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--xx-small">
+                                <ui:inputText label="{!$Label.c.Return_Location}" value="{!v.shipmentObject.Return_Location__r.Name}" disabled="true" class="slds-input output"/>
+                            </div>
+                        </div>
+                        <div class="slds-grid  slds-wrap">
+                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--xx-small">
+                                <ui:inputDate label="{!$Label.c.Shipment_Date}" value="{!v.shipmentObject.Shipment_Date__c}" disabled="true" class="slds-input output"/>
+                            </div>
+                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--xx-small">
+                                <ui:inputText label="{!$Label.c.TrackingNumber}" value="{!v.shipmentObject.Tracking_Number__c}" disabled="true" class="slds-input output"/>
+                            </div>
+                        </div>
+                        <div class="slds-grid  slds-wrap">
+                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--xx-small">
+                                <ui:inputDate aura:id="receiveDate" label="{!$Label.c.Shipment_Received_Date}" value="{!v.shipmentObject.Shipment_Received_Date__c}"  class="slds-input required" disabled="true"/>
+                            </div>
+                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--xx-small">
+                                <ui:inputText aura:id="receiveComment" label="{!$Label.c.Receiver_Comments}" value="{!v.shipmentObject.Receiver_Comments__c}"  class="slds-input required" disabled="true"/>
+                            </div>                                    
+                        </div>
+                        <div class="slds-grid  slds-wrap">
+                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--xx-small">
+                                <ui:inputDate aura:id="inspectionDate" label="{!$Label.c.Shipment_Inspection_Date}" value="{!v.shipmentInspectionDate}"  class="slds-input required" displayDatePicker="true" disabled="false"/>
+                                <aura:if isTrue="{!v.error.fieldError.inspectionDate!=''}">
+                                    <div class="field-error">
+                                        {!v.error.fieldError.inspectionDate}
+                                    </div> 
+                                </aura:if>
+                            </div>
+                           <!--  <div class="slds-size- -12-of-12 slds-medium-size- -6-of-12 slds-large-size- -6-of-12 slds-p-around- -xx-small">
+                                 <ui:inputText aura:id="inspectComment" label="{!$Label.c.Inspection_Comment}" value="{!v.shipmentObject.Inspection_Comments__c}"  class="slds-input required" disabled="false"/> 
+                              <aura:iteration items="{!v.claimShipmentPartList}" var="individualClaimPart" indexVar="index">
+                                <ui:inputText aura:id="inspectionComment" label="{!$Label.c.Inspection_Comment}" labelClass="{!index}" value="{!individualClaimPart.Inspection_Comments__c}" change="{!c.fillComments}" class="slds-input required"/>
+                                </aura:iteration> 
+
+                            </div>-->
+                        </div>                         
+                    </div>
+                    <div class="form-break" />
+                    <div class="form-heading">{!$Label.c.Received_Part_Infromation}</div>
+                    <div class="form-body">
+                        <div class="parts-container">
+                            <!---table content-->
+                            <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                                <thead class="form-heading">
+                                    <tr class="slds-text-title--caps">
+                                        <th scope="col" class="slds-is-resizable">
+                                            <div class="slds-resizable" title="{!$Label.c.Part_Number}">{!$Label.c.Part_Number}</div> 
+                                        </th>
+                                        <th scope="col" class="slds-is-resizable">
+                                            <div class="slds-resizable" title="{!$Label.c.Serial_Number}">{!$Label.c.Serial_Number}</div>
+                                            
+                                        </th>
+                                        <th scope="col" class="slds-is-resizable">
+                                            <div class="slds-resizable" title="{!$Label.c.Received_Quantity}">{!$Label.c.Received_Quantity}</div>
+                                        </th>
+                                        <th scope="col" class="slds-is-resizable">
+                                            <div class="slds-resizable" title="{!$Label.c.Inspection_Comment}">{!$Label.c.Inspection_Comment}</div> 
+                                        </th> 
+                                    </tr>
+                                </thead>
+                                
+                                <tbody class="font-large">
+                                    <aura:iteration items="{!v.claimShipmentPartList}" var="individualClaimPart" indexVar="index">
+                                        <tr>
+                                            <td data-label="{!$Label.c.Part_Number}" class="slds-cell-wrap">
+                                                <aura:if isTrue="{!individualClaimPart.Removed_Claim_Part__r.Warranty_Product__c!=null}">
+                                                    <div title="{!$Label.c.Part_Number}">{!individualClaimPart.Removed_Claim_Part__r.Warranty_Product__r.Name}</div> 
+                                                </aura:if>
+                                                <aura:if isTrue="{!individualClaimPart.Removed_Claim_Part__r.Inventory__c!=null}">
+                                                    <div title="{!$Label.c.Part_Number}">{!individualClaimPart.Removed_Claim_Part__r.Inventory__r.Item__r.Name}</div> 
+                                                </aura:if> 
+                                            </td>
+                                            <td data-label="{!$Label.c.Serial_Number}" class="slds-cell-wrap">
+                                                <div title="{!$Label.c.Serial_Number}">{!individualClaimPart.Removed_Claim_Part__r.Inventory__r.Name}</div> 
+                                            </td>  
+                                            <td data-label="{!$Label.c.Received_Quantity}" class="slds-cell-wrap">
+                                                <div title="{!$Label.c.Received_Quantity}">{!individualClaimPart.Quantity__c}</div>
+                                            </td>  
+                                            <td data-label="{!$Label.c.Inspection_Comment}" class="slds-cell-wrap">
+                                                <div title="{!$Label.c.Inspection_Comment}">
+                                                    <ui:inputText aura:id="inspectionComment" labelClass="{!index}" value="{!individualClaimPart.Inspection_Comments__c}" change="{!c.fillComments}" class="slds-input required"/></div>
+                                            </td> 
+                                        </tr>
+                                    </aura:iteration>
+                                    
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="padder">
+                            <ui:button aura:id="cancelInspectionButton" class="slds-button slds-button--destructive" label="{!$Label.c.Cancel}" press="{!c.CancelinspectShipment}"/>
+                            <ui:button aura:id="createInspectionButton" class="slds-button slds-button--brand" label="{!$Label.c.Inspect}" press="{!c.inspectShipment}"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</aura:component>

@@ -1,0 +1,83 @@
+<aura:component extends="c:GenericCrudComponent">
+<ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" />
+
+
+<aura:attribute name="RecoveryClaim" type="sObject"  default="{'sobjectType':'Supplier_Recovery_Claim__c', 'Id' : null }"/>  
+<aura:attribute name="RecoveryClaimId" type="String"  />    
+<aura:attribute name="baseURL" type="String"  /> 
+<aura:attribute name="ShowComponentforApprove" type="String"  />
+<aura:attribute name="ShowComponentforDispute" type="String"  />
+<aura:attribute name="MinimumRecovarablePercentageAmount" type="Integer"  /> 
+<aura:attribute name="UpdatedApprovedAmount" type="Integer"  />
+<aura:attribute name="PageError" type="String" default="" />    
+<aura:attribute name="RecoveryClaimURL" type="String" default="" />
+   
+<aura:handler name="init" value="{!this}" action="{!c.doInit}"></aura:handler>    
+
+    <c:container class="demo-container" size="small" align="center">     
+            <div  class="slds-container--center slds-container--small claim-form ">
+                <h2 class="slds-text-heading--medium">{!$Label.c.EditRecoveryClaim}</h2>
+              
+      
+                    <div class="slds-form--stacked slds-p-around--medium slds-m-bottom--x-small">
+                        <div class="slds-form-element">
+                            <label class="slds-form-element__label" for="inputNameSample1">{!$Label.c.RecoveryClaimName}</label>
+                            <div class="slds-form-element__control">
+                              <a href="{!v.RecoveryClaimURL}">  <ui:outputText value="{!v.RecoveryClaim.Name}"  /></a>
+
+                            </div>
+                        </div>
+                        <div class="slds-form-element">
+                            <label class="slds-form-element__label" for="inputNameSample2">{!$Label.c.ApprovedClaimCost}</label>
+                            <div class="slds-form-element__control">
+                                <ui:inputCurrency aura:id="inputAmount"    change="{!c.ApprovedAmountChange}" class="slds-input" placeholder="{!v.RecoveryClaim.Total_Approved_Amount__c}" />
+                            </div>
+                        </div>
+                       
+                    </div>
+                    
+                    
+                    <aura:if isTrue="{!v.PageError != ''}" >
+                        <ui:message title="Info" severity="info" closable="false">
+                           {!v.PageError}
+                        </ui:message>
+                    </aura:if>
+                    
+              
+                    <h3 class="slds-section-title--divider">{!$Label.c.CommentsSection}</h3>
+                    <div class="slds-form--stacked slds-p-around--medium slds-m-bottom--x-small">
+                        <div class="slds-form-element">
+                            <label class="slds-form-element__label" for="inputSample3">{!$Label.c.EnterComment}</label>
+                            <div class="slds-form-element__control">
+                                <ui:inputTextArea rows="6" value="{!v.RecoveryClaim.Comments__c}"/>
+
+                            </div>
+                        </div>
+                    </div>
+               	
+                <div class="row">
+                    <div class="col">
+                        <a  href="{!v.RecoveryClaimURL}"><button class="buttonclass slds-button slds-button--brand" >Go Back</button></a>
+                    </div>
+                    <div class="col">
+                        <SPAN>
+                        <aura:if isTrue="{!v.ShowComponentforApprove == 'Approve'}">
+                        <button class="slds-button slds-button--neutral slds-button--small slds-button--brand"  onclick = "{!c.ApproveRecord}" >Approve</button>
+                        </aura:if>
+                        </SPAN>    
+                        
+                        <SPAN>
+                        <aura:if isTrue="{!v.ShowComponentforDispute == 'Dispute'}">
+                        <button class="slds-button slds-button--neutral slds-button--small slds-button--brand" onclick = "{!c.DisputeRecord}">Dispute</button>
+                        </aura:if>
+                        </SPAN>    
+                        
+                    </div>
+                   
+             	</div>
+            </div>
+    
+
+    
+  </c:container> 
+</aura:component>

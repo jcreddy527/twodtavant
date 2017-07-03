@@ -1,0 +1,101 @@
+<aura:component extends="c:GenericComponent">
+
+    <aura:attribute name="nonOEMPart" type="sObject" default="{
+                                                                       'sobjectType': 'Claim_Part__c',
+                                                                       'Name': '',
+                                                                 	   'Warranty_Product_Pricebook__c':'a0T15000007xbkv',
+                                                                 	   'Type__c':'Installed Part'
+                                                                       }" />
+   <aura:attribute name="tempInstalledPart" type="sObject" default="{
+                                                                        'sobjectType': 'Claim_Part__c',
+                                                                        'Name': '',
+                                                                        'Warranty_Product_Pricebook__c':'a0T15000007xbkv',
+                                                                    	'Type__c':'Installed Part'
+                                                                       }" />
+    <aura:attribute name="claimId" 				type="string" default=""/>
+
+
+
+    <aura:attribute name="isNewRecord"			type="boolean" default="false"/>
+    <aura:attribute name="tempInvId" 		    type="string" />
+    <aura:attribute name="tempPartId" 		  type="string" />
+    <aura:attribute name="costValue" 		    type="Integer" />
+    <aura:attribute name="isShowInv" 			type="Boolean" />
+    <aura:attribute name="BaseURL" type="String" default=""/>
+    <aura:attribute name="recordTypeId"		type="String"		default=""/>
+
+    <aura:attribute name="isUpdateRemovedPart"	type="boolean" default="false"/>
+
+    <aura:attribute name="dmlErrors" 			type="String[]" 				default="" />
+    <aura:handler name="init" 					value="{!this}" 				action="{!c.doInit}"/>
+
+    <aura:attribute name="isUpdateInventoryId"	type="String" default="false"/>
+    <aura:attribute name="showSpinner" 			type="Boolean" default="true"/>
+  
+    <c:container class="demo-container" size="large" align="center">
+        <aura:if isTrue="{!v.dmlErrors.length > 0}" >
+            <SPAN>
+                <ui:message title="Error" severity="error" closable="false">
+                    <aura:iteration items="{!v.dmlErrors}" var="item">
+                        {!item} <br/>
+                    </aura:iteration>
+                </ui:message>
+            </SPAN>
+        </aura:if>
+        <form class="slds-form--stacked">
+
+            <div class="slds-form-element slds-is-required">
+                <div class="slds-form-element__control">
+                    <ui:inputText aura:id="partName" label="Non-OEM Part Name"
+                                  class="slds-input"
+                                  labelClass="slds-form-element__label"
+                                  value="{!v.nonOEMPart.Name}"
+                                  required="true"/>
+                </div>
+            </div>
+            <div class="slds-form-element slds-is-required">
+                <div class="slds-form-element__control">
+                    <ui:inputText aura:id="description" label="Description"
+                                  class="slds-input"
+                                  labelClass="slds-form-element__label"
+                                  value="{!v.nonOEMPart.Miscellaneous_Part_Name__c}"
+                                  required="true"/>
+                </div>
+            </div>
+            <div class="slds-form-element slds-is-required">
+                <div class="slds-form-element__control">
+                    <ui:inputCurrency aura:id="price" label="Custom Part Cost"
+                                  class="slds-input"
+                                  labelClass="slds-form-element__label"
+                                  value="{!v.nonOEMPart.Custom_Part_Cost__c}"
+                                  required="true"/>
+                </div>
+            </div>
+
+
+            <div class="slds-form-element slds-is-required">
+                <div class="slds-form-element__control">
+                    <ui:inputNumber aura:id="quantity" label="Quantity"
+                                  class="slds-input"
+                                  labelClass="slds-form-element__label"
+                                  value="{!v.nonOEMPart.Quantity__c}"
+                                  required="true"
+                                  />
+                </div>
+            </div>
+
+
+
+            <div>
+                <center>
+                <br />
+                <div class="slds-x-small-buttons--horizontal">
+                    <button class="slds-button slds-button--neutral" onclick = "{!c.changeModalClose}" >Cancel</button>
+                  	<button class="slds-button slds-button--neutral" onclick = "{!c.saveRecord}" >Save</button>
+                </div>
+                </center>
+            </div>
+
+        </form>
+    </c:container>
+</aura:component>

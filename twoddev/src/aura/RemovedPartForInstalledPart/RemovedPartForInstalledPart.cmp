@@ -1,0 +1,50 @@
+<aura:component extends="c:GenericComponent">
+    <aura:attribute name="claimId"				type="String"/>
+    <aura:attribute name="removedPartId"		type="String"/>
+    <aura:attribute name="removedPartIds"		type="String[]"/>
+    <aura:attribute name="inventoryId" 			type="string" />
+    <aura:attribute name="inventoryName" 		type="string" />
+    <aura:attribute name="inventoryError" 		type="string" />
+    <aura:attribute name="removedPart" 			type="sObject" />
+    <aura:attribute name="tempInvId" 			  type="String" />
+    <aura:attribute name="tempInventoryId"  type="String" />
+    <aura:attribute name="tempPartId" 			type="String" />
+    <aura:attribute name="isShowInv" 			type="Boolean"/>
+    <aura:attribute name="assetType" 			type="String"  default="Warrantable"/>
+    <aura:attribute name="trackType" 			type="String"  default="Non-Serialized"/>
+    <aura:attribute name="avoidIds" 			type="String[]" />
+    <aura:attribute name="inventoriesToAvoid" 			 type="String[]" />
+    <aura:attribute name="dmlErrors" 			type="String[]" 				default="" />
+    <aura:handler name="init" 					  value="{!this}" 				action="{!c.doInit}"/>
+
+    <aura:if isTrue="{!v.dmlErrors.length > 0}" >
+      <ui:message title="Error" severity="error" closable="false">
+                <aura:iteration items="{!v.dmlErrors}" var="item">
+                    {!item} <br/>
+                </aura:iteration>
+      </ui:message>
+    </aura:if>
+
+    <aura:if isTrue="{!v.isShowInv}">
+        <div class="slds-form-element slds-is-required">
+            <div class="slds-form-element__control">
+                <span class="slds-form-element__label">{!$Label.c.Inventory_for_Removed_Part}</span>
+                <c:LookupForInventory claimId="{!v.claimId}" inventoryIdToRemove="{!v.tempInventoryId}" avoidIds="{!v.avoidIds}" aura:id="inventoryId" condition="{!' Asset_Type__c =' + '\''+ v.assetType +'\'' + ' AND ID  !=' +'\'' + v.tempInvId+'\''}"  value="{!v.inventoryId}"	labelVal="Inventory" selectedValue="{!v.inventoryName}" selectedId="{!v.inventoryId}" selSobject="Inventory__c" QuerySOQL="Select Id,Name from Inventory__c"/>
+                <!-- <c:LookupWithoutSpinner aura:id="inventoryId" condition="{!' Asset_Type__c =' + '\''+ v.assetType +'\'' + ' AND ID  !=' +'\'' + v.tempInvId+'\''}"  value="{!v.inventoryId}"	labelVal="Inventory" selectedValue="{!v.inventoryName}" selectedId="{!v.inventoryId}" selSobject="Inventory__c" QuerySOQL="Select Id,Name from Inventory__c"/>  -->
+                <ul class="has-error uiInputDefaultError uiInput uiInputText uiInput--default uiInput--input" id="40:c" data-aura-rendered-by="1:1;0">
+                    <li class="form-element__help" data-aura-rendered-by="4:1;0">
+                        <ui:outputText class="form-element__help" value="{!v.inventoryError}"/>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </aura:if>
+
+    <div class="slds-modal__footer">
+        <div class="slds-x-small-buttons--horizontal">
+            <button class="slds-button slds-button--neutral" onclick = "{!c.changeModalClose}" >{!$Label.c.Cancel}</button>
+            <button class="slds-button slds-button--neutral" onclick = "{!c.saveRecord}" >{!$Label.c.Save}</button>
+        </div>
+    </div>
+
+</aura:component>

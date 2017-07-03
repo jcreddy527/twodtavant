@@ -1,0 +1,61 @@
+<apex:page standardController="Service_Campaign__c"
+    extensions="UploadCampMemberController" tabStyle="Service_Campaign__c"
+    showHeader="true" sidebar="false">
+    <!--====================================================================-->
+    <!--Name: CoreUploadCampMembers                                          -->
+    <!--Copyright © 2014 Tavant Technology Inc                              -->
+    <!--====================================================================-->
+    <!--====================================================================-->
+    <!-- Purpose: Page to upload campaign members for service campaign      -->
+    <!--                                                                    -->
+    <!--====================================================================-->
+    <!--====================================================================-->
+    <!-- History                                                            -->
+    <!-- -------                                                            -->
+    <!-- VERSION  AUTHOR           DATE              DETAIL                 -->
+    <!--   1.0 -  Neethu           04-11-2014        INITIAL DEVELOPMENT    -->
+    <!--====================================================================-->
+
+    <apex:pageMessages />
+    <apex:sectionHeader subtitle="Upload Campaign Members"
+        title="Service Campaign" />
+    <apex:form id="theForm">
+
+        <apex:pageBlock rendered="{!NOT(sCampaign.Status__c= 'Active')}">
+
+            <apex:pageBlockButtons >
+                <apex:commandButton action="{!uploadFile}" value="Upload"
+                    rendered="{!$ObjectType.Campaign_Members__c.Createable}" />
+                <apex:commandButton action="{!cancel}" value="Cancel"
+                    immediate="true" />
+            </apex:pageBlockButtons>
+
+            <apex:pageBlockSection showHeader="false" columns="2" id="block1">
+                <apex:repeat value="{!fieldSetList}" var="sc">
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!sc.Label}" for="slNumber" />
+                        <apex:outputField value="{!sCampaign[sc]}" id="slNumber" />
+                    </apex:pageBlockSectionItem>
+                </apex:repeat>
+                <apex:outputField value="{!sCampaign.Upload_Template__c}" />
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection showHeader="false" columns="2" id="block2">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="File" for="file" />
+                    <apex:inputFile value="{!contentFile}" filename="{!nameFile}"
+                        id="file" />
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+
+        </apex:pageBlock>
+
+        <apex:pageBlock rendered="{!sCampaign.Status__c= 'Active'}">
+            <center>
+                <apex:commandButton action="{!cancel}" value="Cancel"
+                    immediate="true" />
+            </center>
+        </apex:pageBlock>
+
+    </apex:form>
+</apex:page>

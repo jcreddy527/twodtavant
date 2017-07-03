@@ -1,0 +1,356 @@
+<aura:component extends="c:GenericComponent" implements="flexipage:availableForAllPageTypes,force:hasRecordId">
+    <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" />
+    <aura:attribute name="claimId" 				type="String" />
+    <aura:attribute name="isSysAdmin"			type="boolean"/>
+    <aura:attribute name="isNonSerialized"		type="boolean"/>
+    <aura:attribute name="warrantyProductName"	type="string"/>
+    <aura:attribute name="causalPartName"		type="string"/>
+    <aura:attribute name="dealerName"			type="string"/>
+    <aura:attribute name="policyName"			type="string"/>
+    <aura:attribute name="faultCode"			type="string"/>
+    <aura:attribute name="casualPartNumber"		type="string"/>
+    <aura:attribute name="inventoryName"		type="string"/>
+    <aura:attribute name="campaignMembers"		type="string"/>
+    <aura:attribute name="claimRecord"			type="Claim__c" default="{ 'sobjectType': 'Claim__c',
+                                                                            'Name': '',
+                                                                         	'Account__c':'',
+                                                                         	'Inventory__c':'',
+                                                                         	'Total_Labor_Cost__c':0.00,
+                                                                         	'Final_Labor_Cost__c':0.00
+
+                                                                           }"	/>
+
+
+    <div class="slds-form-element">
+        <div class="slds-form-element__label slds-text-heading--small slds-theme--shade" style="width:100%">{!$Label.c.ClaimPageTab1}</div>
+        <br/>
+        <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--1">
+            	<label class="slds-form-element__helper">Dealer</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--2">
+                <ui:outputText class="form-element__help" value="{!v.dealerName}"/>
+            </div>
+            <aura:if isTrue="{!v.isNonSerialized  == false }">
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--3">
+                    <label class="slds-form-element__helper">Inventory</label>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--4">
+                    <ui:outputText class="form-element__help" value="{!v.inventoryName}"/>
+                </div>
+            </aura:if>
+            <aura:if isTrue="{!v.isNonSerialized}">
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--3">
+                    <label class="slds-form-element__helper">Warranty Product</label>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--4">
+                    <ui:outputText class="form-element__help" value="{!v.warrantyProductName}"/>
+                </div>
+            </aura:if>
+        </div>
+
+        <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--1">
+            	<label class="slds-form-element__helper">Serial Number</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--2">
+                <ui:outputText class="form-element__help" value="{!v.claimRecord.Serial_Number__c}"/>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--3">
+            	<label class="slds-form-element__helper">Applicable Policy</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--4">
+                <ui:outputText class="form-element__help" value="{!v.policyName}"/>
+            </div>
+        </div>
+
+        <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--1">
+            	<label class="slds-form-element__helper">Date of Failure</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--2">
+                <ui:outputDate class="form-element__help" value="{!v.claimRecord.Date_of_Failure__c}"/>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--3">
+            	<label class="slds-form-element__helper">Date of Repair</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--4">
+                <ui:outputDate class="form-element__help" value="{!v.claimRecord.Date_of_Repair__c}"/>
+            </div>
+        </div>
+        <br/>
+        <div class="slds-form-element__label slds-text-heading--small slds-theme--shade" style="width:100%">{!$Label.c.FaultCode_CasualPart}</div>
+        <br/>
+         <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--1">
+            	<label class="slds-form-element__helper">Fault Code</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--2">
+                <ui:outputText class="form-element__help" value="{!v.faultCode}"/>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--3">
+            	<label class="slds-form-element__helper">Causal Part Number</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--4">
+                <ui:outputText class="form-element__help" value="{!v.causalPartName}"/>
+            </div>
+        </div>
+        <br/>
+        <div class="slds-form-element__label slds-text-heading--small slds-theme--shade" style="width:100%">{!$Label.c.Additional_Info}</div>
+        <br/>
+        <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--1">
+            	<label class="slds-form-element__helper">Request SMR</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--2">
+                <ui:outputCheckbox class="form-element__help" value="{!v.claimRecord.Request_SMR__c}"/>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--3">
+            	<label class="slds-form-element__helper">Claim Parts Pending Approval</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--4">
+                <ui:outputText class="form-element__help" value="{!v.claimRecord.Claim_Parts_Pending_Approval__c}"/>
+            </div>
+        </div>
+
+        <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--1">
+            	<label class="slds-form-element__helper">SMR Reason</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--2">
+                <ui:outputText class="form-element__help" value="{!v.claimRecord.SMR_Reason__c}"/>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--3">
+            	<label class="slds-form-element__helper">Override Policy</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--4">
+                <ui:outputCheckbox class="form-element__help" value="{!v.claimRecord.Override_Policy__c}"/>
+            </div>
+        </div>
+        <div class="slds-form-element__label slds-text-heading--small slds-theme--shade" style="width:100%">{!$Label.c.Cost_Category}</div>
+        <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--1">
+            	<label class="slds-form-element__helper">Travel By Hours</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--2">
+                <ui:outputNumber class="form-element__help" value="{!v.claimRecord.TravelByHours__c}"/>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--3">
+            	<label class="slds-form-element__helper">Travel By Distance</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--4">
+                <ui:outputNumber class="form-element__help" value="{!v.claimRecord.TravelByDistance__c}"/>
+            </div>
+        </div>
+
+        <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--1">
+            	<label class="slds-form-element__helper">Total Labor Cost</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--2">
+                <ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Total_Labor_Cost__c}"/>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--3">
+            	<label class="slds-form-element__helper">Final Labor Cost</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--4">
+                <ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Final_Labor_Cost__c}"/>
+            </div>
+        </div>
+
+        <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--1">
+            	<label class="slds-form-element__helper">Total TravelByDistance Cost</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--2">
+                <ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Total_TravelByDistance_Cost__c}"/>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--3">
+            	<label class="slds-form-element__helper">Final Travel By Distance Cost</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--4">
+                <ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Final_TravelByDistance_Cost__c}"/>
+            </div>
+        </div>
+
+        <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--1">
+            	<label class="slds-form-element__helper">Total Travel ByHours Cost</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--2">
+                <ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Total_TravelByHours_Cost__c}"/>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--3">
+            	<label class="slds-form-element__helper">Final TraveByHours Cost</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--4">
+                <ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Final_TravelByHours_Cost__c}"/>
+            </div>
+        </div>
+
+        <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--1">
+            	<label class="slds-form-element__helper">Total Meals Cost</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--2">
+                <ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Total_Meals_Cost__c}"/>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--3">
+            	<label class="slds-form-element__helper">Final Meals Cost</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--4">
+                <ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Final_Meals_Cost__c}"/>
+            </div>
+        </div>
+
+        <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--1">
+            	<label class="slds-form-element__helper">Total Parking Cost</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--2">
+                <ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Total_Parking_Cost__c}"/>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--3">
+            	<label class="slds-form-element__helper">Final Parking Cost</label>
+            </div>
+            <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--4">
+                <ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Final_Parking_Cost__c}"/>
+            </div>
+        </div>
+
+        <aura:if isTrue="{!v.isSysAdmin}">
+          <div class="slds-form-element__label slds-text-heading--small slds-theme--shade" style="width:100%">{!$Label.c.Approved_Cost}</div>
+            <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--1">
+                    <label class="slds-form-element__helper">Percent Labor Cost</label>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--2">
+                    <ui:outputNumber class="form-element__help" value="{!v.claimRecord.Percent_Labor_Cost__c}"/>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--3">
+                    <label class="slds-form-element__helper">Approved Labor Cost</label>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--4">
+                    <ui:outputNumber class="form-element__help" value="{!v.claimRecord.Approved_Labor_Cost__c}"/>
+                </div>
+        	</div>
+
+        	<div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--1">
+                    <label class="slds-form-element__helper">Percent TravelByDistance Cost</label>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--2">
+                    <ui:outputNumber class="form-element__help" value="{!v.claimRecord.Percent_TravelByDistance_Cost__c}"/>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--3">
+                    <label class="slds-form-element__helper">Approved TravelByDistance Cost</label>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--4">
+                    <ui:outputNumber class="form-element__help" value="{!v.claimRecord.Approved_TravelByDistance_Cost__c}"/>
+                </div>
+        	</div>
+
+            <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--1">
+                    <label class="slds-form-element__helper">Percent TravelByHours Cost</label>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--2">
+                    <ui:outputNumber class="form-element__help" value="{!v.claimRecord.Percent_TravelByHours_Cost__c}"/>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--3">
+                    <label class="slds-form-element__helper">Approved TravelByHours Cost</label>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--4">
+                    <ui:outputNumber class="form-element__help" value="{!v.claimRecord.Approved_TravelByHours_Cost__c}"/>
+                </div>
+        	</div>
+
+            <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--1">
+                    <label class="slds-form-element__helper">Percent Parts Cost</label>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--2">
+                    <ui:outputNumber class="form-element__help" value="{!v.claimRecord.Percent_Parts_Cost__c}"/>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--3">
+                    <label class="slds-form-element__helper">Approved Parts Cost</label>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--4">
+                    <ui:outputNumber class="form-element__help" value="{!v.claimRecord.Approved_Parts_Cost__c}"/>
+                </div>
+        	</div>
+
+            <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--1">
+                    <label class="slds-form-element__helper">Percent Meals Cost</label>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--2">
+                    <ui:outputNumber class="form-element__help" value="{!v.claimRecord.Percent_Meals_Cost__c}"/>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--3">
+                    <label class="slds-form-element__helper">Approved Meals Cost</label>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--4">
+                    <ui:outputNumber class="form-element__help" value="{!v.claimRecord.Approved_Meals_Cost__c}"/>
+                </div>
+        	</div>
+
+            <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--1">
+                    <label class="slds-form-element__helper">Percent Parking Cost</label>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--2">
+                    <ui:outputNumber class="form-element__help" value="{!v.claimRecord.Percent_Parking_Cost__c}"/>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--3">
+                    <label class="slds-form-element__helper">Approved Parking Cost</label>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--4">
+                    <ui:outputNumber class="form-element__help" value="{!v.claimRecord.Approved_Parking_Cost__c}"/>
+                </div>
+        	</div>
+
+            <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--1">
+                    <label class="slds-form-element__helper">Percent Claim Cost</label>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--2">
+                    <ui:outputNumber class="form-element__help" value="{!v.claimRecord.Percent_Claim_Cost__c}"/>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--3">
+                    <label class="slds-form-element__helper">Ignore Sum</label>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--4">
+                    <ui:outputCheckbox class="form-element__help" value="{!v.claimRecord.Approved_Ignore_Sum__c}"/>
+                </div>
+        	</div>
+
+            <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--1">
+                    <label class="slds-form-element__helper">Final Claim Cost</label>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--2">
+                    <ui:outputNumber class="form-element__help" value="{!v.claimRecord.Final_Claim_Cost__c}"/>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--3">
+                    <label class="slds-form-element__helper">Approved Claim Cost</label>
+                </div>
+                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--4">
+                    <ui:outputNumber class="form-element__help" value="{!v.claimRecord.Approved_Claim_Cost__c}"/>
+                </div>
+        	</div>
+        </aura:if>
+
+        <div class="slds-form-element__label slds-text-heading--small slds-theme--shade" style="width:100%">{!$Label.c.Description}</div>
+        <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+            <div class="slds-col slds-size--1-of-2 slds-small-order--1 slds-medium-order--1">
+                <label class="slds-form-element__helper">Description</label>
+            </div>
+            <div class="slds-col slds-size--1-of-2 slds-small-order--1 slds-medium-order--2">
+                <ui:outputText class="form-element__help" value="{!v.claimRecord.Description__c}"/>
+        </div>
+        <br/>
+
+      </div>
+    </div>
+</aura:component>

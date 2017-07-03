@@ -1,0 +1,312 @@
+<aura:component extends="c:GenericCrudComponent">
+              
+    <!-- Lightning css resources -->
+    <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" />
+     
+    <!-- Attribute declaration -->
+    <aura:attribute name="ClaimRecord" type="sObject" default="{'sobjectType':'Claim__c',
+                                                               'Id' : null }"/>    
+    <aura:attribute name="RemovedpartArray" type="sObject[]" />
+    <aura:attribute name="ExistingRecoveryClaims" type="sObject[]"/>
+    <aura:attribute name="CloseSymbolURL" type="String" />
+    <aura:attribute name="namemera" type="String" />
+    <aura:attribute name="baseURL" type="String"/>
+    <aura:attribute name="CausalProductName" type="String" />
+    <aura:attribute name="SelectedContracts" type="String[]" />
+    <aura:attribute name="SupplyRecoveryClaim" type="sObject[]" />
+    <aura:attribute name="SupplyRecoveryClaimRecord" type="sObject" default="{'sobjectType':'Supplier_Recovery_Claim__c', 'Id' : null }" />
+    <aura:attribute name="SupplyRecoveryLineItemRecord" type="sObject" default="{'sobjectType':'Supply_Recovery_Claim_Line_Items__c', 'Id' : null }" />
+    <aura:attribute name="SelectedProducts" type="String[]" />
+    <aura:attribute name="searchsymbolURL" type="String" />
+    <aura:attribute name="CollateralApplicableLogic" type="Boolean" default="false"/>
+    <aura:attribute name="ShowCreatedRecoveryClaimInfo" type="Boolean" default="false"/>
+    <aura:attribute name="ShowTheCreateClamButton" type="Boolean" default="false"/>
+    <aura:attribute name="RecoveryClaimLineItemTobeCreated" type="Object[]" default="[{contract : {id : '', name : ''}, lineitems : [{id:'',name: ''}]}]"/>
+   <aura:attribute name="RecoveryClaimLineItemTobeCreatedtest" type="MAP[]" default="[]"/>
+    <aura:attribute name="CreatedSupplyRecoveryClaimList" type="sObject[]"/>
+    <aura:attribute name="SupplyRecoveryClaimList" type="String[]"/>
+    <aura:attribute name="RecoveryClaimLineItemMAP" type="MAP" default="{contract : {id : '', name : ''}, lineitems : [{id:'',name: ''}]}"/>
+    <aura:attribute name="ProductSetcmp" type="String[]"/>
+    <aura:attribute name="supplierContracts" type="sObject[]"/>
+    <aura:attribute name="supplierContractRecord" type="sObject" default="{'sobjectType':'Supplier_Contract_Item__c', 'Id' : null }" />
+    <aura:attribute name="ValidsupplierContracts" type="sObject[]"/>
+    <aura:attribute name="ClaimURL" type="String"/>
+    <aura:attribute name="RecoveryClaimURL" type="String"/>
+    <aura:attribute name="DistinctProductSet" type="String[]"/>
+    <aura:attribute name="ClaimRecordId" type="String"/>
+    <aura:attribute name="contractRecords" type="sObject[]"/>
+    <aura:attribute name="causalPartRecord" type="sObject[]"/>
+    <aura:attribute name="causalPartRecordID" type="String"/>
+    <aura:handler event="c:RecoveryClmPageCreateLineItemEvent" action="{!c.ShowRecoveryClaimLineItems}" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"></aura:handler>
+    <aura:attribute name="validContracts" type="boolean" default="false"/>
+    <aura:attribute name="ProceedURL" type="string" />
+    <aura:attribute name="showRecoveryClaims" type="boolean" default="false"/>
+    <aura:attribute name="spinnerBool" type="Object"/>
+    <aura:attribute name="showExistingClaims" type="boolean" default="false"/>
+    <aura:attribute name="ExistingRecoveryClaimsURL" type="Object[]"/>
+    <aura:attribute name="ContractClaimsURL" type="Object[]"/>
+    <aura:attribute name="FinalContractClaimsURL" type="Object[]"/>
+    <aura:attribute name="newRecoveryClaimsURL" type="Object[]"/>
+    <aura:attribute name="validCount" type="boolean" default="false"/>
+    <aura:attribute name="dmlErrors" type="object[]" />
+   
+    <!-- header section -->
+    <header class="slds-text-heading--large slds-align--absolute-center heading">
+        {!$Label.c.Recovery_Claim}
+    </header>
+    <!-- main dev start here -->
+    <div class="main-body">
+        <div class="alertbox">{!v.body}</div>
+        <div class="page-spinner-container">
+            <aura:if isTrue="{!v.spinnerBool.pageSpinner}">
+                <div class="slds-spinner_container">
+                    <div class="slds-spinner--brand slds-spinner slds-spinner--medium" role="alert">
+                        <span class="slds-assistive-text">Loading</span>
+                        <div class="slds-spinner__dot-a"></div>
+                        <div class="slds-spinner__dot-b"></div>
+                    </div>
+                </div>
+            </aura:if>
+        </div>
+        <div class="containerC">
+            <div class="form">               
+              <div class="slds-grid slds-wrap slds-grid">
+                    <!-- Warranty Claim Detail table -->
+                             <table class="slds-table slds-table--striped slds-max-medium-table--stacked-horizontal slds-table--bordered slds-table--cell-buffer">
+                             <caption class="slds-text-heading--small  slds-truncate">{!$Label.c.ClaimDetail}</caption>
+                        <thead>
+                             <tr class="slds-text-title--caps">
+                            <th class="slds-is-resizable" scope="col">{!$Label.c.Claim_Number}</th>
+                                <th class="slds-is-resizable" scope="col">{!$Label.c.ClaimType}</th>
+                                <th class="slds-is-resizable" scope="col">{!$Label.c.DateoFFailure}</th>
+                                <th class="slds-is-resizable" scope="col">{!$Label.c.Dealer}</th>
+                                <th class="slds-is-resizable" scope="col">{!$Label.c.CausalPartNumber}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                             <tr >
+                                <td  class="slds-cell-wrap" data-label="{!$Label.c.Claim_Number}"><h1><a target="_blank" href="{!v.ClaimURL}">{!v.ClaimRecord.Name}</a></h1></td>
+                                <td  class="slds-cell-wrap" data-label="{!$Label.c.ClaimType}"><ui:outputText value="{!v.ClaimRecord.Claim_Type__c}"/></td>
+                                <td  class="slds-cell-wrap" data-label="{!$Label.c.DateoFFailure}"><ui:outputText value="{!v.ClaimRecord.Date_of_Failure__c}"/></td>
+                                <td  class="slds-cell-wrap" data-label="{!$Label.c.Dealer}"><ui:outputText value="{!v.ClaimRecord.Account__r.Name}"/></td>
+                                <td  class="slds-cell-wrap" data-label="{!$Label.c.CausalPartNumber}"><ui:outputText value="{!v.ClaimRecord.Causal_Part_Number__r.Name}"/></td>
+                            </tr>
+                        </tbody>
+                    </table>   
+              </div>
+            </div>
+            <br/><br/>
+        
+            <!-- Casual Parts Table -->
+            <div class="Casual form">
+                <table class="slds-table slds-table--striped slds-max-medium-table--stacked-horizontal slds-table--bordered slds-table--cell-buffer">
+                    <caption class="slds-text-heading--small  slds-truncate">{!$Label.c.CausalParts}</caption>
+                    <thead>
+                        <tr class="slds-text-title--caps">
+                            <th class="slds-is-resizable" scope="col">{!$Label.c.CausalPartName}</th>
+                            <th class="slds-is-resizable" scope="col">{!$Label.c.Item_Type}</th>
+                            <th class="slds-is-resizable" scope="col">{!$Label.c.Product_Name}</th>
+                            <th class="slds-is-resizable" scope="col">{!$Label.c.Contracts}</th>                        
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.causalPartRecord}" var="item1" indexVar="j">    
+                            <tr>
+                                <aura:if isTrue="{!item1!=null}">
+                                    <td class="slds-cell-wrap" data-label="{!$Label.c.CausalPartName}"><h1><ui:outputText value="{!item1.Name}" /></h1></td>
+                                    <td class="slds-cell-wrap" data-label="{!$Label.c.Item_Type}"><ui:outputText value="{!item1.Item_Type__c}"/></td>
+                                    <td class="slds-cell-wrap" data-label="{!$Label.c.Product_Name}"><ui:outputText value="{!item1.Product_Name__c}"/></td>
+                                    <td class="slds-cell-wrap">                                 
+                                        <button class="slds-button slds-button--neutral" onclick= "{!c.viewActiveContractsForCausal}" value="{!j}" tabIndex="{!j}">                                     
+                                            Search
+                                        </button>
+                                    </td>
+                                </aura:if>
+                            </tr>
+                          </aura:iteration>
+                   </tbody>
+                </table>            
+              <br/>
+                <!-- Remove Parts Table -->
+                <table class="slds-table slds-table--striped slds-max-medium-table--stacked-horizontal slds-table--bordered slds-table--cell-buffer">
+                    <caption class="slds-text-heading--small  slds-truncate"> {!$Label.c.Removed_Parts}</caption>
+                     <thead>
+                        <tr class="slds-text-title--caps">
+                            <th class="slds-is-resizable" scope="col">{!$Label.c.Removed_Part_Name}</th>
+                            <th class="slds-is-resizable" scope="col">{!$Label.c.Part_Type}</th>
+                            <th class="slds-is-resizable" scope="col">{!$Label.c.Product_Name}</th>
+                            <th class="slds-is-resizable" scope="col">{!$Label.c.Contracts}</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <aura:iteration items="{!v.RemovedpartArray}" var="item" indexVar="i">
+                            <tr >
+                                <aura:if isTrue="{!item!=null}">
+                                    <td class="slds-cell-wrap" data-label="{!$Label.c.Removed_Part_Name}"><h1><ui:outputText value="{!item.Warranty_Product_on_Recovery_Claim__c}" /></h1></td>
+                                    <td class="slds-cell-wrap" data-label="{!$Label.c.Part_Type}"><ui:outputText value="{!item.RecordType.Name}"/></td>
+                                    <td class="slds-cell-wrap" data-label="{!$Label.c.Product_Name}">
+                                        <ui:outputText value="{!item.Warranty_Product_Name_on_Recovery_Claim__c}"/>
+                                    </td>
+                                    <td class="slds-cell-wrap">                                    
+                                         <button class="slds-button slds-button--neutral" onclick = "{!c.viewActiveContracts}" value="{!i}" tabIndex="{!i}">                                     
+                                            Search
+                                        </button>                                                                     
+                                    </td>
+                                </aura:if>
+                            </tr>
+                        </aura:iteration>
+                    </tbody>
+                </table>              
+                </div>
+                <br/><br/>
+                <aura:if isTrue="{!v.validContracts == true}">
+                <div class="Casual form">
+                <!-- Valid Contracts Table -->                
+                <table class="slds-table slds-table--striped slds-max-medium-table--stacked-horizontal slds-table--bordered slds-table--cell-buffer" aura:id="contractTable">
+                             <caption class="slds-text-heading--small">{!$Label.c.The_Valid_Contracts_for_Selected_Product_Part}</caption>
+                    <thead>
+                             <tr class="slds-text-title--caps">
+                             <th  class="slds-is-resizable" scope="col">{!$Label.c.Product_Name}</th>
+                            <th  class="slds-is-resizable" scope="col">{!$Label.c.Contracts}</th>
+                            <th  class="slds-is-resizable" scope="col">{!$Label.c.Supplier}</th>
+                            <th  class="slds-is-resizable" scope="col">Select</th>
+                        </tr>
+                   </thead>
+                   <tbody>
+                       <aura:iteration items="{!v.supplierContracts}" var="cont" >
+                            <c:RecoveryClaimPageLightningAuraContractcmp ProductID="{!v.causalPartRecordID}" supplierContract="{!cont}" baseURL="{!v.baseURL}" />
+                       </aura:iteration>
+                       <aura:renderIf isTrue="{!v.supplierContracts.length == 0}">
+                           <tr><td colspan="4">
+                                {!$Label.c.Valid_Contracts_Not_Available}
+                                </td>
+                           </tr>
+                       </aura:renderIf>
+                       <aura:renderIf isTrue="{!v.validCount == true}">
+                           <tr><td colspan="4">
+                                {!$Label.c.Valid_Contracts_Not_Available}
+                                </td>
+                           </tr>
+                       </aura:renderIf>
+                   </tbody>
+                </table>
+                <br/>
+               
+            
+                <!-- Selected Contracts Table -->
+                <aura:if isTrue="{!v.ShowCreatedRecoveryClaimInfo == true}">
+                <table class="slds-table slds-table--striped slds-max-medium-table--stacked-horizontal slds-table--bordered slds-table--cell-buffer">
+                             <caption class="slds-text-heading--small">{!$Label.c.The_RecoveryClaim_LineItem_To_Be_Created}</caption>
+                    <thead>
+                             <tr class="slds-text-title--caps">
+                             <th  class="slds-is-resizable"  scope="col">{!$Label.c.Product_Name}</th>
+                            <th  class="slds-is-resizable"  scope="col">{!$Label.c.Contracts}</th>
+                            <th  class="slds-is-resizable"  scope="col">Remove</th>                            
+                        </tr>
+                   </thead>
+                   <tbody>
+                                           <aura:iteration items="{!v.RecoveryClaimLineItemTobeCreated}" var="item1" indexVar="k">                                                                
+                             <aura:iteration items="{!item1.lineitems}" var="item3" indexVar="l">                                                                   
+                             <tr>
+                                           <td class="slds-cell-wrap" data-label="{!$Label.c.Product_Name}"><h1><ui:outputText value="{!item3.name}" /></h1></td>                                                                                  
+                                    <td class="slds-cell-wrap" data-label="{!$Label.c.Contracts}"><h1><ui:outputText value="{!item1.contract.name}" /></h1></td>                                                                                  
+                                        <td class="slds-cell-wrap">                                                                                
+                                           <button class="slds-button slds-button--neutral slds-button--destructive" onclick="{!c.RemoveLineItems}" value="{!l +','+ k}" tabIndex="{!l +','+ k}" data-X="{!l +','+ k}">                                     
+                                                          Remove
+                                            </button>                                          
+                                        </td>                                    
+                                    </tr>
+                                 </aura:iteration>                                                             
+                             </aura:iteration>                       
+                   </tbody>                   
+                </table>
+                </aura:if>
+                <!-- Create recovery claims -->        
+                <table class="slds-table">
+                             <tr>
+                             <td>
+                                                                                                     <aura:if isTrue="{!v.ShowTheCreateClamButton == true}">                                        
+                             <button class="slds-button slds-button--neutral slds-button__icon--left" onclick="{!c.CreateSupplyRecoveryClaims}" >Create Recovery Claim</button>                                 
+                            </aura:if>                                   
+                        </td>                             
+                    </tr>
+                </table>
+                <!-- Create Recovery Claims Table -->
+            </div>
+            <br/><br/>
+            </aura:if>
+                 <aura:if isTrue="{!v.showRecoveryClaims == true}">
+                 <div class="Casual form">                
+                    <table class="slds-table slds-table--striped slds-max-medium-table--stacked-horizontal slds-table--bordered slds-table--cell-buffer">
+                        <caption class="slds-text-heading--small">{!$Label.c.Created_Supply_Recovery_Claims} :</caption>
+                        <thead>
+                            <tr class="slds-text-title--caps">
+                                <th class="slds-is-resizable"  scope="col">Name</th>
+                                <th class="slds-is-resizable"  scope="col">{!$Label.c.Supplier}</th>                    
+                                <th class="slds-is-resizable"  scope="col">{!$Label.c.Contracts}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <aura:iteration items="{!v.CreatedSupplyRecoveryClaimList}" var="Claim" indexVar="j">    
+                                <tr>
+                                    <aura:iteration items="{!v.newRecoveryClaimsURL}" var="rURL" indexVar="k">                                           
+                                           <aura:if isTrue="{!j == k}">
+                                            <td class="slds-cell-wrap" data-label="Name">
+                                                          <h1><a target="_blank" href="{!rURL.rId.url}">{!Claim.Name}</a></h1>
+                                            </td>
+                                            <td class="slds-cell-wrap" data-label="{!$Label.c.Supplier}">
+                                                          <h1><a target="_blank" href="{!rURL.rId.url2}">{!Claim.Supplier_Contract__r.Supplier_Account__r.Name}</a></h1>
+                                            </td>
+                                            <td class="slds-cell-wrap" data-label="{!$Label.c.Contracts}">
+                                                          <h1><a target="_blank" href="{!rURL.rId.url1}">{!Claim.Supplier_Contract__r.Name}</a></h1>
+                                            </td>
+                                        </aura:if>
+                                    </aura:iteration>                                   
+                                </tr>
+                            </aura:iteration>
+                        </tbody>
+                    </table>
+                     </div>
+                </aura:if>
+                <br/><br/>
+                <aura:if isTrue="{!v.showExistingClaims == true}">
+                    <div class="Casual form">                
+                    <table class="slds-table slds-table--striped slds-max-medium-table--stacked-horizontal slds-table--bordered slds-table--cell-buffer">
+                        <caption class="slds-text-heading--small">{!$Label.c.Related_Supply_Recovery_Claims} :</caption>
+                        <thead>
+                            <tr class="slds-text-title--caps">
+                                <th class="slds-is-resizable"  scope="col">Name</th>
+                                <th class="slds-is-resizable"  scope="col">{!$Label.c.Supplier}</th>                                
+                                <th class="slds-is-resizable"  scope="col">{!$Label.c.Contracts}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <aura:iteration items="{!v.ExistingRecoveryClaims}" var="Claim" indexVar="j">    
+                                <tr>
+                                           <aura:iteration items="{!v.ExistingRecoveryClaimsURL}" var="rURL" indexVar="k">                                           
+                                           <aura:if isTrue="{!j == k}">
+                                           <td class="slds-cell-wrap" data-label="Name">
+                                                          <h1><a target="_blank" href="{!rURL.rId.url}">{!Claim.Name}</a></h1>
+                                            </td>
+                                            <td class="slds-cell-wrap" data-label="{!$Label.c.Supplier}">
+                                                          <h1><a target="_blank" href="{!rURL.rId.url2}">{!Claim.Supplier_Contract__r.Supplier_Account__r.Name}</a></h1>
+                                            </td>
+                                            <td class="slds-cell-wrap" data-label="{!$Label.c.Contracts}">
+                                                          <h1><a target="_blank" href="{!rURL.rId.url1}">{!Claim.Supplier_Contract__r.Name}</a></h1>
+                                            </td>
+                                         </aura:if>
+                                    </aura:iteration>
+                                </tr>
+                            </aura:iteration>
+                        </tbody>
+                    </table>
+                     </div>
+                </aura:if>
+            <br/>
+            <div>                
+              <a href="{!v.ProceedURL}" onclick="{!c.Cancel}"> <span class="slds-button slds-button--destructive "> {!$Label.c.Cancel} </span> </a>
+            </div>
+              </div>
+    </div>
+</aura:component>

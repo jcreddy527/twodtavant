@@ -1,0 +1,69 @@
+<aura:component >
+    <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" /> 
+    
+    <aura:attribute name="picklistElements" 		type="sObject[]"  />
+    <aura:attribute name="MovedPicklistElements" 		type="String[]"  />
+    <aura:attribute name="FirstCategory" type="String" default="First Category"/>
+    <aura:attribute name="SecondCategory" type="String" default="Second Category"/>
+    <aura:attribute name="selectedValue" type="String"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <div class="slds-picklist--draggable slds-grid">
+      <div class="slds-form-element" ondrop="{!c.goleft}" ondragover="{!c.onDragOver}">
+          <span class="slds-form-element__label" aria-label="select-1"><b>{!v.FirstCategory}</b></span>
+        <div class="slds-picklist slds-picklist--multi">
+          <ul class="slds-picklist__options slds-picklist__options--multi shown slds-scrollable--y ">  
+              <aura:iteration items="{!v.picklistElements}" var="item" >
+                  <li draggable="true" id="{!item.Id}" class="slds-picklist__item" aria-selected="false" tabindex="-1" role="option" value="{!item.Name}" ondragstart="{!c.dragStarted}">
+                      <span class="slds-truncate" value="{!item.Id}" onclick="{!c.picklistElementSelected}">
+                        <span id="{!item.Id}" >{!item.Name}</span>
+                      </span>
+                  </li> 
+              </aura:iteration>
+          </ul>
+        </div>
+      </div>
+      <div class="slds-grid slds-grid--vertical">
+        <button class="slds-button slds-button--icon-container">
+            <span class="slds-icon__container" onclick="{!c.goleft}" value="{!v.selectedValue}">
+				<c:svg class="slds-button__icon" xlinkHref="/resource/slds/assets/icons/utility-sprite/svg/symbols.svg#left" ariaHidden="false"/> 
+            </span>          
+          <span class="slds-assistive-text">Arrow left</span>
+        </button>
+        <button class="slds-button slds-button--icon-container">
+          <span class="slds-icon__container" onclick="{!c.goright}" value="{!v.selectedValue}">
+				<c:svg class="slds-button__icon" xlinkHref="/resource/slds/assets/icons/utility-sprite/svg/symbols.svg#right" ariaHidden="false"/> 
+            </span> 
+          <span class="slds-assistive-text">Arrow right</span>
+        </button>
+      </div>
+      <div class="slds-form-element" ondrop="{!c.goright}" ondragover="{!c.onDragOver}">
+        <span class="slds-form-element__label" aria-label="select-2"><b>{!v.SecondCategory}</b></span>
+        <div class="slds-picklist slds-picklist--multi" >
+          <ul class="slds-picklist__options slds-picklist__options--multi shown slds-scrollable--y" >
+               <aura:iteration items="{!v.MovedPicklistElements}" var="item" >
+                      <li draggable="true" id="{!item.Id}" class="slds-picklist__item" aria-selected="false" tabindex="-1" role="option" ondragstart="{!c.dragStarted}">
+                          <span class="slds-truncate" value="{!item.Id}" onclick="{!c.picklistElementSelected}" >
+                            <span id="{!item.Id}" >{!item.Name}</span>
+                          </span>
+                      </li>  
+              </aura:iteration>
+          </ul>
+        </div>
+      </div>
+      <div class="slds-grid slds-grid--vertical">
+        <button class="slds-button slds-button--icon-container">
+           <span class="slds-icon__container" onclick="{!c.goup}">
+				<c:svg class="slds-button__icon" xlinkHref="/resource/slds/assets/icons/utility-sprite/svg/symbols.svg#up" ariaHidden="false" /> 
+            </span> 
+          <span class="slds-assistive-text">Arrow up</span>
+        </button>
+        <button class="slds-button slds-button--icon-container">
+           <span class="slds-icon__container" onclick="{!c.godown}">
+				<c:svg class="slds-button__icon" xlinkHref="/resource/slds/assets/icons/utility-sprite/svg/symbols.svg#down" ariaHidden="false"/> 
+            </span> 
+          <span class="slds-assistive-text">Arrow down</span>
+        </button>
+      </div>
+    </div>  
+</aura:component>

@@ -1,0 +1,45 @@
+<!-- **********************************************************************************************************
+
+Copyright � 2016  Tavant Technology Inc
+Name - RecoveryClaimPageLightningAuraContractcmp
+Purpose - component used to display relevant contracts on selection of product.
+Date - 01/10/2017
+Last Edited by - Siva Krishna Reddy B
+
+**************************************************************************************************************** -->
+<aura:component >
+    <!-- attribute declaration -->
+    <aura:attribute name="ProductName" type="String" default="noname" />
+    <aura:attribute name="IsSelected" type="Boolean" default="false" />
+    <aura:attribute name="ProductID" type="String" default="" />
+    <aura:attribute name="ContractName" type="String" default="noname" />
+    <aura:attribute name="supplierContract" type="Map" default="{Supplier_Product__r : { Product__c : ''}}" />
+    <aura:attribute name="SupplierAccount"  type="String" default="noname" />
+    <aura:attribute name="IsCollateralApp"  type="String" default="false"/>
+    <aura:attribute name="ShowComponent"    type="String" default="Yes"/>
+    <aura:attribute name="CollateralColour"  type="String" default="#F8F8F8"/>
+    <aura:handler event="c:RecoveryClmPageSelprodWarEvent" action="{!c.ShowSelectedContracts}"/>
+    <aura:handler event="c:DeleteCreatedRecoveryLineItemEvent" action="{!c.RemoveTheDeletedRecoveryLineItem}" />
+    <aura:handler event="c:RecoveryClaimPageSelfFireEvent" action="{!c.UnselectOtherCheckboxes}"/>
+    <aura:attribute name="baseURL" type="String"/>
+    <aura:attribute name="contractURL" type="String"/>
+    <aura:attribute name="supplierURL" type="String" />
+    
+    
+	<aura:renderIf isTrue="{!v.ShowComponent == 'Yes'}">
+		<tr BGCOLOR="{!v.CollateralColour}">
+    		<td class="slds-cell-wrap" data-label="{!$Label.c.Product_Name}">
+        		<ui:outputText value="{!v.supplierContract.Supplier_Product__r.Product__r.Name}" />
+    		</td>
+    		<td  class="slds-cell-wrap" data-label="{!$Label.c.Contracts}">
+        		<h1><a target="_blank" href="{!v.contractURL}">{!v.supplierContract.Supplier_Contract__r.Name}</a></h1>       
+    		</td>
+    		<td class="slds-cell-wrap" data-label="{!$Label.c.Supplier}">
+        		<h1><a target="_blank" href="{!v.supplierURL}">{!v.supplierContract.Supplier_Contract__r.Supplier_Account__r.Name}</a></h1>                
+    		</td>    
+    		<td class="slds-cell-wrap" data-label="Select Row">
+            	<span class="slds-checkbox--faux" ><ui:inputCheckbox class="slds-checkbox slds-checkbox--faux" text="{!v.supplierContract}" aura:id="checkbox"  change="{!c.onCheck}"/> </span>        
+    		</td>   
+		</tr>
+	</aura:renderIf>   
+</aura:component>

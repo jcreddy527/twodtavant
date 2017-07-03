@@ -1,0 +1,17 @@
+<aura:component extends="c:GenericComponent">
+    <aura:attribute name="claimId" 				type="String" 	 default="a061500000X9mmn"/>
+    <aura:attribute name="claimName" 			type="String" 	 default="CLm001"/>
+    <aura:attribute name="recordTypeName" 		type="String" 	 default="Miscellaneous_Part"/>
+    <aura:attribute name="isEnableModal"		type="boolean"	 default="fasle"/>
+    <aura:attribute name="nonOEMParts" 			type="sObject[]" default=""/>
+    <aura:attribute name="recordTypeId"			type="String"	 default=""/>
+    <aura:attribute name="templateObject" 		type="sObject" 	 default="{ 'sobjectType': 'Claim_Part__c',
+                                                                            'Name': ''
+                                                                           }"/>
+    <aura:handler name="init" 					value="{!this}"  action="{!c.doInit}" />
+	<aura:attribute name="BaseURL" type="String" />
+    <aura:handler event="c:UpdateInstalledParts" 	action="{!c.doInit}"/>
+    <SPAN>
+    <c:NonOEMPartsHandler BaseURL="{!v.BaseURL}" isModalEnable="false" recordTypeId="{!v.recordTypeId}"   nonOEMParts="{!v.nonOEMParts}" claimId="{!v.claimId}" claimName="{!v.claimName}"/>
+    </SPAN>
+    </aura:component>

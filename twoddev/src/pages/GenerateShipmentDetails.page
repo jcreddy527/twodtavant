@@ -1,0 +1,51 @@
+<apex:page id="pageId" standardController="Shipment_Detail__c" renderAs="PDF" >
+<!-- <apex:page extensions="GenerateLabelCtrl" id="pageId" standardController="Shipment_Details__c" > -->
+    <apex:form >
+        <table  width="100%" >
+            <tr>
+                <td valign="top"><apex:image url="https://warranty-on-demand3-dev-ed--c.na34.content.force.com/servlet/servlet.ImageServer?id=01561000001CMPh&oid=00D61000000J3AM&lastMod=1466748186000" width="200" /></td>
+                <td width="40%" align="left" ></td>
+            </tr>
+            <tr>
+                <td width="50%" align="right" height="100px" style="padding-left: 0%;vertical-align: top;" colspan="2">
+                    <span style="font-size: 18px; font-weight: bold; padding-top: 2%; height: 50px;" >{!$Label.Shipping_Details}</span><br/>
+                    <apex:repeat value="{!$ObjectType.Shipment_Detail__c.FieldSets.Generate_Shipment_PDF}" var="f">
+                        <span  class="label" style="align:right"> {!f.label}  : </span> 
+                        <apex:outputText value="{!Shipment_Detail__c[f]}" /><br/>
+                    </apex:repeat>
+                </td>
+            </tr>
+            <tr><td><br/></td></tr>
+            
+            <tr>
+                <td align="left" colspan="2" style="padding-left:20px; font-weight: bold;" > {!$Label.Claim_Shipments_Parts}</td>
+            </tr>
+            <tr><td><br/></td></tr>
+             <tr >
+                <td  colspan="2" width="100%" style="padding-left: 15px; padding-right: 15px;">
+                    <table style="padding-top: 15%; width: 100%; height: 100%;"   >
+                        <tr >
+                            <apex:repeat value="{!$ObjectType.Claim_Shipment__c.FieldSets.Shipment_Part}" var="s">
+                                <td>
+                                    <span  class="label" style="align:right;font-size: 20px; font-weight: bold;"> {!s.label}  </span> 
+                                </td>
+                            </apex:repeat>
+                        </tr>
+                        <apex:repeat value="{!Shipment_Detail__c.Claim_Shipments__r}" var="c">
+                        <tr >
+                            <apex:repeat value="{!$ObjectType.Claim_Shipment__c.FieldSets.Shipment_Part}" var="s">
+                                <td>
+<!--                                    <apex:outputPanel >{!c[s]}</apex:outputPanel> -->
+                                    <apex:outputField styleClass="noLink"  value="{!c[s]}"/> 
+                                </td>
+                            </apex:repeat>
+                        </tr>
+                        </apex:repeat>   
+                    </table> 
+                </td>
+            </tr>
+            <tr><td><br/></td></tr>
+        </table>
+    </apex:form>
+    <div >{!$Label.Disclaimer}</div>
+</apex:page>

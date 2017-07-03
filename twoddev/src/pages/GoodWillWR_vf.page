@@ -1,0 +1,36 @@
+<apex:page standardController="Warranty_Registration__c" sidebar="false" showHeader="false">   
+    <apex:includeLightning />
+    
+    <div id="lightning"/>
+    <script>
+    var totalPageURL = window.location.toString();
+    var protocalType= totalPageURL.split("//")[0]; 
+    var tempbaseURL = totalPageURL.split("//")[1].split("/");
+    var finalBaseURL = protocalType+'//'+tempbaseURL[0] + "{!$Site.Prefix}";
+    var sitePrefix = "{!$Site.Prefix}";
+    var scrappedOrStolen = '{!Warranty_Registration__c.Inventory__r.Stolen_inventory__c || Warranty_Registration__c.Inventory__r.Scrapped__c}' === 'true'
+    ? true
+    : false;
+    
+    $Lightning.use("c:WarrantyRegistrationApplication", function() {
+        $Lightning.createComponent("c:WarrantyRegistrationPage",
+                                   { inventoryId: "{!Warranty_Registration__c.Inventory__c}" , 
+                                    wrExistingId:"{!Warranty_Registration__c.Id}",
+                                    usageType :"{!Warranty_Registration__c.Usage_Type__c}",
+                                    formHeading : "{!$Label.Goodwill_Warranty_Registration}",
+                                    BaseURL:finalBaseURL,
+                                    type: "Goodwill",
+                                    sitePrefix : sitePrefix,
+                                    pageBlockerBooleanObject : {
+                                        isScrappedOrStolen : scrappedOrStolen,
+                                        visualCheckListNotcompleted : {!(!Warranty_Registration__c.Inventory__r.Visual_Checklist_Completed__c)}
+                                    },
+                                    inventoryPurchaseDate : "{!Warranty_Registration__c.Inventory__r.Install_Date__c}",
+                                    preowned : {!Warranty_Registration__c.Inventory__r.Pre_Owned__c}
+                                   },
+                                   "lightning",
+                                   function(cmp) {});
+    });   
+    </script>
+    
+</apex:page>

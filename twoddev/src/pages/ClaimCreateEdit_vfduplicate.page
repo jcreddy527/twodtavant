@@ -1,0 +1,340 @@
+<apex:page showHeader="false" sidebar="false" standardController="Claim__c" extensions="ClaimCreateEditExt">
+    <apex:stylesheet value="/resource/slds212/assets/styles/salesforce-lightning-design-system.min.css"/>
+
+    <!--//////////////////vf page spinner till component loads/////////////////-->
+
+    <div class="slds-spinner_container" id="vf-page-spinner" style="height: calc(500%);">
+        <div class="slds-spinner--brand slds-spinner slds-spinner--medium" role="alert" style="position: fixed;">
+            <div class="slds-spinner__dot-a"></div>
+            <div class="slds-spinner__dot-b"></div>
+        </div>
+    </div>
+
+    <!--//////////////////vf page spinner ends /////////////////////////////////-->
+
+    <apex:includeLightning />
+    <div id="lightning"/>
+
+    <div hidden="true">
+        <!--<c:EasyUpload parentId="{!$CurrentPage.parameters.id}" id="uploaderComponent"/>-->
+    </div>
+
+    <script>
+
+        // claim component attributes initialization preparation
+        var picklistString = '{!picklistJSON}';
+        var customSettingManager = {};
+        if (picklistString !== null && picklistString !== undefined && picklistString !== '') {
+
+            function getDateReadableFormat(dateString) {
+
+                var returnableDateString = "";
+                var convertableDate = new Date(dateString);
+                var dateString = convertableDate.getDate() + "";
+                var monthString = (convertableDate.getMonth() + 1) + "";
+                if (dateString.length === 1) {
+                    dateString = "0" + dateString;
+                }
+                if (monthString.length === 1) {
+                    monthString = "0" + monthString;
+                }
+                returnableDateString = convertableDate.getFullYear() + "-" + monthString + "-" + dateString;
+
+                return returnableDateString;
+            }
+
+            var pickListJSON = JSON.parse(picklistString);
+            var lookupMiniumCharacters = parseInt("{!lookupMiniumCharacters}");
+            customSettingManager['Minimum_Lookup_Characters'] = lookupMiniumCharacters;
+            var noOfDaysForDuplicateClaimCheck = parseInt("{!noOfDaysForDuplicateClaimCheck}");
+            customSettingManager['Period_In_Days_For_Duplicate_Claim'] = noOfDaysForDuplicateClaimCheck;
+            
+            var inventory = '{!inventoryJSON}';//added by siva
+            var dealer = '{!defaultDealerAccountJSON}';
+            var rate = null;
+            var claimtemplatePaymentDefinition = null;
+
+            var site = "{!$Site.Prefix}";
+
+            site = (site == 'null' || site == 'undefined' || site == null || site == undefined)
+                ? ''
+                : site;
+
+            dealer = dealer == null || dealer == undefined || dealer == '' || dealer == '[]'
+                ? null
+                : JSON.parse(dealer);
+            
+            var autoAddRemovedPart = ("{!autoAddremovedPart}" === "false")
+                ? false
+                : true;
+            customSettingManager['Auto_Add_Removed_Part'] =  autoAddRemovedPart;
+
+            var isEdit = ("{!$CurrentPage.parameters.id}" === undefined || "{!$CurrentPage.parameters.id}" === null || "{!$CurrentPage.parameters.id}" === "")
+                ? false
+                : true;
+            var currentClaim = null;
+            var faultCodeMapperList = null;
+
+            if (isEdit) {
+
+                var requestSMR = ("{!Claim__c.Request_SMR__c}" === "true")
+                    ? true
+                    : false;
+                var unitsRun = isNaN(parseFloat("{!Claim__c.Units_Run__c}"))
+                    ? 0
+                    : parseFloat("{!Claim__c.Units_Run__c}");
+
+                faultCodeMapperList = JSON.parse('{!faultCodeMapperListJSON}');
+
+                var claimCostList = {
+
+                    Total_Labor_Cost__c: isNaN(parseFloat("{!Claim__c.Total_Labor_Cost__c}"))
+                        ? 0
+                        : parseFloat("{!Claim__c.Total_Labor_Cost__c}"),
+                    Final_Labor_Cost__c: isNaN(parseFloat("{!Claim__c.Final_Labor_Cost__c}"))
+                        ? 0
+                        : parseFloat("{!Claim__c.Final_Labor_Cost__c}"),
+                    Total_TravelByDistance_Cost__c: isNaN(parseFloat("{!Claim__c.Total_TravelByDistance_Cost__c}"))
+                        ? 0
+                        : parseFloat("{!Claim__c.Total_TravelByDistance_Cost__c}"),
+                    Final_TravelByDistance_Cost__c: isNaN(parseFloat("{!Claim__c.Final_TravelByDistance_Cost__c}"))
+                        ? 0
+                        : parseFloat("{!Claim__c.Final_TravelByDistance_Cost__c}"),
+                    Total_TravelByHours_Cost__c: isNaN(parseFloat("{!Claim__c.Total_TravelByHours_Cost__c}"))
+                        ? 0
+                        : parseFloat("{!Claim__c.Total_TravelByHours_Cost__c}"),
+                    Final_TravelByHours_Cost__c: isNaN(parseFloat("{!Claim__c.Final_TravelByHours_Cost__c}"))
+                        ? 0
+                        : parseFloat("{!Claim__c.Final_TravelByHours_Cost__c}"),
+                    Total_Parts_Cost__c: isNaN(parseFloat("{!Claim__c.Total_Parts_Cost__c}"))
+                        ? 0
+                        : parseFloat("{!Claim__c.Total_Parts_Cost__c}"),
+                    Final_Parts_Cost__c: isNaN(parseFloat("{!Claim__c.Final_Parts_Cost__c}"))
+                        ? 0
+                        : parseFloat("{!Claim__c.Final_Parts_Cost__c}"),
+                    Total_Meals_Cost__c: isNaN(parseFloat("{!Claim__c.Total_Meals_Cost__c}"))
+                        ? 0
+                        : parseFloat("{!Claim__c.Total_Meals_Cost__c}"),
+                    Final_Meals_Cost__c: isNaN(parseFloat("{!Claim__c.Final_Meals_Cost__c}"))
+                        ? 0
+                        : parseFloat("{!Claim__c.Final_Meals_Cost__c}"),
+                    Total_Parking_Cost__c: isNaN(parseFloat("{!Claim__c.Total_Parking_Cost__c}"))
+                        ? 0
+                        : parseFloat("{!Claim__c.Total_Parking_Cost__c}"),
+                    Final_Parking_Cost__c: isNaN(parseFloat("{!Claim__c.Final_Parking_Cost__c}"))
+                        ? 0
+                        : parseFloat("{!Claim__c.Final_Parking_Cost__c}"),
+                    Final_Claim_Cost__c: isNaN(parseFloat("{!Claim__c.Final_Claim_Cost__c}"))
+                        ? 0
+                        : parseFloat("{!Claim__c.Final_Claim_Cost__c}"),
+                    Parts_Profit__c: isNaN(parseFloat("{!Claim__c.Parts_Profit__c}"))
+                        ? 0
+                        : parseFloat("{!Claim__c.Parts_Profit__c}"),
+                    Total_Category1_Cost__c: isNaN(parseFloat("{!Claim__c.Total_Category1_Cost__c}"))
+                        ? 0
+                        : parseFloat("{!Claim__c.Total_Category1_Cost__c}"),
+                    Final_Category1_Cost__c: isNaN(parseFloat("{!Claim__c.Final_Category1_Cost__c}"))
+                        ? 0
+                        : parseFloat("{!Claim__c.Final_Category1_Cost__c}"),
+                    Total_Category2_Cost__c: isNaN(parseFloat("{!Claim__c.Total_Category2_Cost__c}"))
+                        ? 0
+                        : parseFloat("{!Claim__c.Total_Category2_Cost__c}"),
+                    Final_Category2_Cost__c: isNaN(parseFloat("{!Claim__c.Final_Category2_Cost__c}"))
+                        ? 0
+                        : parseFloat("{!Claim__c.Final_Category2_Cost__c}"),
+                    Parts_Profit__c: isNaN(parseFloat("{!Claim__c.Parts_Profit__c}"))
+                        ? 0
+                        : parseFloat("{!Claim__c.Parts_Profit__c}")
+                };
+
+                //get all the related list of claim//
+                var relatedListObject = JSON.parse('{!JSENCODE(relatedListJSON)}');
+                console.log(relatedListObject);
+                var applicablePolicy = {
+                    Id: '{!claim.Applicable_Policy__r.Id}',
+                    Name: '{!claim.Applicable_Policy__r.Name}'
+                };
+
+                applicablePolicy = applicablePolicy['Id'] == null || applicablePolicy['Id'] == undefined || applicablePolicy['Id'] == ''
+                    ? null
+                    : applicablePolicy;
+
+                //get the campaign member
+                var campaignMember = {
+                    Id: '{!claim.Campaign_Members__c}'
+                };
+
+                if (campaignMember['Id'] !== null && campaignMember['Id'] !== undefined && campaignMember['Id'] !== '') {
+
+                    var campaignStartDate = '{!claim.Campaign_Members__r.Service_Campaign__r.Start_Date__c}';
+                    var campaignEndDate = '{!claim.Campaign_Members__r.Service_Campaign__r.End_Date__c}';
+
+                    campaignStartDate = (campaignStartDate !== null && campaignStartDate !== undefined && (new Date(campaignStartDate) != 'Invalid Date'))
+                        ? (new Date(campaignStartDate))
+                        : null;
+
+                    campaignEndDate = (campaignEndDate !== null && campaignEndDate !== undefined && (new Date(campaignEndDate) != 'Invalid Date'))
+                        ? (new Date(campaignEndDate))
+                        : null;
+
+                    if (campaignStartDate !== null) {
+                        campaignStartDate = getDateReadableFormat(campaignStartDate);
+                    }
+                    if (campaignEndDate !== null) {
+                        campaignEndDate = getDateReadableFormat(campaignEndDate);
+                    }
+
+                    var campaign = {
+                        Id: '{!claim.Campaign_Members__r.Service_Campaign__c}',
+                        Name: '{!claim.Campaign_Members__r.Service_Campaign__r.Name}',
+                        Start_Date__c: campaignStartDate,
+                        End_Date__c: campaignEndDate
+                    };
+
+                    if (campaign['Id'] !== null && campaign['Id'] !== undefined && campaign['Id'] !== '') {
+
+                        campaignMember['Service_Campaign__r'] = campaign;
+
+                    } else {
+
+                        campaignMember['Service_Campaign__r'] = null;
+
+                    }
+
+                } else {
+
+                    campaignMember = null;
+
+                }
+
+                rate = {
+                    Id: '{!claim.Rate__r.Id}',
+                    Name: '{!claim.Rate__r.Name}'
+                };
+
+                claimtemplatePaymentDefinition = {
+                    Id: '{!claim.Claim_Template_Payment_Definition__r.Id}',
+                    Name: '{!claim.Claim_Template_Payment_Definition__r.Name}'
+                };
+
+                //create claim object to send to lightning component//
+                currentClaim = {
+                    Id: "{!$CurrentPage.parameters.id}",
+                    Name: "{!Claim__c.Name}",
+                    Claim_Record_Type__c: "{!Claim__c.Claim_Record_Type__c}",
+                    Claim_Type__c: "{!claim.Claim_Type__c}",
+                    Account__c: "{!Claim__c.Account__c}",
+                    Account__r: {
+                        Id: "{!Claim__c.Account__c}",
+                        Name: "{!claim.Account__r.Name}"
+                    },
+                    Inventory__c: "{!Claim__c.Inventory__c}",
+                    Inventory__r: {
+                        Id: "{!Claim__c.Inventory__c}",
+                        Name: "{!claim.Inventory__r.Name}",
+                        Item__r: {
+                            Name: "{!claim.Inventory__r.Item__r.Name}",
+                            Item_Type__c: "{!claim.Inventory__r.Item__r.Item_Type__c}",
+                            Parent_Product__r: {
+                                Id: "{!claim.Inventory__r.Item__r.Parent_Product__r.Id}"
+                            },
+                            Product_Name__c: "{!JSENCODE(claim.Inventory__r.Item__r.Product_Name__c)}"
+                        }
+                    },
+                    Warranty_Product__c: "{!Claim__c.Warranty_Product__c}",
+                    Warranty_Product__r: {
+                        Id: "{!Claim__c.Warranty_Product__c}",
+                        Name: "{!claim.Warranty_Product__r.Name}",
+                        Product_Name__c: "{!JSENCODE(claim.Warranty_Product__r.Product_Name__c)}"
+                    },
+                    Rate__r: rate,
+                    Claim_Template_Payment_Definition__r: claimtemplatePaymentDefinition,
+                    Units_Run__c: unitsRun,
+                    Date_of_Failure__c: "{!Claim__c.Date_of_Failure__c}",
+                    Date_of_Repair__c: "{!Claim__c.Date_of_Repair__c}",
+                    Date_Of_Purchase__c: "{!Claim__c.Date_Of_Purchase__c}",
+                    Request_SMR__c: "{!Claim__c.Request_SMR__c}",
+                    Work_order__c: "{!Claim__c.Work_order__c}",
+                    Service_Ticket__c: "{!Claim__c.Service_Ticket__c}",
+                    Host_NonHost__c: "{!Claim__c.Host_NonHost__c}",
+                    Delay_Reason__c: "{!Claim__c.Delay_Reason__c}",
+                    Request_SMR__c: requestSMR,
+                    SMR_Reason__c: "{!Claim__c.SMR_Reason__c}",
+                    Causal_Part_Number__c: "{!Claim__c.Causal_Part_Number__c}",
+                    Causal_Part_Number__r: {
+                        Id: "{!Claim__c.Causal_Part_Number__c}",
+                        Name: "{!Claim__c.Causal_Part_Number__r.Name}",
+                        Product_Name__c: "{!JSENCODE(Claim__c.Causal_Part_Number__r.Product_Name__c)}"
+                    },
+                    Fault_Code__c: "{!Claim__c.Fault_Code__c}",
+                    Fault_Code__r: {
+                        Id: "{!Claim__c.Fault_Code__c}",
+                        Name: "{!claim.Fault_Code__r.Name}"
+                    },
+                    Fault_found__c: "{!Claim__c.Fault_found__c}",
+                    Caused_by__c: "{!Claim__c.Caused_by__c}",
+                    Fault_Code_Comment__c: "{!JSENCODE(Claim__c.Fault_Code_Comment__c)}",
+                    CasualPart_Comments__c: "{!JSENCODE(Claim__c.CasualPart_Comments__c)}",
+                    work_Performed_comments__c: "{!JSENCODE(Claim__c.work_Performed_comments__c)}",
+                    Description__c: "{!JSENCODE(Claim__c.Description__c)}",
+                    TravelByHours__c: parseFloat("{!Claim__c.TravelByHours__c}"),
+                    TravelByDistance__c: parseFloat("{!Claim__c.TravelByDistance__c}"),
+                    TravelByLocation__c: "{!Claim__c.TravelByLocation__c}",
+                    Total_Meals_Cost__c: parseFloat("{!Claim__c.Total_Meals_Cost__c}"),
+                    Campaign_Members__c: "{!Claim__c.Campaign_Members__c}",
+                    Campaign_Members__r: campaignMember,
+                    Total_Category1_Cost__c: claimCostList.Total_Category1_Cost__c,
+                    Final_Category1_Cost__c: claimCostList.Final_Category1_Cost__c,
+                    Total_Category2_Cost__c: claimCostList.Total_Category2_Cost__c,
+                    Final_Category2_Cost__c: claimCostList.Final_Category2_Cost__c,
+                    Total_Labor_Cost__c: claimCostList.Total_Labor_Cost__c,
+                    Final_Labor_Cost__c: claimCostList.Final_Labor_Cost__c,
+                    Total_TravelByDistance_Cost__c: claimCostList.Total_TravelByDistance_Cost__c,
+                    Final_TravelByDistance_Cost__c: claimCostList.Final_TravelByDistance_Cost__c,
+                    Total_TravelByHours_Cost__c: claimCostList.Total_TravelByHours_Cost__c,
+                    Final_TravelByHours_Cost__c: claimCostList.Final_TravelByHours_Cost__c,
+                    Total_Parts_Cost__c: claimCostList.Total_Parts_Cost__c,
+                    Final_Parts_Cost__c: claimCostList.Final_Parts_Cost__c,
+                    Total_Meals_Cost__c: claimCostList.Total_Meals_Cost__c,
+                    Final_Meals_Cost__c: claimCostList.Final_Meals_Cost__c,
+                    Total_Parking_Cost__c: claimCostList.Total_Parking_Cost__c,
+                    Final_Parking_Cost__c: claimCostList.Final_Parking_Cost__c,
+                    Final_Claim_Cost__c: claimCostList.Final_Claim_Cost__c,
+                    Parts_Profit__c: claimCostList.Parts_Profit__c
+                };
+
+            } else {
+                currentClaim = null;
+            }
+
+            //call to lightning component
+            $Lightning.use("c:ClaimCreateEditAppDuplicate", function () {
+                $Lightning.createComponent("c:ClaimCreateEditCmpDuplicate", {
+
+                    claimPicklist: pickListJSON,
+                    isEdit: isEdit,
+                    currentClaim: currentClaim,
+                    relatedListData: relatedListObject,
+                    autoAddRemovedPart: autoAddRemovedPart,
+                    customSettingManager: customSettingManager,
+                    dealer: dealer,
+                    inventory12:inventory,
+                    applicablePolicy: applicablePolicy,
+                    site: site,
+                    claimListViewId: "{!claimListViewId}",
+                    faultCodeList: faultCodeMapperList
+
+                }, "lightning", function (cmp) {
+                    var fileUploadContainer = document.getElementById('fileUpload');
+                    var vfPageSpinner = document.getElementById('vf-page-spinner');
+                    vfPageSpinner.hidden = true;
+                    if (fileUploadContainer != null && fileUploadContainer != undefined) {
+                        vfPageSpinner.hidden = true;
+                        //fileUploadContainer.appendChild(document.querySelectorAll("[id$=uploaderComponent]")[0]);
+                    }
+                });
+            });
+
+        }
+    </script>
+</apex:page>

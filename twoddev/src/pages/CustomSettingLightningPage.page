@@ -1,0 +1,13 @@
+<apex:page showHeader="false" sidebar="false" standardController="Shipment_Detail__c">
+<apex:stylesheet value="/resource/slds212/assets/styles/salesforce-lightning-design-system.min.css"/>
+<apex:includeLightning />
+<div id="lightning"/>   
+    <script>
+    //call to lightning component
+        $Lightning.use("c:CustomSettingLightningApp",  function () {
+            $Lightning.createComponent("c:CustomSettingLightningAppCmp", {
+                sitePrefix : "{!$Site.Prefix}"
+            }, "lightning", function (cmp) {});
+        }); 
+    </script>
+</apex:page>

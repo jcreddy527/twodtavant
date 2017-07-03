@@ -1,0 +1,17 @@
+<apex:page standardStylesheets="false" sidebar="false">
+    <apex:includeLightning />
+    
+    <div id="lightning" />
+    
+    <script>
+        $Lightning.use("c:BulkUploadApp", function() {
+            $Lightning.createComponent("c:BulkUploadCmp",
+            {},
+            "lightning",
+            function(cmp) {
+                // do some stuff
+            });
+        });
+    </script>
+    
+</apex:page>

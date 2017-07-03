@@ -1,0 +1,135 @@
+<apex:page title="Warranty Registration"
+    standardController="Inventory__c" extensions="WarrantyRegistrationCtrl">
+    <title>Warranty Registration</title>
+    <!--====================================================================-->
+    <!--Name: CoreWarrantyRegistration                                          -->
+    <!--Copyright � 2014 Tavant Technology Inc                                        -->
+    <!--====================================================================-->
+    <!--====================================================================-->
+    <!-- Purpose:                                                           -->
+    <!--                                                                    -->
+    <!--====================================================================-->
+    <!--====================================================================-->
+    <!-- History                                                            -->
+    <!-- -------                                                            -->
+    <!-- VERSION  AUTHOR           DATE              DETAIL                 -->
+    <!--   1.0 -  Susmita           05/11/2014              INITIAL DEVELOPMENT    -->
+    <!--====================================================================-->
+    <apex:pageMessages />
+    <apex:sectionHeader subtitle="New Warranty Registration"
+        title="Warranty Registration" />
+    <apex:form id="formId">
+    <apex:pageMessages />
+        <apex:pageBlock >
+            <div align="center">
+               <apex:pageBlockButtons location="bottom">
+                <apex:actionStatus id="regActStatusId">
+                <apex:facet name="start" >
+                          <apex:commandButton value="Loading..."
+                   status="regActStatusId" disabled="true"
+                   rendered="{!IF(PolicyDefinitionWrapperList.size > 0,true,false) && $ObjectType.Warranty_Registration__c.Updateable}" rerender="formId"/>          
+                </apex:facet>
+                <apex:facet name="stop" >
+                        <apex:commandButton value="Register" action="{!registerInventory}" status="regActStatusId" 
+                       rendered="{!IF(PolicyDefinitionWrapperList.size > 0,true,false) && $ObjectType.Warranty_Registration__c.Updateable}"  rerender="formId"/>            
+                </apex:facet>
+            </apex:actionStatus>                                    
+                   <apex:commandButton value="Cancel" action="{!cancelRegistration}"
+                       rendered="{!isSearched}" />
+               </apex:pageBlockButtons>
+           </div>
+
+            <apex:pageBlockSection title="Inventory Information"
+                collapsible="false">
+                <apex:repeat value="{!$ObjectType.Inventory__c.FieldSets.InventoryReadOnlyFields}"
+                    var="objInv1">
+                    <apex:outputField value="{!Inventory__c[objInv1]}" />
+                </apex:repeat>
+            </apex:pageBlockSection>
+            
+            
+            <apex:pageBlockSection title="Warranty Registration" collapsible="false"  rendered="{!Inventory.Customer__c== null}">
+                <apex:pageBlockSectionItem id="infoBlock">
+                    <apex:outputLabel value="Customer Name" for="cusSite"/>
+                    <apex:actionRegion id="infoRegion">
+                        <apex:inputField value="{!Inventory.Customer__c}" required="true">
+                        <apex:actionSupport event="onchange" action="{!getCustomerInfo}" rerender="infoBlock,infoRegion,pbCustDetails" status="status"/>
+                        </apex:inputField>
+                    </apex:actionRegion>
+                </apex:pageBlockSectionItem> 
+            </apex:pageBlockSection>
+            
+             <apex:pageBlockSection title="Warranty Registration" collapsible="false"  rendered="{!Inventory.Customer__c != null}">
+                 <apex:outputField label="Customer Name" value="{!Inventory.Customer__c}" id="custName"></apex:outputField>
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockSection id="pbCustDetails">
+            <apex:outputField label="Street" value="{!CustomerInfoDetail.BillingStreet}" id="custAdd" rendered="{!Inventory.Customer__c != null}"></apex:outputField>
+            <apex:outputField label="State" value="{!CustomerInfoDetail.BillingState}" id="custState" rendered="{!Inventory.Customer__c != null}"></apex:outputField>
+            <apex:outputField label="Country" value="{!CustomerInfoDetail.BillingCountry}" id="custCountry" rendered="{!Inventory.Customer__c!=null}"></apex:outputField>
+            <apex:outputField label="Zip" value="{!CustomerInfoDetail.BillingPostalCode }" id="custZip" rendered="{!Inventory.Customer__c != null}"> </apex:outputField>
+            </apex:pageBlockSection>        
+
+
+            <apex:pageBlockSection title="Warranty Registration Information"
+                collapsible="false">
+                <apex:repeat value="{!$ObjectType.Inventory__c.FieldSets.InventoryEditableFields}"
+                    var="objInv2">
+                    <apex:inputField value="{!Inventory__c[objInv2]}"
+                        required="{!OR(objInv2.DBRequired, objInv2.required)}" />
+                </apex:repeat>
+                <apex:inputTextarea label="{!$Label.Comments}"
+                    value="{!CurrentInventoryDetails}"
+                    rendered="{!$ObjectType.Warranty_Registration__c.fields.Registration_Comments__c.Accessible}"
+                    rows="5" cols="50" style="resize: none;" />
+            </apex:pageBlockSection>
+
+            <div align="center">
+                <apex:actionStatus id="actStatusId" >
+                    <apex:facet name="start" >
+                              <apex:commandButton value="Loading..."
+                    status="actStatusId" disabled="true"
+                    rerender="searchresultId,formId,resultTblId" />          
+                    </apex:facet>
+                    <apex:facet name="stop" >
+                            <apex:commandButton value="{!$Label.Search_Policy}"
+                    action="{!fetchPolicyDefinitions}" status="actStatusId"
+                    rerender="searchresultId,formId,resultTblId" />            
+                    </apex:facet>
+                </apex:actionStatus>
+            
+                
+                <apex:commandButton value="{!$Label.Cancel}" action="{!Cancel}"
+                    rendered="{!!isSearched}" />
+                <!-- <apex:commandButton value="{!$Label.Register_without_Warranty}" action="{!registerWOWarranty}" />  -->
+            </div>
+
+            <apex:pageBlockSection title="Policy Definitions" collapsible="false"
+                columns="1" rendered="{!isSearched}" id="searchresultId">
+                <apex:pageBlockTable value="{!PolicyDefinitionWrapperList}"
+                    var="objPolicyWrap"
+                    rendered="{!IF(PolicyDefinitionWrapperList.size > 0,true,false)}"
+                    id="resultTblId">
+
+                    <apex:column headerValue="Action">
+                        <apex:inputCheckbox value="{!objPolicyWrap.selected}"
+                            id="checkedone"
+                            disabled="{!IF(objPolicyWrap.isDisabled == true,true,false)}"></apex:inputCheckbox>
+                    </apex:column>
+
+                    <apex:repeat value="{!$ObjectType.Policy_Definition__c.FieldSets.PolicyFields}"
+                        var="f">
+                        <apex:column headerValue="{!f.Label}">
+                            <apex:outPutField value="{!objPolicyWrap.ObjPolicyDefinition[f]}" />
+                        </apex:column>
+                    </apex:repeat>
+
+                </apex:pageBlockTable>
+                <apex:outputLabel value="{!$Label.No_Policy_Definition_Message}"
+                    rendered="{!IF(PolicyDefinitionWrapperList.size > 0,false,true)}"></apex:outputLabel>
+            </apex:pageBlockSection>
+
+        </apex:pageBlock>
+
+    </apex:form>
+</apex:page>

@@ -1,0 +1,214 @@
+<!--/////////////////////////////////////
+
+Copyright � 2016  Tavant Technology Inc
+Name - CampaignMember
+Purpose - component to add inventory to campaign 
+		  and create campaign
+Date - 12/27/2016
+Last Edited by - AMAN SAWHNEY
+
+/////////////////////////////////////-->
+
+<aura:component access="global" controller="CampaignMember" implements="force:appHostable">
+    <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" />
+    <aura:attribute name="groupWrap" type="GroupWrapper[]" />
+    <aura:attribute name="groups" type="string" />     
+    <aura:attribute name="showSpinner" type="boolean"/>
+    <aura:attribute name="showToast" type="boolean"/>
+    <aura:attribute name="showNew" type="boolean"/>
+    <aura:attribute name="showError" type="boolean"/>
+    <aura:attribute name="showTable" type="boolean" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <style>
+        #sides{
+        margin:0;        
+        }
+        
+        #left{
+        float:left;
+        width:75%;
+        overflow:hidden;    
+        }
+        
+        #right{
+        float:left;
+        width:25%;
+        overflow:hidden;
+        } 
+        #buttons{
+        margin:0;
+        width:100%;
+        position:absolute;    
+        }
+        #btn1{
+        float:left;
+        width:10%;
+        overflow:hidden;
+        }
+        #btn2{
+        float:left;
+        width:10%;
+        overflow:hidden;
+        } 
+        .TableClass{
+        border: 1px solid #ddd;
+        text-align: left;
+        padding-top : 5%;
+        border-collapse: collapse;
+        width: 100%;
+        }
+        .thclass{
+        border: 1px solid #ddd;
+        text-align: left;
+        padding: 15px;   
+        }
+        .trClass{
+        border: 1px solid #ddd;
+        text-align: left;
+        padding: 15px;
+        }
+        .slds-assistive-text {
+        position: absolute !important;
+        margin: 2px !important;
+        border: 0 !important;
+        padding: 0 !important;
+        width: 1px !important;
+        height: 2px !important;
+        }
+        input[type=text], select {
+        width: 50%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;    
+        }
+        .blur:after {
+        content: '';
+        height: 100%;
+        width: 100%;
+        background: rgba(255, 255, 255, .2);
+        position: absolute;
+        }
+        
+    </style>
+    
+    <div class="main-body">
+        <header class="slds-text-heading--large slds-align--absolute-center header">
+            {!$Label.c.Campaign_Member_Management}
+        </header>
+        <div class="containerC" aura:id="outer">
+            
+            
+            <aura:if isTrue="{!v.showTable ==true}">
+                <div class="slds-grid slds-wrap slds-grid">
+                    <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                        <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon--right">
+                            <aura:if isTrue="{!v.showSpinner}"> 
+                                <lightning:spinner variant="brand" size="small" class="searchboxSpinner"/>
+                            </aura:if>
+                            <ui:inputText label="{!$Label.c.Campaign_Search}" class="slds-input" keyup="{!c.searchGroup}" updateOn="keyup"/>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="jobcode-container">
+                <table class="slds-table slds-table--bordered slds-table--cell-buffer" role="grid" >
+                    <thead>
+                        <tr class="slds-text-title--caps">
+                            <th scope="col" class="slds-is-resizable">
+                                <div style="width:10%;float:left;word-wrap:break-word;color:black;"><b><ui:outputText aura:id="checkbox" value="{!$Label.c.Add_To_Campaign}"/></b></div>
+                            </th>
+                            <th scope="col" class="slds-is-resizable">
+                                <div style="width:18%;float:left;word-wrap:break-word;color:black;"><b><ui:outputText class="form-element__help" value="{!$Label.c.Name}"/></b></div>
+                            </th>
+                            <th scope="col" class="slds-is-resizable">
+                                <div style="width:18%;float:left;word-wrap:break-word;color:black;"><b><ui:outputText class="form-element__help" value="{!$Label.c.Start_Date}"/></b></div>
+                            </th>
+                            <th scope="col" class="slds-is-resizable">
+                                <div style="width:18%;float:left;word-wrap:break-word;color:black;"><b><ui:outputText class="form-element__help" value="{!$Label.c.End_Date}"/></b></div>
+                            </th>
+                            <th scope="col" class="slds-is-resizable"> 
+                                <div style="width:18%;float:left;word-wrap:break-word;color:black;"><b><ui:outputText class="form-element__help" value="{!$Label.c.Campaign_Type}"/></b></div>
+                            </th>
+                            <th scope="col" class="slds-is-resizable">       
+                                <div style="width:18%;float:left;word-wrap:break-word;color:black;"><b><ui:outputText class="form-element__help" value="{!$Label.c.Description}"/></b></div>
+                                
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.groupWrap}" var="con">
+                            <tr class="slds-text-title--caps">
+                                <td class="slds-cell-wrap">
+                                    <div class="slds-resizable"> 
+                                        <span class="slds-checkbox">
+                                            <label class="slds-checkbox__label">
+                                                <ui:inputCheckbox aura:id="checkbox" value="{!con.isSelected}" />
+                                                <span class="slds-checkbox--faux"></span>
+                                            </label>
+                                        </span>
+                                    </div>
+                                </td>
+                                <td class="slds-cell-wrap">
+                                    <div ><ui:outputText class="form-element__help" value="{!con.groupWr.Name}"/></div>
+                                </td>
+                                <td class="slds-cell-wrap">
+                                    <div ><ui:outputText class="form-element__help" value="{!con.groupWr.Start_Date__c}"/></div>
+                                </td>
+                                <td class="slds-cell-wrap">
+                                    <div ><ui:outputText class="form-element__help" value="{!con.groupWr.End_Date__c}"/></div>
+                                </td>
+                                <td class="slds-cell-wrap">
+                                    <div ><ui:outputText class="form-element__help" value="{!con.groupWr.Campaign_Type__c}"/></div>
+                                </td>
+                                <td class="slds-cell-wrap">
+                                    <div ><ui:outputText class="form-element__help" value="{!con.groupWr.Campaign_Descrip__c}"/></div>      
+                                </td>
+                            </tr>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+                </div>
+                <br/>
+                <div class="slds-button-group padder" role="group">
+                    <button class="slds-button slds-button--brand" onclick = "{!c.addtoGroup}">{!$Label.c.Add_to_CampaignButton}</button>&nbsp;&nbsp;
+                    <button class="slds-button slds-button--brand" onclick = "{!c.createGroup}">{!$Label.c.Create_Campaign}</button>&nbsp;&nbsp;
+                    <button class="slds-button slds-button--brand" onclick = "{!c.cancel}">{!$Label.c.Cancel}</button>
+                </div>
+               
+            </aura:if>
+            <aura:if isTrue="{!v.showNew}">
+                <c:NewCampaign objectName="{!v.objectName}" recordIds="{!v.groups}"/>
+            </aura:if>
+            <aura:if isTrue="{!v.showToast}">
+                <div class="slds-notify_container" align="center">
+                    <span>{!$Label.c.No_Campaign_Found}</span>
+                    <ui:button label="{!$Label.c.Create_Campaign}" press="{!c.createGroup}"/>
+                </div>
+            </aura:if>
+        </div>
+        <aura:if isTrue="{!v.showError}">
+            <div>
+                <div aria-hidden="false" aria-labelledby="prompt-heading-id" aria-describedby="prompt-message-wrapper" role="alertdialog" class="slds-modal slds-modal--prompt slds-fade-in-open">
+                    <div class="slds-modal__container slds-modal--prompt" role="document" id="prompt-message-wrapper" tabindex="0">
+                        <div class="slds-modal__header slds-theme--error slds-theme--alert-texture">
+                            <h2 class="slds-text-heading--medium" id="prompt-heading-id">{!$Label.c.Error}</h2>
+                        </div>
+                        <div class="slds-modal__content slds-p-around--medium">
+                            <div>
+                                <p>{!$Label.c.Please_Select_Records_And_Groups}</p>
+                            </div>
+                        </div>
+                        <div class="slds-modal__footer slds-theme--default">
+                            <button class="slds-button slds-button--neutral" onclick="{!c.gotoListView}">{!$Label.c.Okay}</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-backdrop slds-backdrop--open"></div>
+            </div>
+        </aura:if>
+    </div>
+</aura:component>

@@ -1,0 +1,10 @@
+.THIS .claim-form{
+    border: outset;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: white;
+}
+.THIS .claim-grid{
+  background-color: #EDEBEB;
+    padding: 10px;
+}

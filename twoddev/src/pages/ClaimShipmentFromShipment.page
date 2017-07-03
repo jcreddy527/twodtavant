@@ -1,0 +1,15 @@
+<apex:page standardController="Shipment_Detail__c">
+
+  <!-- Begin Default Content REMOVE THIS -->
+    <flow:interview name="From_Shipment_Claim_Part_Insert" finishLocation="{!URLFOR( '/' + Shipment_Detail__c.Id )}" rendered="{!if($Site.prefix== '',true,false)}" id="flowId1" >
+        <apex:param name="SovShipment" value="{!Shipment_Detail__c}"/>
+        <apex:param name="varTShipmentReturnLocationId" value="{!Shipment_Detail__c.Return_Location__c}"/>
+    </flow:interview>
+    <flow:interview name="From_Shipment_Claim_Part_Insert" finishLocation="{!URLFOR( '/TWOD3/' + Shipment_Detail__c.Id )}" rendered="{!if(NOT($Site.prefix== ''),true,false)}">
+        <apex:param name="SovShipment" value="{!Shipment_Detail__c}"/>
+        <apex:param name="varTShipmentReturnLocationId" value="{!Shipment_Detail__c.Return_Location__c}"/>
+    </flow:interview>
+    <apex:form >
+      <apex:commandButton value="{!$Label.Back_To_Main_Page}" action="{!cancel}"/>
+   </apex:form>
+</apex:page>

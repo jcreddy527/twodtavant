@@ -1,0 +1,24 @@
+<apex:page standardController="Policy_Applicability_Term__c" standardStylesheets="false" sidebar="false" recordSetVar="pat" >
+    <apex:includeLightning />
+    <div id="lightning" />
+    
+    <script>
+    var totalPageURL = window.location.toString();
+var protocalType= totalPageURL.split("//")[0];
+var tempbaseURL = totalPageURL.split("//")[1].split("/");
+var finalBaseURL = protocalType+'//'+tempbaseURL[0] + "{!$Site.Prefix}";
+
+    
+        $Lightning.use("c:PATCreationLight", function() {
+            $Lightning.createComponent("c:ApplicabilityType",
+                                       {id : "{!$CurrentPage.parameters.id}",BaseURL:finalBaseURL},
+                                       "lightning",
+                                       function(cmp) {
+                                           // do some stuff
+                                       });
+        });
+    
+    
+    
+    </script>
+</apex:page>

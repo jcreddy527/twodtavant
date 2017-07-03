@@ -1,0 +1,14 @@
+.THIS .result{
+    display: none;
+}
+.THIS.heading {
+    background: #1a315b;
+    color: white;
+    padding: 25px;
+}
+.THIS.main-body {
+    font-family: "Salesforce Sans", Arial, sans-serif;
+}
+.THIS .required {
+    border-left: solid red;
+}

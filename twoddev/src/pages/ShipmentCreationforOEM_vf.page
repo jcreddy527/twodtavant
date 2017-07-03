@@ -1,0 +1,12 @@
+<apex:page showHeader="false" sidebar="false" standardController="Shipment_Detail__c">
+    <apex:includeLightning />
+    <div id="lightning"/>
+    <script>
+        //call to lightning component
+        $Lightning.use("c:ShipmentCreationforOEMApp",  function () {
+            $Lightning.createComponent("c:ShipmentCreationforOEM", {
+                sitePrefix : "{!$Site.Prefix}"
+            }, "lightning", function (cmp) {});
+        });
+    </script>
+</apex:page>

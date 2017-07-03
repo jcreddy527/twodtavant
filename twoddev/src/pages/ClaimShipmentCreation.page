@@ -1,0 +1,24 @@
+<apex:page standardController="Removed_Claim_Part__c">
+<apex:sectionHeader subtitle="{!$Label.New_Claim_Shipment}" title="{!$Label.Claim_Shipment}"/>
+
+  <!-- Begin Default Content REMOVE THIS -->
+    <flow:interview name="Claim_Shipment_Creation" finishLocation="{!URLFOR( '/' + Removed_Claim_Part__c.Id )}" rendered="{!if($Site.prefix== '',true,false)}" id="flowId1" >
+        <apex:param name="claimPartId" value="{!Removed_Claim_Part__c.Id}"/>
+        <apex:param name="claimPartQuantity" value="{!Removed_Claim_Part__c.Quantity__c}"/>
+        <apex:param name="claimPartShippedQuantity" value="{!Removed_Claim_Part__c.Shipped_Quantity__c}"/>
+        <apex:param name="varTCurrentUser" value="{!$User.Id}"/>
+        <apex:param name="varTReturnLocationId" value="{!Removed_Claim_Part__c.Return_Location__c}"/>
+        
+    </flow:interview>
+    <flow:interview name="Claim_Shipment_Creation" finishLocation="{!URLFOR( '/TWOD3/' + Removed_Claim_Part__c.Id )}" rendered="{!if(NOT($Site.prefix== ''),true,false)}">
+        <apex:param name="claimPartId" value="{!Removed_Claim_Part__c.Id}"/>
+        <apex:param name="claimPartQuantity" value="{!Removed_Claim_Part__c.Quantity__c}"/>
+        <apex:param name="claimPartShippedQuantity" value="{!Removed_Claim_Part__c.Shipped_Quantity__c}"/>
+        <apex:param name="varTCurrentUser" value="{!$User.Id}"/>
+        <apex:param name="varTReturnLocationId" value="{!Removed_Claim_Part__c.Return_Location__c}"/>
+    </flow:interview>
+  <!-- End Default Content REMOVE THIS -->
+  <apex:form >
+      <apex:commandButton value="{!$Label.Back_To_Main_Page}" action="{!cancel}"/>
+  </apex:form>
+</apex:page>

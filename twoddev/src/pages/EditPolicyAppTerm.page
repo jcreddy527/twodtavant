@@ -1,0 +1,143 @@
+<apex:page id="pageId" standardController="Policy_Applicability_Term__c"
+    extensions="PATCreationCtrl" tabStyle="Policy_Applicability_Term__c">
+    <!--====================================================================-->
+    <!--Name: CoreEditPolicyAppTerm                                         -->
+    <!--Copyright © 2014 Tavant Technology Inc                              -->
+    <!--====================================================================-->
+    <!--====================================================================-->
+    <!-- Purpose:                                                           -->
+    <!-- Page that enables to edit a policy app term record                  -->
+    <!--====================================================================-->
+    <!--====================================================================-->
+    <!-- History                                                            -->
+    <!-- -------                                                            -->
+    <!-- VERSION  AUTHOR           DATE              DETAIL                 -->
+    <!--   1.0 -  Neethu          10-11-2014         INITIAL DEVELOPMENT    -->
+    <!--   2.0 -  Susmita         25-09-2015         Added Delete           -->
+    <!--                                                functionality       -->
+    <!--====================================================================-->
+
+    <apex:pageMessages />
+    <apex:sectionHeader subtitle="{!PDAppsWrapr.PolicyAppTerm.Name}"
+        title="Edit Policy Applicability Term" />
+    <apex:form id="frm">
+
+        <apex:inputHidden rendered="{!$ObjectType.Policy_Definition__c.fields.Name.Accessible}"
+            id="selectedRecord" value="{!selectedObjectIds}" />
+        <apex:actionFunction name="callBackFunction" reRender="PDAppTerm,frm"
+            action="{!addNewObjectRecord}" status="status" />
+
+        <apex:pageblock id="PDAppTerm">
+
+            <apex:pageBlockSection title="Policy Applicability Terms"
+                showHeader="false" columns="2" id="block2">
+
+                <apex:pageBlockSectionItem >
+
+                    <apex:outputLabel for="pType" value="Aplicability Type" />
+
+                    <apex:actionregion >
+                        <apex:inputField value="{!PDAppsWrapr.PolicyAppTerm.Applicability_Term_Type__c}"
+                            required="true" id="pType">
+                            <apex:actionSupport event="onchange" rerender="PDAppTerm,frm"
+                                status="status" />
+                        </apex:inputField>
+                    </apex:actionregion>
+
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel for="displayType" value="Aplicability Sub-Type" />
+                    <apex:inputField value="{!PDAppsWrapr.PolicyAppTerm.Applicability_SubType__c}"
+                        id="displayType" required="true" onchange="document.getElementById('searchStr').value = '';">
+                        <apex:actionSupport event="onchange" rerender="PDAppTerm"
+                            status="status" />
+                    </apex:inputField>
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel for="pMapping" value="WR Field Mapping" />
+                    <apex:inputField value="{!PDAppsWrapr.PolicyAppTerm.WR_Field_Mapping__c}"
+                        id="pMapping" />
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem rendered="{!AND(( PDAppsWrapr.PolicyAppTerm.Applicability_Term_Type__c == 'Referred by ID' ),NOT(PDAppsWrapr.PolicyAppTerm.Applicability_SubType__c==''))}">
+
+                    <apex:outputLabel for="psearch2" value="Related To" />
+                    <apex:variable var="c" value="{!1}">
+                        <!-- 
+                    <apex:inputText value="{!PDAppsWrapr.Name}" id="psearch2" maxlength="200" size="20" >
+                    <apex:actionSupport event="onchange" rerender="PDAppTerm,frm"/>
+                    </apex:inputText> 
+                    -->
+                        <input type="text" id="searchStr"
+                            value="{!HTMLENCODE(PDAppsWrapr.Name)}" />
+                        <a href="#" id="acc3_lkwgt"
+                            onclick="openLookupPopup('{!HTMLENCODE(PDAppsWrapr.PolicyAppTerm.Applicability_SubType__c)}', 'Single');"
+                            tabindex="2" title="Parent Lookup (New Window)"
+                            style="text-decoration: none;"> <img src="/s.gif"
+                            alt="Parent Lookup (New Window)" class="lookupIcon"
+                            onblur="this.className = 'lookupIcon';"
+                            onfocus="this.className = 'lookupIconOn';"
+                            onmouseout="this.className = 'lookupIcon';this.className = 'lookupIcon';"
+                            onmouseover="this.className = 'lookupIconOn';this.className = 'lookupIconOn';"
+                            title="Parent Lookup (New Window)" />
+                        </a>
+                    </apex:variable>
+
+                </apex:pageBlockSectionItem>
+
+                <apex:pageBlockSectionItem rendered="{!( PDAppsWrapr.PolicyAppTerm.Applicability_Term_Type__c == 'Referred by Text')}">
+                    <apex:outputLabel for="pLabel" value="Related To" />
+                    <apex:inputText value="{!PDAppsWrapr.PolicyAppTerm.Applicability_Label__c}"
+                        rendered="{!$ObjectType.Policy_Applicability_Term__c.fields.Applicability_Label__c.Accessible}"
+                        id="pLabel" maxlength="200" size="20" required="true" />
+                </apex:pageBlockSectionItem>
+
+            </apex:pageBlockSection>
+
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton action="{!SavePDRecord}" value="Save"
+                    rendered="{!$ObjectType.Policy_Applicability_Term__c.Createable}" />
+                <apex:commandButton action="{!cancel}" value="Cancel"
+                    immediate="true" />
+            </apex:pageBlockButtons>
+
+            </apex:pageBlock>
+
+
+            <apex:outputpanel >
+                <apex:actionstatus id="status">
+                    <apex:facet name="start">
+                        <div class="waitingSearchDiv" id="el_loading"
+                            style="background-color: #fbfbfb; height: 100%; opacity: 0.65; width: 100%;">
+                            <div class="waitingHolder" style="top: 74.2px; width: 91px;">
+                                <img class="waitingImage" src="/img/loading.gif"
+                                    title="{!$Label.Please_Wait}" /> <span
+                                    class="waitingDescription">Please Wait...</span>
+                            </div>
+                        </div>
+                    </apex:facet>
+                </apex:actionstatus>
+            </apex:outputpanel>
+    </apex:form>
+    <script>
+    var newWin;
+        function openLookupPopup(ObjectName,selected){ 
+            var t =document.getElementById('searchStr').value;
+            var url;
+            url ="/apex/ObjectLookup?oName="+ObjectName+"&searchStr="+t+"&displayType="+selected;
+            newWin=window.open(url, 'Popup','height=500,width=650,left=400,top=150,resizable=no,scrollbars=yes,toolbar=no,status=no');
+            return false;
+        }
+        
+    function closeLookupPopup(type){
+       if (null!=newWin)
+       {
+          newWin.close();
+       }
+        callBackFunction();
+    }
+    
+    </script>
+</apex:page>

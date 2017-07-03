@@ -1,0 +1,19 @@
+<apex:page showHeader="false" sidebar="false" standardController="Claim__c" extensions="SupplierRecoveryClaimExt">
+    <apex:stylesheet value="/resource/slds212/assets/styles/salesforce-lightning-design-system.min.css"/>
+    <apex:includeLightning />
+    <div id="lightning"/>
+    
+    <script>
+
+            //call to lightning component
+            $Lightning.use("c:SupplierRecoveryClaimApp", function () {
+                $Lightning.createComponent("c:SupplierRecoveryClaimCmp", {
+                }, "lightning", function (cmp) {
+                    
+                });
+            });
+
+        
+    </script>
+
+</apex:page>

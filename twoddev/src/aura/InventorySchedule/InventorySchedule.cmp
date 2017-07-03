@@ -1,0 +1,77 @@
+<aura:component implements="flexipage:availableForAllPageTypes" access="global" >
+    <aura:attribute name="inventoryScheduleList" type="Object[]"/>
+    
+    <table class="slds-table slds-table--bordered slds-table--fixed-layout" role="grid">
+        <thead>
+            <tr class="slds-line-height--reset">
+                <th scope="col" style="width:3.25rem;" class="slds-text-align--right">
+                </th>
+                
+                <th focusable="true" class="slds-is-sortable slds-is-resizable slds-text-title--caps" scope="col">
+                    	<span class="slds-assistive-text">Sort </span>
+                        <span class="slds-truncate" title="Name">Name</span>
+                        <div class="slds-icon_container">
+                            <c:svg class="slds-icon slds-icon--x-small slds-icon-text-default slds-is-sortable__icon" ariaHidden="true" xlinkHref="/assets/icons/utility-sprite/svg/symbols.svg#arrowdown" />
+                        </div>
+                        <span class="slds-assistive-text" aria-live="assertive" aria-atomic="true"></span>
+                </th>
+                
+                <th focusable="true" class="slds-is-sortable slds-is-resizable slds-text-title--caps" scope="col">
+                    	<span class="slds-assistive-text">Sort </span>
+                        <span class="slds-truncate" title="Account Name">Description</span>
+                        <div class="slds-icon_container">
+                            <c:svg class="slds-icon slds-icon--x-small slds-icon-text-default slds-is-sortable__icon" ariaHidden="true" xlinkHref="/assets/icons/utility-sprite/svg/symbols.svg#arrowdown" />
+                        </div>
+                        <span class="slds-assistive-text" aria-live="assertive" aria-atomic="true"></span>
+                </th>
+                
+                <th focusable="true" class="slds-is-sortable slds-is-resizable slds-text-title--caps" scope="col">
+                    	<span class="slds-assistive-text">Sort </span>
+                        <span class="slds-truncate" title="Account Name">Preventative Maintenance Date</span>
+                        <div class="slds-icon_container">
+                            <c:svg class="slds-icon slds-icon--x-small slds-icon-text-default slds-is-sortable__icon" ariaHidden="true" xlinkHref="/assets/icons/utility-sprite/svg/symbols.svg#arrowdown" />
+                        </div>
+                        <span class="slds-assistive-text" aria-live="assertive" aria-atomic="true"></span>
+                </th>
+               
+                <th focusable="true" class="slds-is-sortable slds-is-resizable slds-text-title--caps" scope="col">
+                    	<span class="slds-assistive-text">Sort </span>
+                        <span class="slds-truncate" title="Account Name">Time Left</span>
+                        <div class="slds-icon_container">
+                            <c:svg class="slds-icon slds-icon--x-small slds-icon-text-default slds-is-sortable__icon" ariaHidden="true" xlinkHref="/assets/icons/utility-sprite/svg/symbols.svg#arrowdown" />
+                        </div>
+                        <span class="slds-assistive-text" aria-live="assertive" aria-atomic="true"></span>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <aura:iteration items="{!v.inventoryScheduleList}" var="obj">
+                <tr class="slds-hint-parent">
+                    <td role="gridcell" class="slds-text-align--right" style="width:3.25rem;">
+                        <ui:inputRadio name="options"/>
+                    </td>
+                    
+                    <td role="gridcell">
+                        <div class="slds-truncate" >{!obj.Name}</div>
+                    </td>
+                    
+                    <td role="gridcell">
+                        <div class="slds-truncate" >{!obj.Description__c}</div>
+                    </td>
+                    
+                    <td role="gridcell">
+                        <div class="slds-truncate" >{!obj.Preventative_Maintenance_Date__c}</div>
+                    </td>
+                    
+                    <td role="gridcell">
+                        <div class="slds-truncate" >{!obj.Time_Left__c}</div>
+                    </td>
+                </tr>
+            </aura:iteration>
+            
+        </tbody>
+    </table>
+    
+    
+    
+</aura:component>

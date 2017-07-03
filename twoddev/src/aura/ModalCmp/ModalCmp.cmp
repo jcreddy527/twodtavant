@@ -1,0 +1,35 @@
+<aura:component >
+  <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" />
+
+  <aura:attribute name="ModalSize" type="String" default="slds-modal slds-fade-in-open slds-visible" />
+  <aura:attribute name="isPopup" type="boolean" default="true"/>
+  <aura:attribute name="isLarge" type="boolean" default="false"/>
+  <aura:attribute name="Modalheader" type="String" />
+  <aura:attribute name="body" type="Aura.Component[]"/>
+  <aura:attribute name="isShowCancel" type="boolean" default="false"/>
+    <aura:attribute name="BaseURL" type="string"/>
+
+  <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+  <aura:registerEvent name="ModalCloseEvent" type="c:ModalCloseEvent" />
+  <aura:if isTrue="{!v.isPopup}">
+    <div aria-hidden="false" role="dialog" class="{!v.ModalSize}">
+      <div class="slds-modal__container">
+        <div class="slds-modal__header">
+          <button class="slds-button slds-button--icon-inverse slds-modal__close"  onclick = "{!c.hidepopup}">
+            <span>
+              <c:svg class="slds-icon icon__svg icon-utility-close " xlinkHref="{!v.BaseURL + '/resource/slds/assets/icons/utility-sprite/svg/symbols.svg#close'}" ariaHidden="false"/>
+            </span>
+            <span class="slds-assistive-text">Close</span>
+          </button>
+        </div>
+          
+        <div class="slds-modal__content">
+          <div>
+            {!v.body}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slds-modal-backdrop slds-modal-backdrop--open"></div>
+  </aura:if>
+</aura:component>

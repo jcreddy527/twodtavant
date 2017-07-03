@@ -1,0 +1,195 @@
+<aura:documentation>
+	<aura:description>Documentation</aura:description>
+	<aura:example name="ExampleName" ref="exampleComponentName" label="Label">
+This generic compoenent takes care of CRUD functionality of the object records in salesforce.
+
+There are eight helper methods that takes some parameters and gives some output related to CRUD-
+
+1. readRaw()  : Takes four parameters namely
+				i)   component                   : For passing the component which can call the component methods.
+				ii)  event                       : For current event that triggered the helper method.
+				iii) query {string}              : It is a SOQL select query which is passed to backend for reading the objects.
+        		iV)  callbackFunction(response)  : As soon as the response comes from the server side, this method
+                                                   is executed and all the response related work should be done inside this method
+                                                   as the scope of response is inside this method only;
+
+			Q	What is returned as response?
+			A	response is the javascript object which will be:
+			   1. errorMsg    : error message with respect to that query.
+				 			OR
+			   2. sObjectList : list of sObjects returned.
+        
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////			
+
+2. readDom() : Takes six parameters namely
+			i)   component                   : For passing the component which can call the component methods.
+			ii)  event                       : For current event that triggered the helper method.
+			iii) query {string}              : It is a SOQL select query which is passed to backend for reading the objects.
+			iv)  errorVar										 : Aura page variable on which error string is saved.
+			v)   objectVar                   : Aura page variable in which returned object list is saved.
+			Vi)  callbackFunction(response)  : As soon as the response comes from the server side, this method
+															 					 is executed and all the response related work should be done inside this list
+																				 as the scope of response is inside this function only;
+
+			 		Q	What is returned as response?
+			 		A	response is the javascript object which will be:
+			 		   1. errorMsg    : error message with respect to that query.
+			 			 			OR
+			 		   2. sObjectList : list of sObjects returned.
+        
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+3. insertRaw() : Takes four parameters namely
+			i)   component                           : For passing the component which can call the component methods.
+			ii)  event                               : For current event that triggered the helper method.
+			iii) sObjectList  {javascript object[]}  : Array of javascript objects in following format is given
+                                    eg.
+                                    {
+                                    sobjectType: 'Contact',
+                                    FirstName: "rfthr",
+                                    LastName: "sawtdgsrtgu",
+                                    Email: "sawhndgsrtgjcv@gmail.com"
+                                    }
+                                    here *sobjectType is the mandatory feild otherwise the insert
+        							function will not understand where to inert the record.
+
+			iV)  callbackFunction(response)          : As soon as the response comes from the server side, this method
+															 					         is executed and all the response related work should be done inside this method
+																				         as the scope of response is inside this method only;
+
+
+		Q	What is returned as response?
+		A	response is the javascript object in which we have two attributes:
+			 1. errorArrays    : Array of javascript object with each object having following attributes.
+			 									i)   errorMessages : array of error messages string
+												ii)  index         : index of the sObject in your provided sObjectList that cannot be inserted.
+
+			 2. sObjectsAndStatus  : Array of javascript object with each object having following attributes.
+			 									i)   sObject: your provided sObject with the id, if record is not inserted, id is not provided;
+												ii) status : if sobject inserted,status is successful else unsuccesssful.
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+4. insertDom() : Takes five parameters namely
+			 component, event, objectVar, errorVarArray, callbackFunctio
+			 			i)   component                   : For passing the component which can call the component methods.
+			 			ii)  event                       : For current event that triggered the helper method.
+			 			iii) objectVar                   : Aura page variable with the objects to be inserted in javascript object
+																							 format same as in insert raw. After insert, same variable will be
+																							 updated with inserted objects with Id as a extra attribute.
+			 			iv)  errorVar										 : Aura page variable on which error string is saved.
+       					 v)   callbackFunction(response)  : As soon as the response comes from the server side, this method
+                                           is executed and all the response related work should be done inside this method
+                                           as the scope of response is inside this method only;
+
+        Q	What is returned as response?
+        A	response is the javascript object which will contain two attributes :
+            1. sobjectsAndStatus    : Array of objects each of which will contain two attributes:
+                                        i)  sObject : an inserted sObject
+                                        ii) status  : a binary value which tells whether the insert operation
+                                        is successful or not.
+        OR
+        
+        2. errorList  : Array of objects each of which will contain three attributes:
+                            i)   errorMesssages : List of error messages strings.
+                            ii)  index          : Index of the record in sobject list that user has
+                            provided on which insertion is failed.
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+5. updateRaw() : Takes four parameters namely
+			i)   component                           : For passing the component which can call the component methods.
+			ii)  event                               : For current event that triggered the helper method.
+			iii) sobjectList  {javascript object[]}  : Array of javascript objects in following format is given
+                                eg.
+                                {
+                                Id: "0032800000FwrwP",
+                                FirstName: "rahul",
+                                LastName: "sharma",
+                                Email: "sawhndgsrtgjcv@gmail.com"
+                                }
+                                here *Id is the mandatory feild otherwise the update function will not understand where to inert the record.
+                                other than Id, all feilds that should be updated are entered
+        	iV)  callbackFunction(response)          : As soon as the response comes from the server side, this method
+                                                       is executed and all the response related work should be done inside this method
+                                                       as the scope of response is inside this method only;
+
+
+					 Q	What is returned as response?
+			 			A	response is the javascript object in which we have two attributes:
+			 			 1. errorList     : Array of javascript object with each object having following attributes.
+			 			 									i)   errorMessages : array of error messages string
+			 												ii)  index         : index of the sObject in your provided sObjectList that cannot be updated.
+
+			 			 2. sobjectsAndStatus  : Array of javascript object with each object having following attributes.
+			 			 									i)  sObject: your provided sObject.
+			 												ii) status : if sobject updated,status is successful else unsuccesssful.
+        
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+6. updateDom() : Takes five parameters namely
+        component, event, objectVar, errorVarArray, callbackFunctio
+        i)   component                   : For passing the component which can call the component methods.
+        ii)  event                       : For current event that triggered the helper method.
+        iii) objectVar                   : Aura page variable with the objects to be inserted in javascript object
+        format same as in update raw. After update, same variable will be
+        updated with edited objects.
+        iv)  errorVar										 : Aura page variable on which error string is saved.
+        Vi)  callbackFunction(response)  : As soon as the response comes from the server side, this method
+        is executed and all the response related work should be done inside this method
+        as the scope of response is inside this method only;
+
+        Q	What is returned as response?
+        A	response is the javascript object which will contain two attributes :
+        1. sobjectsAndStatus    : Array of objects each of which will contain two attributes:
+                i)  sObject : an updated sObject
+                ii) status  : a binary value which tells whether the update operation
+                is successful or not.
+                OR
+        
+        2. errorList  : Array of objects each of which will contain three attributes:
+                i)   errorMesssages : List of error messages strings.
+                ii)  id provided    : The Id provided by user for the updation of record.
+                iii) index          : Index of the record in sobject list that user has
+                provided on which updation is failed.
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+7. deleteRaw() : Takes four parameters namely
+				i)   component                            : For passing the component which can call the component methods.
+				ii)  event                                : For current event that triggered the helper method.
+				iii) objectList {javascript object[]}     : Array of javascript objects which will corrospond to the sObject records to be deleted in salesforce org.
+				iV)  callbackFunction(response)           : As soon as the response comes from the server side, this method
+                                                            is executed and all the response related work should be done inside this list
+                                                            as the scope of response is inside this function only;
+
+			Q	What is returned as response?
+			A	response is the javascript object in which we have two attributes:
+			   1. errorListArray     : Array of javascript objects in which each of the objects have three attributes namely
+				  												i)   errorMessages : array of error message strings
+                                                                ii)  index         : index of the sObject in your provided sObjectList
+                                                                iii) sObjectId     : id of sObject that cannot be deleted
+
+			   2. statusArray        : Array of boolean status for each sObject in your sObjectList. If deleted it is true else false.
+
+8. deleteDom() : Takes five parameters namely
+				i)   component                            : For passing the component which can call the component methods.
+				ii)  event                                : For current event that triggered the helper method.
+				iii) objectList {javascript object[]}     : Array of javascript objects which will corrospond to the sObject records to be deleted in salesforce org.
+				iv)  errorVarArray                        : A page variable on which all delete errors are saved.
+
+				v)   callbackFunction(response)           : As soon as the response comes from the server side, this method
+                                                            is executed and all the response related work should be done inside this list
+                                                            as the scope of response is inside this function only;
+
+			Q	What is returned as response?
+			A	response is the javascript object in which we have two attributes:
+			   1. statusArray     : Array of boolean values which tells which corrosponding record in objectList is deleted and which was not deleted.
+
+			   2. errorListArray   : Array of javascript objects each of which has following attributes.
+                            i)   errorMessages : array of error message strings
+                            ii)  index         : index of the sObject in your provided sObjectList
+                            iii) sObjectId     : id of sObject that cannot be deleted
+
+	</aura:example>
+</aura:documentation>

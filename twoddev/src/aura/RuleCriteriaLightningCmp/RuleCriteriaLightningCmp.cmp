@@ -1,0 +1,157 @@
+<aura:component controller="RuleCriteriaLightningCmpContr" access="global">
+    <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" /> 
+    
+    <aura:attribute name="WarrantyRule" type="String"/>
+    <aura:attribute name="Sequence" type="Decimal"/>
+    <aura:attribute name="FieldNameList" type="List"/>
+    <aura:attribute name="CriteriaTypeList" type="List"/>
+    <aura:attribute name="FieldApiName" type="String"/>
+    <aura:attribute name="FieldType" type="String"/>
+    <aura:attribute name="CriteriaValue" type="String"/>
+    <aura:attribute name="error" type="String"/>
+    <aura:attribute name="objectName" type="String"/>
+    <aura:attribute name="FieldNameMap" type="Map"/>
+    <aura:attribute name="CriteriaValueString" type="String"/>
+    <aura:attribute name="CriteriaValuedate" type="Date"/>
+    <aura:attribute name="CriteriaValueBoolean" type="Boolean"/>
+    <aura:attribute name="CriteriaValuedateTime" type="DateTime"/>
+    <aura:attribute name="CriteriaValuePickList" type="list"/>
+    <aura:attribute name="ReferenceTo" type="string"/>
+    <aura:attribute name="RelatedObject" type="string"/>
+    <aura:attribute name="searchKey" type="string"/>
+    <aura:attribute name="QuerySOQL" type="string"/>
+    
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />       
+    
+    <center><ui:spinner aura:id="spinner" isVisible="false"/></center> 
+    <body onload="myFunction()">   
+    <center>
+        <div class="slds-form-element main-body" aura:id="group" >
+            <header class="slds-text-heading--large slds-align--absolute-center heading" >
+                {!$Label.c.RuleCriteriaLightningLabelHeader}
+            </header>
+            <br />
+            <div class = "slds-box slds-theme--default slds-container--large  form">
+                <br />
+                <table class="slds-table  slds-table--cell-buffer" style="width:100%">            
+                    <tbody>                
+                        <tr > 
+                            <td width="50%">    
+                                <div class="inline label" >
+                                    <label class="slds-form-element__label" >{!$Label.c.RuleCriteriaLightningLabel1}  </label>
+                                </div>
+                                <div class=" inline select">
+                                    <div class=" inline select required" id="div123">
+                                        <c:LookupWithoutSpinner selectedValue="{!v.searchKey}"  selectedId="{!v.WarrantyRule}" selSobject="Warranty_Rule__c" QuerySOQL="Select Id,Name from Warranty_Rule__c" />                                        
+                                    </div>
+                                </div>   
+                            </td>
+                            <td width="50%">    
+                                <div class="inline label" >
+                                    <label class="slds-form-element__label" >{!$Label.c.RuleCriteriaLightningLabel2}</label>
+                                </div>
+                                <div class=" inline select">
+                                    <ui:inputText value="{!v.Sequence}"  class="slds-input select required " /> 
+                                </div>   
+                            </td>                                         
+                        </tr>
+                        <tr > 
+                            <td width="50%">    
+                                <div class="inline label" >
+                                    <label class="slds-form-element__label" >{!$Label.c.RuleCriteriaLightningLabel3}  </label>
+                                </div>
+                                <div class=" inline select">
+                                    <ui:inputSelect aura:id="FieldName" change="{!c.onFieldNameChange}" class="slds-input select required">
+                                        <aura:iteration items="{!v.FieldNameList}" var="at" >                                            
+                                            <option>{!at}</option>
+                                        </aura:iteration> 
+                                    </ui:inputSelect>
+                                </div>   
+                            </td>
+                            <td width="50%">    
+                                <div class="inline label" >
+                                    <label class="slds-form-element__label" >{!$Label.c.RuleCriteriaLightningLabel4}</label>
+                                </div>
+                                <div class=" inline select">
+                                    <ui:inputSelect aura:id="CriteriaType" change="{!c.removeError}" class="slds-input select required">
+                                        <aura:iteration items="{!v.CriteriaTypeList}" var="at" >                                            
+                                            <option>{!at}</option>
+                                        </aura:iteration> 
+                                    </ui:inputSelect>
+                                </div>   
+                            </td>                                         
+                        </tr>
+                        <tr > 
+                            <td width="50%">    
+                                <div class="inline label" >
+                                    <label class="slds-form-element__label" >{!$Label.c.RuleCriteriaLightningLabel5}  </label>
+                                </div>
+                                <div class=" inline select">
+                                    <ui:outputText value="{!v.FieldApiName}"  class="slds-output select" />
+                                </div>   
+                            </td>
+                            <td width="50%">    
+                                <div class="inline label" >
+                                    <label class="slds-form-element__label" >{!$Label.c.RuleCriteriaLightningLabel6}</label>
+                                </div>
+                                <div class=" inline select">
+                                    <ui:outputText value="{!v.FieldType}"  class="slds-output select" />
+                                </div>   
+                            </td>                                         
+                        </tr>
+                        <tr > 
+                            <td width="50%">    
+                                <div class="inline label" >
+                                    <label class="slds-form-element__label" >{!$Label.c.RuleCriteriaLightningLabel7}  </label>
+                                    <ui:outputText value="{!v.RelatedObject}"  class="slds-output select" />
+                                </div>
+                                <div class=" inline select">
+                                    
+                                </div>   
+                            </td>
+                            <td width="50%">    
+                                <div class="inline label" >
+                                    <label class="slds-form-element__label" >{!$Label.c.RuleCriteriaLightningLabel8}</label>
+                                </div>
+                                <div class=" inline select">
+                                    <aura:renderIf isTrue="{!v.FieldType == 'STRING' || v.FieldType == 'ID' || v.FieldType == 'OTHER'}">
+                                        <ui:inputText value="{!v.CriteriaValueString}"  class="slds-input select required" />									   
+                                    </aura:renderIf>
+                                    <aura:renderIf isTrue="{!v.FieldType == 'DATE'}">
+                                        <ui:inputDate value="{!v.CriteriaValuedate}" displayDatePicker="true" class="form-control slds-input select required"/>									   
+                                    </aura:renderIf>
+                                    <aura:renderIf isTrue="{!v.FieldType == 'DATETIME'}">
+                                        <ui:inputDateTime class="form-control slds-input select required"  value="{!v.CriteriaValuedateTime}" displayDatePicker="true" />								   
+                                    </aura:renderIf>
+                                    <aura:renderIf isTrue="{!v.FieldType == 'BOOLEAN'}">
+                                        <ui:inputCheckbox value="{!v.CriteriaValueBoolean}" />									   
+                                    </aura:renderIf>
+                                    <aura:renderIf isTrue="{!v.FieldType == 'PICKLIST'}">                                        
+                                        <ui:inputSelect aura:id="CriteriaValuePickListValue" class=" slds-input select required">
+                                            <aura:iteration items="{!v.CriteriaValuePickList}" var="at" >                                            
+                                                <option>{!at}</option>
+                                            </aura:iteration> 
+                                        </ui:inputSelect>
+                                    </aura:renderIf>
+                                    <aura:renderIf isTrue="{!v.FieldType == 'REFERENCE'}">
+                                        <div class=" inline select required">                                        
+                                            <c:LookupWithoutSpinner selectedId="{!v.CriteriaValueString}" selSobject="{!v.ReferenceTo}" QuerySOQL="{!v.QuerySOQL}" />                                                                                        
+                                        </div>
+                                    </aura:renderIf> 
+                                </div>   
+                            </td>                                         
+                        </tr>                         
+                    </tbody>
+                </table>
+                <br /> 
+                <button class="slds-button slds-button--brand" onclick="{!c.save}">Save</button>
+                <button class="slds-button slds-button--neutral" onclick="{!c.cancel}">Cancel</button>
+            </div>
+        </div>
+        
+        <ui:message severity="error" closable="true" aura:id="errorMessage" class="slds-hide">{!v.error}            
+        </ui:message>
+    </center>
+    </body>
+</aura:component>

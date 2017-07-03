@@ -1,0 +1,54 @@
+.THIS .labelCol {
+    padding-right: 10px;
+    padding-left: 10px;
+}
+.THIS .dataCol {
+    padding-left: 10px;
+    padding-right: 2px;
+}
+.THIS .padding {
+    padding-bottom: 10px;
+    padding-top: 10px;
+}
+.THIS .pageBlockSection {
+    display: block;
+    padding: 7px;
+    background-color: yellowgreen;
+    color: white;
+}
+.THIS .center {
+    margin: auto;
+    width: 70%;
+    padding: 10px;
+}
+.THIS .centerwarrantyinfo {
+    margin: auto;
+    width: 50%;
+    padding: 10px;
+}
+.THIS .claim-form {
+    border: outset;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: white;
+}
+.THIS .bgColor {
+    background-color: red;
+    display: none;
+}
+.THIS .claim-grid {
+    background-color: #EDEBEB;
+    padding: 10px;
+}
+.THIS .pageheader {
+    padding: 12px;
+    font-size: 1.4em;
+    font-style: normal;
+    color: #100404;
+    text-align: center;
+}
+
+/* .THIS .datePicker-openIcon {
+     left: 250px;
+    bottom: 25px;
+}*/

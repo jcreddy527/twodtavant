@@ -1,0 +1,53 @@
+.THIS .rowX{
+	background: #2070d0;
+    cursor: pointer;
+    color: white;
+    border: solid;
+    border-width: 1px;	
+    font-size:initial;
+}
+.THIS .rowX>span{
+	display:block;
+    padding: 10px;
+}
+.THIS .rowX>div{
+  background:rgba(255,255,255,0);
+}
+.THIS .pointer{
+    cursor:pointer;
+}
+
+.THIS .rowX:hover{
+    background: #1a315b;;
+}
+
+.THIS .lookup-list{
+    opacity:1;
+}
+
+.THIS .show{
+    display:block;
+}
+
+.THIS .hide{
+    display:none;
+}
+
+.THIS .objectList{
+    z-index: 1200;
+    position: absolute;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 360px;
+}
+.THIS .lookup-check{
+    display:none;
+}
+
+@media screen and (max-width: 400px) {
+
+    .THIS .objectList{
+        width:50%;
+    }
+
+}

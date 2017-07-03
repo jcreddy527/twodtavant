@@ -1,0 +1,139 @@
+<apex:page controller="ObjectLookupController" title="Search"
+    showHeader="false" sideBar="false" id="pg">
+    <!--====================================================================-->
+    <!--Name: CoreObjectLookup                                              -->
+    <!--Copyright © 2014 Tavant Technology Inc                              -->
+    <!--====================================================================-->
+    <!--====================================================================-->
+    <!-- Purpose:                                                           -->
+    <!--                                                                    -->
+    <!--====================================================================-->
+    <!--====================================================================-->
+    <!-- History                                                            -->
+    <!-- -------                                                            -->
+    <!-- VERSION  AUTHOR           DATE              DETAIL                 -->
+    <!--   1.0 -  Manish Gupta    29-10-2014         INITIAL DEVELOPMENT    -->
+    <!--====================================================================-->
+    <style>
+body.lookupTab {
+    background: #fff url(/img/alohaSkin/lookup_bg.png) repeat-x;
+}
+</style>
+    <apex:includeScript value="{!$Resource.JQuery}" />
+    <body class="hasMotif lookupTab  LookupResultsFrame" marginwidth="0"
+        marginheight="0">
+        <apex:form id="frm">
+            <apex:actionFunction name="noRecordSelected" reRender="frm"
+                action="{!noRecordSelected}" />
+            <div class="lookup">
+                <div class="bPageTitle">
+                    <div class="ptBody secondaryPalette">
+                        <div class="content">
+                            <img src="/s.gif" alt="" class="pageTitleIcon" title="" />
+                            <h1>Lookup</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="pBody">
+                    <apex:inputText id="lksrch" maxlength="80" size="20"
+                        value="{!searchStringLabel}" />
+                    &nbsp;&nbsp;
+                    <apex:commandButton value=" Go! " title="Go!"
+                        action="{!fetchRecords}" reRender="frm" />
+                    <br /> <br />
+                    <div class="bDescription">{!$Label.LookUpMessage}</div>
+                </div>
+            </div>
+            <br />
+            <div style="float: right; align: right;">
+                <apex:commandButton value=" Done " onclick="onClose();"
+                    rendered="{!displayType == 'Multi' && IF(ls.size > 0,true,false)}"
+                    reRender="tab1" />
+            </div>
+            <br />
+            <br />
+            <apex:messages style="color:red" />
+            <br />
+            <apex:outputLabel rendered="{!IF(ls.size > 0,true,false)}">
+                <b>{!$Label.SerachResultLabel}</b>
+            </apex:outputLabel>
+            <apex:pageBlock id="tab1" rendered="{!IF(ls.size > 0,true,false)}">
+                <apex:pageBlockTable value="{!ls}" var="l"
+                    rendered="{!displayType == 'Multi'}">
+                    <apex:column >
+                        <apex:inputCheckbox value="{!l.isSelected}"
+                            onchange="checkSelected(this.checked)">
+                            <apex:actionSupport action="{!onCheck}" event="onclick"
+                                oncomplete="fillIn();" reRender="objectIds" />
+                        </apex:inputCheckbox>
+                    </apex:column>
+                    <apex:repeat value="{!fields}" var="f">
+                        <apex:column >
+                            <apex:facet name="header">{!mapApiNameLable[f]}</apex:facet>
+                                {!l.fieldMap[f]}
+                            </apex:column>
+                    </apex:repeat>
+                </apex:pageBlockTable>
+                <apex:pageBlockTable value="{!ls}" var="l"
+                    rendered="{!displayType == 'Single'}">
+                    <apex:repeat value="{!fields}" var="f">
+                        <apex:column >
+                            <apex:facet name="header">{!mapApiNameLable[f]}</apex:facet>
+                            <apex:outputLink rendered="{!f == 'Name'}"
+                                onclick="onSelect('{!l.objId}','{!l.fieldMap[f]}')">{!l.fieldMap[f]}</apex:outputLink>
+                            <apex:outputPanel rendered="{!f != 'Name'}">{!l.fieldMap[f]}</apex:outputPanel>
+                        </apex:column>
+                    </apex:repeat>
+                </apex:pageBlockTable>
+            </apex:pageBlock>
+            <apex:outputLabel value="{!$Label.No_Record_Message}"
+                rendered="{!(IF(ls.size > 0,false,true) && rendermsg)}"></apex:outputLabel>
+            <apex:inputhidden value="{!selectedObjectIds}" id="objectIds" />
+        </apex:form>
+        <script>
+            var checkedCount = [];
+            function checkSelected(val) {
+                if(val == true) {
+                    checkedCount.push(val);
+                } else {
+                    checkedCount.pop();
+                }
+            }
+            function fillIn() {
+                var objectIdPass = $('input[id$=objectIds]').val();
+                var winMain1 = window.opener;
+                if (null == winMain1) {
+                    winMain1 = window.parent.opener;
+                }
+                var elem = winMain1.document
+                        .getElementById('pageId:frm:selectedRecord');
+                elem.value = objectIdPass;
+            }
+            function onClose() {
+                if (checkedCount.length == 0) {
+                    noRecordSelected();
+                } else {
+                    var winMain = window.opener;
+                    if (null == winMain) {
+                        winMain = window.parent.opener;
+                    }
+                    winMain.closeLookupPopup('{!JSENCODE(objName)}');
+                }
+            }
+            function onSelect(ids, name) {
+                var winMain1 = window.opener;
+                if (null == winMain1) {
+                    winMain1 = window.parent.opener;
+                }
+                var elem = winMain1.document
+                        .getElementById('pageId:frm:selectedRecord');
+                elem.value = ids;
+                var winMain = window.opener;
+                if (null == winMain) {
+                    winMain = window.parent.opener;
+                }
+                winMain.closeLookupPopup('{!JSENCODE(objName)}');
+            }
+        </script>
+    </body>
+</apex:page>

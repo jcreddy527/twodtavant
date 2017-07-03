@@ -1,0 +1,11 @@
+<aura:component >
+    <aura:attribute name="SObject" type="map[]" />
+    <aura:attribute name="fieldName" type="String" />
+    <aura:attribute name="fieldNameMap" type="map" />
+    <aura:attribute name="fieldValue" type="map" />
+    
+    <input type="text" Id="hiddenInputId" aura:Id="inputTextId" name="user" value="{!v.fieldValue}" class="slds-hide slds-input" disabled="true"/>    
+    <br/>
+    <ui:outputText aura:Id="outputTextId"  class="slds-hide slds-output"/> <br/>
+    
+</aura:component>

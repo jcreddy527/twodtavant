@@ -1,0 +1,781 @@
+<!--
+  Created By	: Mounika DV
+  Description	: Claim New/Edit Landing page which creates or edits claim.
+-->
+    <aura:component extends="c:GenericComponent"  implements="flexipage:availableForAllPageTypes,force:hasRecordId">
+    <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" />
+    <aura:attribute name="claimId"  					type="String" 		default="" description="Id of the claim which we are working on" />
+    <aura:attribute name="claimStatus"  				type="String" 		default="" description="Status of the claim which we are working on" />
+    <aura:attribute name="claimName"  					type="String" 		default="" description="Name of the claim which we are working on" />
+    <aura:attribute name="isServiceInfoActivated"  		type="Boolean" 		default="false" description="Boolean to enable tabs(3rd,4th,5th) only after creating claim record" />
+    <aura:attribute name="dmlErrors" 					type="String[]" description="list to fetch all the errors and display" />
+    <aura:attribute name="claimrecordTypes" 			type="sObject[]" default="" description="list of claim record types" />
+    <aura:attribute name="BaseURL" 						type="String" description="BaseUrl used for redirecting in all environments including customer portal"/> 
+    <aura:attribute name="ProceedURL" 					type="String"/>
+    <aura:attribute name="claimRecord"					type="Claim__c" 	default="{'sobjectType':'Claim__c',
+                                                                                     'Id' : null,
+                                                                                     'Name': '',
+                                                                                     'Request_SMR__c':'false',
+                                                                                     'Claim_Parts_Pending_Approval__c':0,
+                                                                                     'Total_Labor_Cost__c':0.00,
+                                                                                     'Final_Labor_Cost__c':0.00,
+                                                                                     'Total_TravelByDistance_Cost__c':0.00,
+                                                                                     'Final_TravelByDistance_Cost__c':0.00,
+                                                                                     'Total_TravelByHours_Cost__c':0.00,
+                                                                                     'Final_TravelByHours_Cost__c':0.00,
+                                                                                     'Total_Meals_Cost__c':0.00,
+                                                                                     'Final_Meals_Cost__c':0.00,
+                                                                                     'Total_Parking_Cost__c':0.00,
+                                                                                     'Final_Parking_Cost__c':0.00,
+                                                                                     'Percent_Labor_Cost__c':100.00,
+                                                                                     'Approved_Labor_Cost__c':0.00,
+                                                                                     'Percent_TravelByDistance_Cost__c':100.00,
+                                                                                     'Approved_TravelByDistance_Cost__c':0.00,
+                                                                                     'Percent_TravelByHours_Cost__c':100.00,
+                                                                                     'Approved_TravelByHours_Cost__c':0.00,
+                                                                                     'Percent_Parts_Cost__c':100.00,
+                                                                                     'Approved_Parts_Cost__c':0.00,
+                                                                                     'Percent_Meals_Cost__c':100.00,
+                                                                                     'Approved_Meals_Cost__c':0.00,
+                                                                                     'Percent_Parking_Cost__c':100.00,
+                                                                                     'Approved_Parking_Cost__c':0.00,
+                                                                                     'Percent_Claim_Cost__c':0.00,
+                                                                                     'Approved_Ignore_Sum__c':0.00,
+                                                                                     'Final_Claim_Cost__c':0.00,
+                                                                                     'Approved_Claim_Cost__c':0.00,
+                                                                                     'Units_of_Measure__c':'',
+                                                                                     
+                                                                                     
+                                                                                     }"	
+                    description="claim which we are working on"
+                    />
+    <aura:attribute name="rateName"						type="String" default="" description="save the rate object name"/>
+    <aura:attribute name="ClaimType"				    type="String" default="" description="Claim type"/>
+    <aura:attribute name="warrantyProductName"			type="String" default="" description="save the warranty product name"/>
+    <aura:attribute name="causalPartName"				type="String" default="" description="save the causal part name"/>
+    <aura:attribute name="dealerName"					type="String" default="" description="save the dealer name"/>
+    <aura:attribute name="policyName"					type="String" default="" description="save the policy name"/>
+    <aura:attribute name="policyType"					type="String" default="" description="save the policy type to be used on pricebook"/>    
+    <aura:attribute name="faultCode"					type="String" default="" description="save the fault code"/>
+    <aura:attribute name="casualPartNumber"				type="String" default="" description="save the casual part number"/>
+    <aura:attribute name="inventoryName"				type="String" description="save the inventory name"/>
+    <aura:attribute name="campaignMembers"				type="String" default="" description="save the campaignmembers name"/>
+    <aura:attribute name="recordTypeName"				type="String" default="Non-Serialized Part" description="to get the Claim record type
+                                                                                                                 Values we may have the following
+                                                                                                                 Non-Serialized Part, Serialized Part,
+                                                                                                                 Claim Template, Field Modification"/>
+    <aura:attribute name="currentTab"					type="Integer" default="1" description="store current tab value"/>
+    <aura:attribute name="NextTab"						type="Integer" description="Decide Next tab value- if going back currenttab-1 or else +1"/>
+    
+    <!--<aura:attribute name="selectedFaultCodeRecord" type="sobject" description="save the FaultCodeRecord selected"/>
+    <aura:attribute name="selectedCasualPartRecord" type="sobject" description="save the CasualPartRecord selected"/>-->
+    
+    <aura:attribute name="isSysAdmin"					type="boolean" description="check whether login user is systemadmin" />
+    <aura:attribute name="isSaved"						type="boolean" default="true" description="Boolean enabled if claim record is saved without any errors"/>
+    <!--<aura:attribute name="isChanged"					type="boolean" default="false" description="check whether login user is systemadmin"/>-->
+    
+    <aura:attribute name="isUnitRun"					type="boolean" default="false" description="Boolean to check whether UnitsRun is applicable"/>
+    <aura:attribute name="isDealer"						type="boolean" default="false" description="check whether login user is Dealer"/>
+    <aura:attribute name="isSerialized"					type="boolean" description="Boolean which specifies serialized claim or not"/>
+    <aura:attribute name="FaultCodeList"                type="sObject[]" description="This list is populated on the basis of the causalpart and the inventory warranty product" />
+    <aura:attribute name="JobCodeList"                  type="sObject[]" description="This list is populated on the basis of the faultcode selected"/>
+    <aura:attribute name="isNonSerialized"				type="boolean" description="Boolean which specifies NonSerialized claim or not"/>
+    <aura:attribute name="isFieldModification"			type="boolean" description="Boolean which specifies FieldModification claim or not"/>
+    <aura:attribute name="isClaimTemplate"				type="boolean" description="Boolean which specifies ClaimTemplate claim or not"/>
+    <aura:attribute name="isError"						type="boolean" description="Boolean gets enabled in case of any error"/>
+    <aura:attribute name="isSuccess"					type="boolean" description="Boolean gets enabled if there is no errors"/>
+    <aura:attribute name="isNextClicked"				type="boolean" default="false" description="Boolean used in changing tabs, enabled if Next button is clicked instead of direct click on tab"/>
+    <aura:attribute name="isPrevClicked"				type="boolean" default="false" description="Boolean used in changing tabs, enabled if Previous button is clicked instead of direct click on tab"/>
+    <aura:attribute name="isFaultCodeEnabled"			type="boolean" default="false" description="Enabled if there is no errors in first tab" />
+    <aura:attribute name="isSaveEnabled"				type="boolean" default="true" description="Enabled if claim is not yet created, once saved disable"/>
+    <aura:attribute name="isHostNonHost"				type="boolean" default="false" description="Enabled if itemtype is part and claim is not fieldmod claim"/>
+    <aura:attribute name="isDelayReason"				type="boolean" default="false" description="Boolean gets enabled if difference between dateof repair and dateof failure is more than certain value"/>
+    <aura:attribute name="validateClicked"				type="boolean" default="false" description="Boolean enabled if validate button is clicked" />
+    <aura:attribute name="DisplayApprovalTab"			type="boolean" default="false" description="Enable if user profile is matching label-ApprovalEligibleProfiles" />
+    
+    <aura:attribute name="message"						type="String" description="Message displayed in case of any errors of warnings" />
+    <aura:attribute name="InventoryWarrantyProductParentID"					type="String" description="Parent product of the inventory warranty product" />
+    <aura:attribute name="InventoryWarrantyProductParentType"					type="String" description="Type of Parent product of the inventory warranty product" />
+    <aura:attribute name="WarrantyProductSetForFaultCode"					type="String[]" description="Set of the causalpart and the inventory parent warranty product to fetch the fault codes" />
+    <aura:attribute name="ClaimSerialNumberOutput"		type="Boolean" description="Enable if claim Product_Name__c is not null"/>
+    <aura:attribute name="ClaimSerialNumberInput"		type="Boolean" description="Enable if claim Product_Name__c is null"/>
+    <aura:attribute name="ClaimRecordType"				type="String" description="fetch record type based on the claimtype selected"/>
+    <aura:attribute name="ApplicablePolicyName"				type="String" />
+    
+    <!-- Error Message attributes -->
+    <aura:attribute name="inventoryError"				type="String"		default="" description="Error message displayed under Inventory"/>
+    <aura:attribute name="warrantyProductError"			type="String"		default="" description="Error message displayed under WarrantyProduct"/>
+    <aura:attribute name="dealerError"					type="String"		default="" description="Error message displayed under Dealer"/>
+    <aura:attribute name="dealorError"					type="String"		default="" description="Error message displayed under Dealer"/>
+    <aura:attribute name="dateofFailureError"			type="String"		default="" description="Error message displayed under Date of failure"/>
+    <aura:attribute name="dateofRepairError"			type="String"		default="" description="Error message displayed under Date of repair"/>
+    <aura:attribute name="dateofPurchaseError"			type="String"		default="" description="Error message displayed under Date of purchase"/>
+    <aura:attribute name="invoiceError"					type="String"		default="" description="Error message displayed under Invoice"/>
+    <aura:attribute name="SMRReasonError"				type="String"		default="" description="Error message displayed under SMR reason"/>
+    <aura:attribute name="faultCodeError"				type="String"		default="" description="Error message displayed under Fault Code"/>
+    <aura:attribute name="casualPartError"				type="String"		default="" description="Error message displayed under Casual Part"/>
+    <aura:attribute name="campaignMembersError" 		type="String" default="" description="Error message displayed under Campaign Members"/>
+    <aura:attribute name="claimTypeError"				type="String" default="" description="Error message displayed under ClaimType"/>
+    <aura:attribute name="UnitsRunError"				type="String" default="" description="Error message displayed under UnitsRun"/>
+    
+    <aura:attribute name="InventoryUnitsRun"			type="String" default="" description="Field to store Inventory UnitsRun"/>
+    <aura:attribute name="cancelUrl" 					type="String"    default="" description="Url to redirect when cancel button is clicked"/>
+    <aura:attribute name="numRecords" 					type="Integer" default="6" description="Number of tabs in claim page"/>
+    <aura:attribute name="dealerAccount" 				type="Id" description="Selected Dealer Id"/> <!--default="0011500001DBZ5zAAH" -->
+    <aura:attribute name="hasTabErrors" 				type="String"    default="" description="To See if there are tab errors"/>
+    
+    <aura:handler name="init" 	value="{!this}" 								action="{!c.doInit}" description="Method executed on page load"/>
+    <aura:handler name="change" value="{!v.claimRecord.Inventory__c}" 			action="{!c.populateClaimType}" description="Method executed on inventory change to fetch and display related itemtype"/>
+    <aura:handler name="change" value="{!v.claimRecord.Warranty_Product__c}" 	action="{!c.populateWarrantyClaimType}" description="Method executed on WarrantyProduct change to fetch and display related itemtype"/>
+    <aura:handler name="change" value="{!v.claimRecord.Account__c}" 			action="{!c.dealerHandler}" description="Method executed on Dealer change and validates value"/>
+    <aura:handler name="change" value="{!v.claimRecord.Date_of_Failure__c}" 	action="{!c.dateOfFailureHandler}" description="Method executed on Date of Failure change and validates value"/>
+    <aura:handler name="change" value="{!v.claimRecord.Date_of_Repair__c}" 		action="{!c.dateOfRepairHandler}" description="Method executed on Date of Repair change and validates value"/>
+    <aura:handler name="change" value="{!v.claimRecord.Fault_Code__c}" 			action="{!c.faultCodeHandler}" description="Method executed on Fault Code change and validates value"/>
+    <aura:handler name="change" value="{!v.claimRecord.Causal_Part_Number__c}" 	action="{!c.casualPartHandler}" description="Method executed on Casual Part Number change and validates value"/>
+    
+    <aura:method name="settab" 			action="{!c.setCurrentTab}" access="PUBLIC" description="Method to change Tab"/>
+    <!--<aura:method name="navigateMethod" 	action="{!c.navigateURL}" 	access="PUBLIC"/>-->
+    
+    
+    <!-- <aura:method name="claimBasicDetails" 	action="{!c.findPolicy}"  description="Method">
+        <aura:attribute name="hasTabErrors"	type="boolean" default="false"/>
+    </aura:method>
+    <aura:method name="faultCodeValidation" action="{!c.saveClaimTemplate}">
+        <aura:attribute name="isOnlyValidate" type="boolean" default="false"/>
+    </aura:method>-->
+    
+    <!-- Style added to hide additional text visible for date picker on mobile -->
+    <style>
+        .assistiveText {  display: none !important; }
+        
+    </style>
+    
+    <c:container class="demo-container" size="large" align="center">
+        <div class="slds-tabs--scoped" aura:id="tabDivId" >
+            <ul aura:id="tabListid"  class="slds-tabs--scoped__nav" role="tablist">
+                <!-- list of tabs -->
+                <li id="li-tab-1" aura:id="li-tab-1" class="slds-tabs__item slds-text-heading--label activeTabColor" title="Item one" role="presentation"><a id="tab-1" value="tab-1" class="slds-tabs--scoped__link" href="" onclick="{!c.setCurrentTab}" role="tab" tabindex="1" aria-selected="true" aria-controls="tab-default-1">{!$Label.c.ClaimPageTab1}<span class="slds-badge slds-theme--inverse"></span></a></li>
+                <li id="li-tab-2" aura:id="li-tab-2" class="slds-tabs__item slds-text-heading--label" title="Item Two" 	role="presentation"><a aura:id="tab-2" value="tab-2" class="slds-tabs--scoped__link" href="" onclick="{!c.setCurrentTab}" role="tab" tabindex="2" aria-selected="false" aria-controls="tab-default-2">{!$Label.c.FaultCode_CasualPart} </a></li>
+                <li id="li-tab-3" aura:id="li-tab-3" class="slds-tabs__item slds-text-heading--label" title="Item Three" 	role="presentation"><a id="tab-3" value="tab-3" class="slds-tabs--scoped__link" href="" onclick="{!c.setCurrentTab}" role="tab" tabindex="3" aria-selected="false" aria-controls="tab-default-3">{!$Label.c.ClaimServiceInfo}</a></li>
+                <li id="li-tab-4" aura:id="li-tab-4" class="slds-tabs__item slds-text-heading--label" title="Item Four" 	role="presentation"><a id="tab-4" value="tab-4" class="slds-tabs--scoped__link" href="" onclick="{!c.setCurrentTab}" role="tab" tabindex="4" aria-selected="false" aria-controls="tab-default-4">{!$Label.c.InstalledParts_RemovedParts}</a></li>
+                <li id="li-tab-5" aura:id="li-tab-5" class="slds-tabs__item slds-text-heading--label" title="Item Five" 	role="presentation"><a id="tab-5" value="tab-5" class="slds-tabs--scoped__link" href="" onclick="{!c.setCurrentTab}" role="tab" tabindex="5" aria-selected="false" aria-controls="tab-default-5">{!$Label.c.Additional_Info}</a></li>
+                <li id="li-tab-6" aura:id="li-tab-6" class="slds-tabs__item slds-text-heading--label" title="Item Six" 		role="presentation"><a id="tab-6" value="tab-6" class="slds-tabs--scoped__link" href="" onclick="{!c.setCurrentTab}" role="tab" tabindex="6" aria-selected="false" aria-controls="tab-default-6">{!$Label.c.Claim_Summary}</a></li>
+                
+                
+            </ul>
+            
+            <!-- Tab for Claim basic Detail information -->
+            <div id="div-tab-1" class="slds-tabs__content slds-show" role="tabpanel">
+                <div class="slds-grid">
+                    <div class="slds-col--padded slds-size--1-of-1 claim-grid">
+                        <div class="slds-container--center slds-container--small claim-form">
+                            
+                            <form class="slds-form--stacked">
+                                <aura:if isTrue="{!v.isSuccess}">
+                                    <div class="slds-box slds-theme--success">
+                                        <p>{!v.message}</p>
+                                    </div>
+                                </aura:if>
+                                <aura:if isTrue="{!v.isError}">
+                                    <div class="slds-box slds-theme--error">
+                                        <p>{!v.message}</p>
+                                    </div>
+                                </aura:if>
+                                <!-- option to pick claim Recordtype if claim landed on new button click -->
+                                <aura:renderIf isTrue="{!(v.claimId == null) || (v.claimId == '') }">
+                                    <div class="slds-form-element__control slds-p-top--medium">
+                                        <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Claim_Record_Type}</span>
+                                        <ui:inputSelect aura:id="claimtype"  class="slds-input" change="{!c.selectedclaimtype}">
+                                            <ui:inputSelectOption text="None" label="None"/>
+                                            <ui:inputSelectOption text="Serialized" label="Serialized"/>
+                                            <ui:inputSelectOption text="Non-Serialized" label="Non-Serialized"/>
+                                            <ui:inputSelectOption text="Field Modification" label="Field Modification"/>
+                                            <aura:renderIf isTrue="{!!v.isDealer}">
+                                                <ui:inputSelectOption text="Claim Template" label="Claim Template"/>
+                                            </aura:renderIf>
+                                        </ui:inputSelect>
+                                        <ul class="has-error uiInputDefaultError uiInput uiInputText uiInput--default uiInput--input" id="40:c" data-aura-rendered-by="1:1;0">
+                                            <li class="form-element__help" data-aura-rendered-by="4:1;0">
+                                                <ui:outputText class="form-element__help" value="{!v.claimTypeError}"/>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </aura:renderIf>
+                                <!-- display claim Recordtype if claim landed on Edit button click -->
+                                <aura:renderIf isTrue="{!(v.claimId != '')}">
+                                    <div class="slds-form-element slds-has-divider--bottom">
+                                        <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Claim_Record_Type}</span>
+                                        <div class="slds-form-element__control">
+                                            <span class="slds-form-element__static"><ui:outputText value="{!v.claimRecord.RecordType.Name}" /></span>
+                                        </div>
+                                    </div>
+                                </aura:renderIf>
+                                <!-- Hide all the fields claim is of ClaimTemplate type -->
+                                <aura:if isTrue="{!!v.isClaimTemplate}">
+                                    <aura:if isTrue="{!v.isDealer}">
+                                        <div class="slds-form-element__control slds-m-top--medium">
+                                            <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Dealer}</span>
+                                            <div class="slds-form-element__control">
+                                                <span class="slds-form-element__static"><ui:outputText value="{!v.dealerName}" /></span>
+                                            </div>
+                                        </div>
+                                    </aura:if>
+                                    
+                                 
+                                     <aura:if isTrue="{!v.isDealer == false}">
+                                        <div class="slds-form-element__control slds-m-top--medium">
+                                            <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Dealer}</span>
+                                            <span onclick="{!c.onDealerClick}">
+                                                <c:LookupWithoutSpinner selectedId="{!v.claimRecord.Account__c}" selectedValue="{!v.dealerName}" selSobject="Account" QuerySOQL="Select Id,Name from ACCOUNT" condition=" Warranty_Account_Type__c = 'Dealer'"/>
+                                                <ul class="has-error uiInputDefaultError uiInput uiInputText uiInput--default uiInput--input " id="40:c" data-aura-rendered-by="1:1;0">
+                                                    <li class="form-element__help" data-aura-rendered-by="4:1;0">
+                                                       <ui:outputText class="form-element__help" value="{!v.dealorError}"/>
+                                                    </li>
+                                                </ul>
+                                            </span>
+                                        </div>
+                                    </aura:if>
+                                    
+                                </aura:if>
+                                
+                                <aura:if isTrue="{!v.isSerialized}">
+                                    <aura:renderIf isTrue="{!(v.claimId == null) || (v.claimId == '')}">
+                                        <div class="slds-form-element">
+                                            <div class="slds-form-element__control slds-m-top--medium">
+                                                <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Inventory}</span>
+                                                <c:LookupWithoutSpinner selectedId="{!v.claimRecord.Inventory__c}" selectedValue="{!v.inventoryName}" selSobject="Inventory__c" QuerySOQL="Select Id,Name from Inventory__c" condition=" Asset_Type__c = 'Warrantable'"/>
+                                                <ul class="has-error uiInputDefaultError uiInput uiInputText uiInput--default uiInput--input" id="40:c" data-aura-rendered-by="1:1;0">
+                                                    <li class="form-element__help" data-aura-rendered-by="4:1;0">
+                                                        <ui:outputText class="form-element__help" value="{!v.inventoryError}"/>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </aura:renderIf>
+                                    <aura:renderIf isTrue="{!(v.claimId != '')}">
+                                        <div class="slds-form-element__control slds-m-top--medium">
+                                            <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Inventory}</span>
+                                            <div class="slds-form-element__control">
+                                                <span class="slds-form-element__static"><ui:outputText value="{!v.inventoryName}" /></span>
+                                            </div>
+                                        </div>
+                                    </aura:renderIf>
+                                </aura:if>
+                                
+                                
+                                <!-- Non serialized -->
+                                <aura:if isTrue="{!v.isNonSerialized}">
+                                    <aura:renderIf isTrue="{!(v.claimId == '' || v.claimId == null)}">
+                                        <div class="slds-form-element">
+                                            <div class="slds-form-element__control slds-m-top--medium">
+                                                <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Item_Number}</span>
+                                                <c:LookupWithoutSpinner selectedId="{!v.claimRecord.Warranty_Product__c}" selectedValue="{!v.warrantyProductName}" selSobject="Warranty_Product__c"  QuerySOQL="Select Id,Name from Warranty_Product__c" condition=" Track_Type__c = 'Non-Serialized'"/>
+                                                <ul class="has-error uiInputDefaultError uiInput uiInputText uiInput--default uiInput--input" id="40:c" data-aura-rendered-by="1:1;0">
+                                                    <li class="form-element__help" data-aura-rendered-by="4:1;0">
+                                                        <ui:outputText class="form-element__help" value="{!v.warrantyProductError}"/>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <aura:set attribute="else">
+                                            <div class="slds-form-element slds-has-divider--bottom">
+                                                <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Item_Number}</span>
+                                                <div class="slds-form-element__control">
+                                                    <span class="slds-form-element__static"><ui:outputText value="{!v.warrantyProductName}" /></span>
+                                                </div>
+                                            </div>
+                                        </aura:set>
+                                    </aura:renderIf>
+                                </aura:if>
+                                <aura:if isTrue="{!(v.isFieldModification)}">
+                                    <aura:renderIf isTrue="{!v.claimId == ''}">
+                                        <div class="slds-form-element">
+                                            <label class="slds-form-element__control slds-size--1-of-3">
+                                                <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Inventory}</span>
+                                                <c:LookupWithoutSpinner selectedId="{!v.claimRecord.Inventory__c}" selectedValue="{!v.inventoryName}" selSobject="Inventory__c" QuerySOQL="Select Id,Name from Inventory__c" condition=" Asset_Type__c = 'Warrantable'"/>
+                                                <ul class="has-error uiInputDefaultError uiInput uiInputText uiInput--default uiInput--input" id="40:c" data-aura-rendered-by="1:1;0">
+                                                    <li class="form-element__help" data-aura-rendered-by="4:1;0">
+                                                        <ui:outputText class="form-element__help" value="{!v.inventoryError}"/>
+                                                    </li>
+                                                </ul>
+                                            </label>
+                                        </div>
+                                    </aura:renderIf>
+                                    <aura:renderIf isTrue="{!v.claimId != ''}">
+                                        <aura:renderIf isTrue="{!v.claimId != null}">
+                                            <div class="slds-form-element slds-has-divider--bottom">
+                                                <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Inventory}</span>
+                                                <div class="slds-form-element__control">
+                                                    <span class="slds-form-element__static"><ui:outputText value="{!v.inventoryName}" /></span>
+                                                </div>
+                                            </div>
+                                        </aura:renderIf>
+                                    </aura:renderIf>
+                                </aura:if>
+                                <!--  Field Modification -->
+                                <aura:if isTrue="{!v.isFieldModification}">
+                                    <div class="slds-form-element">
+                                        <label class="slds-form-element__control slds-size--1-of-3">
+                                            <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Campaign_Members}</span>
+                                            <c:LookupWithoutSpinner selectedId="{!v.claimRecord.Campaign_Members__c}" selectedValue="{!v.campaignMembers}" selSobject="Campaign_Members__c" QuerySOQL="Select Id,Name from Campaign_Members__c" condition="{!'Inventory__c  = ' +'\''+ v.claimRecord.Inventory__c+'\''}"/>
+                                            <ul class="has-error uiInputDefaultError uiInput uiInputText uiInput--default uiInput--input" id="40:c" data-aura-rendered-by="1:1;0">
+                                                <li class="form-element__help" data-aura-rendered-by="4:1;0">
+                                                    <ui:outputText class="form-element__help" value="{!v.campaignMembersError}"/>
+                                                </li>
+                                            </ul>
+                                        </label>
+                                    </div>
+                                </aura:if>
+                                
+                                <fieldset class="slds-form--compound">
+                                    <div class="form-element__group">
+                                        <div class="slds-form-element__row">
+                                            <aura:if isTrue="{!v.ClaimType != null}">
+                                                <label class="slds-form-element__control slds-size--1-of-2">
+                                                    <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Claim_Type}</span>
+                                                    <span class="slds-form-element__static slds-m-left--large"><ui:outputText class="InputDateSize" value="{!v.ClaimType}" /></span>
+                                                </label>
+                                            </aura:if>
+                                            
+                                            <aura:if isTrue="{!v.ClaimSerialNumberOutput == true}">
+                                                <label class="slds-form-element__control slds-size--1-of-2">
+                                                    <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Product_Name}</span>
+                                                    <span class="slds-form-element__static slds-m-left--large"><ui:outputText class="InputDateSize" value="{!v.claimRecord.Serial_Number__c}" /></span>
+                                                </label>
+                                            </aura:if>
+                                            <aura:if isTrue="{!v.ClaimSerialNumberInput == true}">
+                                                <label class="slds-form-element__control slds-size--1-of-2">
+                                                    <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Product_Name}</span>
+                                                    <span class="slds-form-element__static slds-m-left--large"><ui:inputText class="slds-input InputDateSize"  value="{!v.claimRecord.Serial_Number__c}" /></span>
+                                                </label>
+                                            </aura:if>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                                
+                                <aura:if isTrue="{!v.isHostNonHost}">
+                                    <label class="slds-form-element__control">
+                                        <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Host_Non_Host}</span>
+                                        <c:Picklist selectedValue="{!v.claimRecord.Host_NonHost__c}" objectName="Claim__c" fieldName="Host_NonHost__c" labelName=""/>
+                                    </label>
+                                </aura:if>
+                                
+                                <!-- For Claim Template Record type hide this section -->
+                                <aura:if isTrue="{!!v.isClaimTemplate}">                                                                    
+                                    <fieldset class="slds-form--compound">
+                                        <div class="form-element__group">
+                                            <aura:if isTrue="{!v.isUnitRun}">
+                                                <div class="slds-form-element__row">
+                                                    <label class="slds-form-element__control slds-size--1-of-2 slds-p-top--medium">
+                                                        <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Units_Run}</span>
+                                                        <ui:inputNumber aura:id="unitsRun" class="slds-input " value="{!v.claimRecord.Units_Run__c}" />
+                                                    </label>
+                                                    
+                                                    <label class="slds-form-element__control slds-size--1-of-2 slds-p-top--medium">
+                                                        <!--	<c:CustomDatePicker aura:id="repairdate" dateValue="{!v.claimRecord.Date_of_Repair__c}"  /> -->
+                                                        <ui:outputText class="slds-output " value="{!v.claimRecord.Units_of_Measure__c}" />                                                 
+                                                    </label>
+                                                    
+                                                </div></aura:if>
+                                            <ul class="has-error uiInputDefaultError uiInput uiInputText uiInput--default uiInput--input" id="40:c" data-aura-rendered-by="1:1;0">
+                                                <li class="form-element__help" data-aura-rendered-by="4:1;0">
+                                                    <ui:outputText class="form-element__help" value="{!v.UnitsRunError}"/>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </fieldset>
+                                    
+                                    <fieldset class="slds-form--compound">
+                                        <div class="form-element__group">
+                                            <div class="slds-form-element__row">
+                                                <label class="slds-form-element__control slds-size--1-of-2 slds-p-top--medium">
+                                                    <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Date_of_Failure}</span>
+                                                    <ui:inputDate aura:id="failuredate" displayDatePicker="true" class="slds-input" value="{!v.claimRecord.Date_of_Failure__c}" required="true"/> 
+                                                    
+                                                    <!--<c:CustomDatePicker aura:id="failuredate" dateValue="{!v.claimRecord.Date_of_Failure__c}"  />-->
+                                                    <ul class="has-error uiInputDefaultError uiInput uiInputText uiInput--default uiInput--input" id="40:c" data-aura-rendered-by="1:1;0">
+                                                        <li class="form-element__help" data-aura-rendered-by="4:1;0">
+                                                            <ui:outputText class="form-element__help" value="{!v.dateofFailureError}"/>
+                                                        </li> 
+                                                    </ul>
+                                                </label>
+                                                <label class="slds-form-element__control slds-size--1-of-2 slds-p-top--medium">
+                                                    <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Date_of_Repair}</span>
+                                                    <!--	<c:CustomDatePicker aura:id="repairdate" dateValue="{!v.claimRecord.Date_of_Repair__c}"  /> -->
+                                                    <ui:inputDate aura:id="repairdate" displayDatePicker="true" class="slds-input " value="{!v.claimRecord.Date_of_Repair__c}" required="true"/>
+                                                    <ul class="has-error uiInputDefaultError uiInput uiInputText uiInput--default uiInput--input" id="40:c" data-aura-rendered-by="1:1;0">
+                                                        <li class="form-element__help" data-aura-rendered-by="4:1;0">
+                                                            <ui:outputText class="form-element__help" value="{!v.dateofRepairError}"/>
+                                                        </li>
+                                                    </ul>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    <aura:renderIf isTrue="{!v.isDelayReason}">
+                                        <div class="slds-form-element slds-has-divider--bottom" >
+                                            <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Reason_for_Delay}</span>
+                                            <div class="slds-form-element__control">
+                                                <span class="slds-form-element__static" style="width:60%"><ui:inputTextArea class="slds-input"  value="{!v.claimRecord.Delay_Reason__c}" /></span>
+                                            </div>
+                                        </div>
+                                    </aura:renderIf>
+                                    <aura:if isTrue="{!v.isNonSerialized}">
+                                        <fieldset class="slds-form--compound">
+                                            <div class="form-element__group">
+                                                <div class="slds-form-element__row">
+                                                    <label class="slds-form-element__control slds-size--1-of-2">
+                                                        <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Date_of_Purchase}</span>
+                                                        <!--<c:CustomDatePicker aura:id="purchasedate" dateValue="{!v.claimRecord.Date_Of_Purchase__c}"  />-->
+                                                        <ui:inputDate aura:id="purchasedate" displayDatePicker="true" class="slds-input" value="{!v.claimRecord.Date_Of_Purchase__c}" required="true"/>
+                                                        <ul class="has-error uiInputDefaultError uiInput uiInputText uiInput--default uiInput--input" id="40:c" data-aura-rendered-by="1:1;0">
+                                                            <li class="form-element__help" data-aura-rendered-by="4:1;0">
+                                                                <ui:outputText class="form-element__help" value="{!v.dateofPurchaseError}"/>
+                                                            </li>
+                                                        </ul>
+                                                    </label>
+                                                    <label class=" slds-form-element__control slds-size--1-of-2">
+                                                        <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Invoice_Number}</span>
+                                                        <span class="slds-form-element__static"><ui:inputText class="slds-input" value="{!v.claimRecord.Invoice_Number__c}" /></span>
+                                                        <ul class="has-error uiInputDefaultError uiInput uiInputText uiInput--default uiInput--input" id="40:c" data-aura-rendered-by="1:1;0">
+                                                            <li class="form-element__help" data-aura-rendered-by="4:1;0">
+                                                                <ui:outputText class="form-element__help" value="{!v.invoiceError}"/>
+                                                            </li>
+                                                        </ul>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    </aura:if>
+                                    <fieldset class="slds-form--compound">
+                                        <div class="form-element__group">
+                                            <div class="slds-form-element__row">
+                                                <label class="slds-checkbox slds-form-element__control slds-size--1-of-2">
+                                                    <ui:inputCheckbox class="slds-input InputDateSize" aura:id="checkbox" label="" value="{!v.claimRecord.Request_SMR__c}" change="{!c.onCheckSMR}"/>
+                                                    <span class="slds-form-element__helper  slds-text-heading--label " >{!$Label.c.Pre_authorization}</span>&nbsp;&nbsp;
+                                                    <span class="slds-checkbox--faux"></span>
+                                                </label>
+                                                <aura:if isTrue="{!v.claimRecord.Request_SMR__c}">
+                                                    <label class="slds-form-element__control slds-size--1-of-2 slds-m-top--medium">
+                                                        <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Reasons_for_Pre_authorization}</span>
+                                                        <c:Picklist selectedValue="{!v.claimRecord.SMR_Reason__c}" objectName="Claim__c" fieldName="SMR_Reason__c" labelName=""/>
+                                                        <ul class="has-error uiInputDefaultError uiInput uiInputText uiInput--default uiInput--input" id="40:c" data-aura-rendered-by="1:1;0">
+                                                            <li class="form-element__help" data-aura-rendered-by="4:1;0">
+                                                                <ui:outputText class="form-element__help" value="{!v.SMRReasonError}"/>
+                                                            </li>
+                                                        </ul>
+                                                    </label>
+                                                </aura:if>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    <fieldset class="slds-form--compound">
+                                        <div class="form-element__group">
+                                            <div class="slds-form-element__row">
+                                                <label class="slds-form-element__control slds-size--1-of-2 slds-p-top--medium">
+                                                    <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Work_Order}</span>
+                                                    <ui:inputText aura:id="workOrder" class="slds-input " value="{!v.claimRecord.Work_order__c}"/>
+                                                </label>
+                                                <label class="slds-form-element__control slds-size--1-of-2 slds-p-top--medium">
+                                                    <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Service_Ticket}</span>
+                                                    <ui:inputText aura:id="serviceTicket" class="slds-input " value="{!v.claimRecord.Service_Ticket__c}"/>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </aura:if>
+                                <br/>
+                                
+                                <center>
+                                    <a href="{!v.cancelUrl}" onclick="{!c.cancelclick}"> <span class="slds-button slds-button--brand "> Cancel </span> </a>&nbsp;&nbsp;
+                                    <button class="slds-button slds-button--brand" onclick = "{!c.goToclaimFaultCode}">Next</button>
+                                </center>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab for Fault code and Casual Part number -->
+            <div id="div-tab-2" class="slds-tabs__content slds-hide" role="tabpanel">
+                <div class="slds-grid">
+                    <div class="slds-col--padded slds-size--1-of-1 claim-grid">
+                        <div class="slds-container--center slds-container--small claim-form">
+                            <aura:if isTrue="{!v.isFaultCodeEnabled}">
+                                <form class="slds-form--stacked">
+                                    <aura:if isTrue="{!v.isSuccess}">
+                                        <div class="slds-box slds-theme--success">
+                                            <p>{!v.message}</p>
+                                        </div>
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.isError}">
+                                        <div class="slds-box slds-theme--error">
+                                            <p>{!v.message}</p>
+                                        </div>
+                                    </aura:if>
+                                    <div class="form-element__group">
+                                        <fieldset class="slds-form--compound">
+                                            <div class="form-element__group">
+                                                <div class="slds-form-element__row">
+                                                    <label class="slds-form-element__control slds-size--1-of-2 slds-p-top--medium slds-cell-wrap" style="width:50%">
+                                                        <span class="slds-form-element__helper slds-text-heading--label">{!$Label.c.Causal_Part}</span>
+                                                        <c:LookupWithoutSpinner selectedId="{!v.claimRecord.Causal_Part_Number__c}" showField="Description__c" selectedRecord="{!v.claimRecord.Causal_Part_Number__r}" selectedValue="{!v.causalPartName}" selSobject="Warranty_Product__c"  QuerySOQL="Select Id,Name,Description__c from Warranty_Product__c"/>                                         
+                                                        <ul class="has-error uiInputDefaultError uiInput uiInputText uiInput--default uiInput--input" id="40:c" data-aura-rendered-by="1:1;0">
+                                                            <li class="form-element__help" data-aura-rendered-by="4:1;0">
+                                                                <ui:outputText class="form-element__help" value="{!v.casualPartError}"/>
+                                                            </li>
+                                                        </ul>
+                                                    </label>
+                                                    
+                                                    <label class="slds-form-element__control slds-size--1-of-2 slds-p-top--medium slds-cell-wrap" style="width:50%">
+                                                        <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Fault_Code}</span>
+                                                        <div class="row">
+                                                                    
+                                                             <ui:inputSelect class="slds-input" aura:id="faultCode"  change="{!c.onFaultcodeSelect}">
+                                                                <ui:inputSelectOption class="slds-input" text="" label="None"/>
+                                                                <aura:if isTrue="{!(v.FaultCodeList!=null &amp;&amp; v.FaultCodeList.length!=0)}">
+                                                                    <aura:iteration items="{!v.FaultCodeList}" var="val">
+                                                                                <ui:inputSelectOption class="slds-input" value="{!(v.claimRecord.Fault_Code__c == val.Fault_Code__c)}" 
+                                                                                text="{!val.Fault_Code__c}" label="{!val.Fault_Code__r.Name}" />
+                                                                    </aura:iteration>
+                                                                </aura:if>
+                                                            </ui:inputSelect> 
+                                                          
+                                                            
+                                                        </div>    
+                                                        <ul class="has-error uiInputDefaultError uiInput uiInputText uiInput--default uiInput--input" id="40:c" data-aura-rendered-by="1:1;0">
+                                                            <li class="form-element__help" data-aura-rendered-by="4:1;0">
+                                                                <ui:outputText class="form-element__help" value="{!v.faultCodeError}"/>
+                                                            </li>
+                                                        </ul>
+                                                    </label>
+                                                    
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                        <fieldset class="slds-form--compound">
+                                            <div class="form-element__group">
+                                                <div class="slds-form-element__row">
+                                                    <label class="slds-form-element__control slds-size--1-of-2 slds-m-top--medium">
+                                                        <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Fault_Found}</span>
+                                                        <c:Picklist selectedValue="{!v.claimRecord.Fault_found__c}" objectName="Claim__c" fieldName="Fault_found__c" labelName=""/>
+                                                    </label>
+                                                    <label class="slds-form-element__control slds-size--1-of-2 slds-m-top--medium">
+                                                        <span class="slds-form-element__helper  slds-text-heading--label">{!$Label.c.Caused_By}</span>
+                                                        <c:Picklist selectedValue="{!v.claimRecord.Caused_by__c}" objectName="Claim__c" fieldName="Caused_by__c" labelName=""/>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                        <br/>
+                                        <center>
+                                            <button class="slds-button slds-button--brand" onclick = "{!c.goPrevious}">Previous</button>
+                                            <aura:If isTrue="{!(v.isSaveEnabled) }">
+                                                <button class="slds-button slds-button--brand" onclick = "{!c.saveClaimTemplate}">Save And Next</button>
+                                            </aura:If>
+                                            
+                                            <aura:If isTrue="{!(!v.isSaveEnabled)}">                                              
+                                                <button  class="slds-button slds-button--brand" onclick = "{!c.goNext}">Next</button>                                              
+                                            </aura:If>
+                                        </center>
+                                    </div>
+                                </form>
+                            </aura:if>
+                        </div>
+                    </div>
+                </div> 
+            </div>
+            
+            <!-- Tab for Claim Service Information -->
+            <div id="div-tab-3" class="slds-tabs__content slds-hide" role="tabpanel">
+                <aura:if isTrue="{!v.isServiceInfoActivated}">
+                    <div class="slds-grid">
+                        <div class="slds-col--padded slds-size--1-of-1 claim-grid">
+                            <div class="slds-container--center slds-container--medium claim-form">
+                                <span><c:ClaimServiceInformationRecs JobCodeList="{!v.JobCodeList}" BaseURL="{!v.BaseURL}" claimId="{!v.claimId}" claimName="{!v.claimName}" /></span>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                    <center>
+                        <button class="slds-button slds-button--brand" onclick = "{!c.goPrevious}">Previous</button>
+                        <button class="slds-button slds-button--brand" onclick = "{!c.goNext}">Next</button>
+                    </center>
+                </aura:if>
+            </div>
+            
+            <!-- Tab for Installed parts and Remvoed parts  -->
+            <div id="div-tab-4" class="slds-tabs__content slds-hide" role="tabpanel">
+                <aura:if isTrue="{!v.isServiceInfoActivated}">
+                    <div class="slds-grid">
+                        <div class="slds-col--padded slds-size--1-of-1 claim-grid">
+                            <div class="slds-container--center slds-container--medium claim-form">
+                                <SPAN>
+                                    <c:InstalledClaimParts BaseURL="{!v.BaseURL}" claimId="{!v.claimId}"/>
+                                </SPAN>
+                                <SPAN>
+                                    <c:RemovedClaimParts BaseURL="{!v.BaseURL}" claimId="{!v.claimId}"/>
+                                </SPAN>
+                                <SPAN>
+                                    <c:NonOEMParts BaseURL="{!v.BaseURL}" claimId="{!v.claimId}"/>
+                                </SPAN>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                    <center>
+                        <button class="slds-button slds-button--brand" onclick = "{!c.goPrevious}">Previous</button>
+                        <button class="slds-button slds-button--brand" onclick = "{!c.goNext}">Next</button>
+                    </center>
+                </aura:if>
+            </div>
+            
+            <!-- Claim Summary Tab for Validate and Submit claim -->
+            <div id="div-tab-5" class="slds-tabs__content slds-hide" role="tabpanel">
+                <aura:if isTrue="{!v.isServiceInfoActivated}">
+                    <div class="slds-grid">
+                        <div class="slds-col--padded slds-size--1-of-1 claim-grid">
+                            <div class="slds-container--center slds-container--medium claim-form">
+                                <aura:if isTrue="{!v.dmlErrors.length > 0}" >
+                                    <ui:message title="Error" severity="error" closable="false">
+                                      
+                                            <aura:iteration items="{!v.dmlErrors}" var="item">
+                                                {!item} <br/>
+                                            </aura:iteration>
+                                      
+                                    </ui:message>
+                                </aura:if>
+                                
+                                <!-- Cost Categories -->
+                                <br /> <br />
+                                <fieldset class="slds-form--compound">
+                                    <legend class="slds-form-element__label slds-text-heading--small slds-theme--shade" style="width:100%">{!$Label.c.TravelBy_Details}</legend>
+                                    <div class="form-element__group">
+                                        <div class="slds-form-element__row">
+                                            <label class="slds-form-element__control slds-size--1-of-3">
+                                                <span class="slds-form-element__helper">{!$Label.c.Travel_Hours}</span>
+                                                <ui:inputNumber aura:id="travelByHours" class="slds-input" value="{!v.claimRecord.TravelByHours__c}"/>
+                                            </label>
+                                            <label class="slds-form-element__control slds-size--1-of-3">
+                                                <span class="slds-form-element__helper">{!$Label.c.Travel_Distance}</span>
+                                                <ui:inputNumber aura:id="travelByDistance" class="slds-input" value="{!v.claimRecord.TravelByDistance__c}"/>
+                                            </label>
+                                            <label class="slds-form-element__control slds-size--1-of-3">
+                                                <span class="slds-form-element__helper">{!$Label.c.Travel_Location}</span>
+                                                <ui:inputText aura:id="travelByLocation" class="slds-input" value="{!v.claimRecord.TravelByLocation__c}"/>
+                                            </label>
+                                            
+                                        </div>
+                                    </div>
+                                </fieldset>
+                                
+                                <!-- Claim Cost -->
+                                <br /> <br />
+                                <fieldset class="slds-form--compound">
+                                    <legend class="slds-form-element__label slds-text-heading--small slds-theme--shade" style="width:100%">{!$Label.c.Cost_Category}</legend>
+                                    <div class="form-element__group">
+                                        <div class="slds-form-element__row">
+                                            <label class="slds-form-element__control slds-size--1-of-3">
+                                                <span class="slds-form-element__helper">{!$Label.c.Total_Meals_Cost}</span>
+                                                <ui:inputCurrency aura:id="totalMealsCost" class="slds-input" value="{!v.claimRecord.Total_Meals_Cost__c}"/>
+                                            </label>
+                                            <label class="slds-form-element__control slds-size--1-of-3">
+                                                <span class="slds-form-element__helper">{!$Label.c.Total_Parking_Cost}</span>
+                                                <ui:inputCurrency aura:id="totalParkingCost" class="slds-input" value="{!v.claimRecord.Total_Parking_Cost__c}"/>
+                                            </label>
+                                            
+                                        </div>
+                                    </div>
+                                </fieldset>
+                                
+                                <!-- comments -->
+                                <fieldset class="slds-form--compound">
+                                    <legend class="slds-form-element__label slds-text-heading--small slds-theme--shade" style="width:100%">{!$Label.c.Comments}</legend>
+                                    <div class="form-element__group">
+                                        <div class="slds-form-element__row">
+                                            <label class="slds-form-element__control slds-size--1-of-2">
+                                                <span class="slds-form-element__helper">{!$Label.c.Fault_Found_Comments}</span>
+                                                <ui:inputTextArea class="slds-input" value="{!v.claimRecord.Fault_Code_Comment__c}" rows="2"/>
+                                            </label>
+                                            <label class="slds-form-element__control slds-size--1-of-2">
+                                                <span class="slds-form-element__helper">{!$Label.c.Casual_Part_Comments}</span>
+                                                <ui:inputTextArea class="slds-input" value="{!v.claimRecord.CasualPart_Comments__c}" rows="2"/>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                                
+                                <fieldset class="slds-form--compound">
+                                    <div class="form-element__group">
+                                        <div class="slds-form-element__row">
+                                            <label class="slds-form-element__control slds-size--1-of-2">
+                                                <span class="slds-form-element__helper">{!$Label.c.Work_Performed_Comments}</span>
+                                                <ui:inputTextArea class="slds-input" value="{!v.claimRecord.work_Performed_comments__c}" rows="2"/>
+                                            </label>
+                                            <label class="slds-form-element__control slds-size--1-of-2">
+                                                <span class="slds-form-element__helper">{!$Label.c.Description}</span>
+                                                <ui:inputTextArea class="slds-input" aura:id="comments" value="{!v.claimRecord.Description__c}" rows="2"/>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                                
+                                
+                                
+                                <br/>
+                                
+                                
+                                <center>
+                                    <button class="slds-button slds-button--brand" onclick = "{!c.goPrevious}">Previous</button>
+                                    <button class="slds-button slds-button--brand" onclick = "{!c.saveClaim}">Save And Next</button>
+                                </center>
+                            </div>
+                        </div>
+                    </div>
+                </aura:if>
+            </div>
+            
+            
+            <!-- Tab to validate claim and Submit Claim functionality -->
+            <div id="div-tab-6" class="slds-tabs__content slds-hide" role="tabpanel">
+                <aura:if isTrue="{!v.isError}">
+                    <div class="slds-box slds-theme--error">
+                        <p>{!v.message}</p>
+                    </div>
+                </aura:if>
+                <center>
+                    <div class="slds-spinner--large slds-hide" aura:id="TabSpinnerDiv">
+                        <img src="{!v.BaseURL + '/resource/slds/assets/images/spinners/slds_spinner_brand.gif'}" alt="Loading...'}" />
+                    </div>
+                </center>
+                <div class="slds-grid slds-hide" aura:id="TabDiv">
+                    <aura:renderIf isTrue='{!v.DisplayApprovalTab}'>
+                        <c:ClaimApproval BaseURL="{!v.BaseURL}" claimId='{!v.claimId}' validateClicked="{!v.validateClicked}" claimRecord="{!v.claimRecord}"/>
+                    </aura:renderIf>
+                    <aura:renderIf isTrue='{!v.DisplayApprovalTab == false}'>
+                        <div class="slds-grid">
+                            <div class="slds-col--padded slds-size--1-of-1 claim-grid">
+                                <div class="slds-container--center slds-container--small claim-form">
+                                    <c:ClaimSummary BaseURL="{!v.BaseURL}" claimId='{!v.claimId}' validateClicked="{!v.validateClicked}" claimRecord="{!v.claimRecord}"/>
+                                </div>
+                            </div>
+                        </div>
+                    </aura:renderIf>
+                </div>
+                <center>
+                    <aura:if isTrue='{!v.validateClicked == false}'>
+                        <button class="slds-button slds-button--neutral" onclick = "{!c.validateClaim}">Validate Claim</button>
+                    </aura:if>
+                    
+                </center>
+                <br/>
+                <center>
+                    <button class="slds-button slds-button--brand" onclick = "{!c.goPrevious}">Previous</button>
+                    <aura:if isTrue='{!v.validateClicked}'>
+                        <a href="{!v.ProceedURL}" onclick="{!c.submitClaim}"> <span class="slds-button slds-button--brand "> Proceed </span> </a>
+                    </aura:if>
+                </center>
+            </div>
+        </div>
+    </c:container>
+</aura:component>

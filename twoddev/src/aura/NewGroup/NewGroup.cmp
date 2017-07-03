@@ -1,0 +1,96 @@
+<!--///////////////////////////
+
+Copyright � 2016  Tavant Technology Inc
+Name - NewGroup
+Purpose - New Group Creation
+Date - 12/27/2016
+Last Edited by - AMAN SAWHNEY
+
+//////////////////////////////-->
+
+<aura:component implements="force:appHostable" controller="GroupCreation" >
+    <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" />
+    <aura:attribute name="newGroup" type="Group__c"
+                    default="{ 'sobjectType': 'Group__c',
+                             'Name__c': '',
+                             'Description__c':'',
+                             'Object_Name__c': ''
+                             }"/>
+    <aura:attribute name="objectName" type="string"/>
+    <aura:attribute name="recordIds" type="string"/>
+    <aura:attribute name="showSpinner" type="boolean"/>
+    <aura:attribute name="showTable" type="boolean" default="true"/>
+    <aura:attribute name="showError" type="boolean" default="false"/>
+    <style>
+        input[type=text], select {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        }
+        
+        input[type=submit] {
+        width: 100%;
+        color: white;
+        margin: 8px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        padding:6px !important;
+        font-size : inherit !important;
+        }
+        
+        #group{
+        border-radius: 5px;
+        background-color: #f2f2f2;
+        padding: 20px;
+        margin-left:20%;
+        margin-right:20%;
+        width:50%;
+        
+        }
+        
+    </style>
+    
+    
+    <aura:if isTrue="{!v.showSpinner}">
+        <center><ui:spinner aura:id="spinner"/></center>
+    </aura:if>
+    <aura:if isTrue="{!v.showTable}">   
+        <div id="group">
+            <div align="center"><h3><b>{!$Label.c.New_Group}</b></h3></div><br/>
+            <label for="fname">{!$Label.c.Group_Name}</label>
+            <ui:inputText value="{!v.newGroup.Name__c}"/>
+            
+            <label for="lname">{!$Label.c.Description}</label>
+            <ui:inputText value="{!v.newGroup.Description__c}"/>
+            
+            <div class="padder">
+                <ui:button label="{!$Label.c.Submit}" class="slds-button slds-button--brand" press="{!c.createGroup}"/>
+                <ui:button label="{!$Label.c.Cancel}" class="slds-button slds-button--brand" press="{!c.cancel}"/>
+            </div>
+        </div></aura:if> 
+    <aura:if isTrue="{!v.showError}">
+        <div>
+            <div aria-hidden="false" aria-labelledby="prompt-heading-id" aria-describedby="prompt-message-wrapper" role="alertdialog" class="slds-modal slds-modal--prompt slds-fade-in-open">
+                <div class="slds-modal__container slds-modal--prompt" role="document" id="prompt-message-wrapper" tabindex="0">
+                    <div class="slds-modal__header slds-theme--error slds-theme--alert-texture">
+                        <h2 class="slds-text-heading--medium" id="prompt-heading-id">{!$Label.c.Error}</h2>
+                    </div>
+                    <div class="slds-modal__content slds-p-around--medium">
+                        <div>
+                            <p>{!$Label.c.Please_Select_Records_And_Enter_Details}</p>
+                        </div>
+                    </div>
+                    <div class="slds-modal__footer slds-theme--default">
+                        <button class="slds-button slds-button--neutral" onclick="{!c.gotoListView}">{!$Label.c.Okay}</button>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-backdrop slds-backdrop--open"></div>
+        </div>
+    </aura:if>
+</aura:component>

@@ -1,0 +1,8 @@
+<aura:component >
+    <aura:attribute name="SObject" type="map[]" />
+    <aura:attribute name="fieldName" type="String" />
+
+   
+    <ui:outputText aura:Id="outputTextId" /> <br/>
+
+</aura:component>

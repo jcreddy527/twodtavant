@@ -1,0 +1,308 @@
+<!--/////////////////////////////////////
+
+Copyright � 2016  Tavant Technology Inc
+Name - CustomerTransfer
+Purpose - component used for warranty registration of inventory.
+Date - 12/27/2016
+Last Edited by - AMAN SAWHNEY
+
+/////////////////////////////////////-->
+
+<aura:component extends="c:GenericCrudComponent">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <ltng:require styles="/resource/SLDS0122/assets/styles/salesforce-lightning-design-system.min.css"/>
+        <!--<ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" />-->
+    </head>
+    <aura:attribute name="isAcknowledged" type="boolean"/>
+    <aura:attribute name="inventoryId" type="string"/>
+    <aura:attribute name="dealerId" type="string"/>
+    <aura:attribute name="dealerName" type="string"/>
+    <aura:attribute name="comments" type="string"/>
+    <aura:attribute name="ProceedURL" type="string"/>
+    <aura:attribute name="BaseURL" type="string"/>
+    
+    <!--customer create atributes-->
+    <aura:attribute name="showCreateCustomerModal" type="Boolean"/>
+    <aura:attribute name="showSpinner" type="Boolean" description="used to display spinner"/>
+    <aura:attribute name="formNewAccount" type="Object" description="used to create new customer"/>
+    
+    <aura:attribute name="unitsRun" type="decimal"/>
+    <aura:attribute name="date" type="date"/>
+    <aura:attribute name="policy" type="sobject[]"/>
+    <aura:attribute name="markedPolicyList" type="Object[]"/>
+    <aura:attribute name="isNoPolicies" type="Boolean" default="false"/>
+    <aura:attribute name="resultMessage" type="String"/>
+    <aura:attribute name="truthy" type="Boolean" default="false"/>
+    <aura:attribute name="isUnitRun" type="boolean" default="false"/>
+    <aura:attribute name="transaction"
+                    type="sobject"
+                    default="{
+                             'sobjectType' : 'Inventory_Transaction_History__c',
+                             'Name':'',
+                             'From__c':'',
+                             'Inventory__c':'',
+                             'Transaction_Type__c':'',
+                             'To__c':'',
+                             'Transfer_Date__c':'',
+                             }"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="inventory" type="sobject"/>
+    <aura:attribute name="inventoryList" type="sobject[]"/>
+    <aura:attribute name="policyInactiveList" type="sobject[]"/>
+    <aura:attribute name="alertBoxData" type="Object"/>
+    <aura:attribute name="scrappedOrStolen" type="Boolean"/>
+    
+    <aura:if isTrue="{!v.scrappedOrStolen}">
+        <div class="pageBlocker">
+            
+            <div role="alertdialog" tabindex="-1" aria-labelledby="prompt-heading-id" aria-describedby="prompt-message-wrapper" class="slds-modal slds-fade-in-open slds-modal--prompt">
+                <div class="slds-modal__container">
+                    <div class="slds-modal__header slds-theme--error slds-theme--alert-texture">
+                        <h2 class="slds-text-heading--medium" id="prompt-heading-id">{!v.alertBoxData.title}</h2>
+                    </div>
+                    <div class="slds-modal__content slds-p-around--medium">
+                        <div>
+                            <p>{!v.alertBoxData.message}</p>
+                        </div>
+                    </div>
+                    <div class="slds-modal__footer slds-theme--default">
+                        <button class="slds-button slds-button--neutral" onclick="{!c.Cancel}">{!v.alertBoxData.okayButtonTitle}</button>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-backdrop slds-backdrop--open"></div>
+            
+        </div>
+        
+    </aura:if>
+    
+    {!v.body}
+    <aura:if isTrue="{!(!v.scrappedOrStolen)}">
+        <div>
+            
+            <header class="slds-text-heading--large slds-align--absolute-center header" style="background: #1a315b;color: white;padding: 30px;">
+                {!$Label.c.CustomerTransfer_Header}
+            </header>
+            <div class="accordion-body tab-open" Style="background: white;color: black;display: block;padding: 17px 9px 17px 9px; width: 80%; margin: 0px auto auto auto;box-shadow: #302e2e -3px 4px 25px;">
+                <div class="accordion-container">
+                    <!-- Accordion 1-->
+                    <div class="accordion">
+                        <div class="HeaderStyle" style="width: 100%;height: 50px;">
+                            
+                            {!$Label.c.CustomerTransfer_InventoryDetails}
+                            
+                        </div>
+                        
+                        <!--***************User Creation Modal****************-->
+                        <aura:if isTrue="{!v.showCreateCustomerModal}">
+                            
+                            <div role="dialog" tabindex="-1" aria-labelledby="header43" class="slds-modal slds-fade-in-open">
+                                <div class="slds-modal__container">
+                                    <div class="slds-modal__header">
+                                        <button class="slds-button slds-modal__close slds-button--icon-inverse">
+                                            <c:svg xlinkHref="/assets/icons/utility-sprite/svg/symbols.svg#close" class="slds-button__icon slds-button__icon--large"/>
+                                            <span class="slds-assistive-text">Close</span>
+                                        </button>
+                                        <h2 id="header43" class="slds-text-heading--medium">{!$Label.c.Create_Customer}</h2>
+                                    </div>
+                                    <div class="slds-modal__content slds-p-around--medium">
+                                        <div class="slds-grid">
+                                            
+                                            <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12">
+                                                <ui:inputText class="slds-input" label="{!$Label.c.Customer_Name}" required="true" value="{!v.formNewAccount.Name}"/>
+                                                <br/>
+                                                <ui:inputText class="slds-input" label="{!$Label.c.State}" value="{!v.formNewAccount.ShippingState}"/>
+                                                <br/>
+                                                <ui:inputText class="slds-input" label="{!$Label.c.Street}" value="{!v.formNewAccount.ShippingStreet}"/>
+                                                <br/>
+                                                <ui:inputText class="slds-input" label="{!$Label.c.Country}" value="{!v.formNewAccount.ShippingCountry}"/>
+                                                <br/>
+                                                <ui:inputText class="slds-input" label="{!$Label.c.Zip_Code}" value="{!v.formNewAccount.ShippingPostalCode}"/>
+                                                <br/>
+                                                <ui:inputText class="slds-input" label="{!$Label.c.Phone}" value="{!v.formNewAccount.Phone}"/>
+                                                <br/>
+                                                <ui:inputText class="slds-input" label="{!$Label.c.Website}" value="{!v.formNewAccount.Website}"/>
+                                                <br/>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                    <div class="slds-modal__footer">
+                                        <aura:if isTrue="{!v.showSpinner}">
+                                            <div class="spinner-container">
+                                                <img src="/resource/SLDS0122/assets/images/spinners/slds_spinner_brand.gif"/>
+                                            </div>
+                                        </aura:if>
+                                        <button class="slds-button slds-button--neutral" onclick="{!c.cancelCustomermake}">{!$Label.c.Cancel}</button>
+                                        <button class="slds-button slds-button--neutral slds-button--brand" onclick="{!c.saveCustomer}">{!$Label.c.Save}</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="slds-backdrop slds-backdrop--open"></div>
+                        </aura:if>
+                        <!--***********************************************-->
+                        <div class="slds-grid slds-wrap slds-grid">
+                            <div Style="width: 50%;padding: 0.7rem;" class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                                <span class="dataHeaderLabel">{!$Label.c.INVENTORY_NAME}</span><br/><ui:outputText class="HeaderValueStyle" value="{!v.inventory.Name}"/>
+                            </div>
+                            <div Style="width: 50%;padding: 0.7rem;" class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                                <span class="dataHeaderLabel">{!$Label.c.Serial_Number}</span><br/><ui:outputText class="HeaderValueStyle" value="{!v.inventory.Serial_Number__c}"/>
+                                
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-wrap slds-grid">
+                            <div Style="width: 50%;padding: 0.7rem;" class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                                <span class="dataHeaderLabel">{!$Label.c.TYPE}</span><br/><ui:outputText class="HeaderValueStyle" value="{!v.inventory.Type__c}"/>
+                            </div>
+                            <div Style="width: 50%;padding: 0.7rem;" class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                                <span class="dataHeaderLabel">{!$Label.c.Warranty_Product}</span><br/><ui:outputText class="HeaderValueStyle" value="{!v.inventory.Item__r.Name}"/>
+                            </div>
+                        </div>
+                        <!--<div class="slds-grid slds-wrap slds-grid">
+     <div Style="width: 50%;padding: 0.7rem;" class="slds-size-12-of-12 slds-medium-size-6-of-12 slds-large-size-6-of-12 slds-p-around-large">
+      <span class="dataHeaderLabel">{!$Label.c.Dealer}</span><br/><ui:outputText class="HeaderValueStyle" value="{!v.inventory.Account__r.Name}"/>
+     </div>
+     <div Style="width: 50%;padding: 0.7rem;" class="slds-size-12-of-12 slds-medium-size-6-of-12 slds-large-size-6-of-12 slds-p-around-large">
+
+     </div>
+    </div>-->
+                        
+                    </div>
+                    <!-- Accordion 2-->
+                    <div class="accordion">
+                        <div class="HeaderStyle" style="width: 100%;height: 50px;">
+                            
+                            {!$Label.c.CustomerTransfer_TransferDetails}
+                            
+                        </div>
+                        <aura:if isTrue="{!v.truthy}">
+                            <div id="onsuccess" style="display: bold ;width: 100%;">
+                                <div style="background: #DC143C !important;" class="slds-notify slds-notify--alert slds-theme--inverse-text slds-theme--alert-texture" role="alert">
+                                    <span class="slds-assistive-text">Info</span>
+                                    <button id="successBtn" class="slds-button slds-button--icon-inverse slds-notify__close" onclick="{!c.hideSuccessAlert}">
+                                        <c:svgIcon svgPath="/resource/slds/assets/icons/utility-sprite/svg/symbols.svg#close" category="standard" size="x-small" name="close"/>
+                                        <span class="slds-assistive-text">Close</span>
+                                    </button>
+                                    <h2>{!v.resultMessage}</h2>
+                                </div>
+                            </div>
+                        </aura:if>
+                        
+                        <div class="slds-grid slds-wrap slds-grid">
+                            <div Style="width: 50%;padding: 0.7rem;" class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                                <span class="dataHeaderLabel">{!$Label.c.Dealer}</span><br/><ui:outputText class="HeaderValueStyle" value="{!v.inventory.Account__r.Name}"/>
+                            </div>
+                            <div Style="width: 50%;padding: 0.7rem;" class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                                <span class="dataHeaderLabel">{!$Label.c.TRANSFER_TO}</span><br/><c:LookupWithoutSpinner aura:id="dealer-lookup"
+                                                                                                                         selectedId="{!v.dealerId}"
+                                                                                                                         selectedValue='hi'
+                                                                                                                         selSobject="Account"
+                                                                                                                         QuerySOQL="Select Id,Name from Account"
+                                                                                                                         condition="{!'Warranty_Account_Type__c = \'Customer\' and Id !=\'' + v.inventory.Customer__c + '\''}"/>
+                                <a onclick="{!c.setCreateCustomerModal}">{!$Label.c.Create_Customer}</a>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-wrap slds-grid">
+                            <div Style="width: 50%;padding: 0.7rem;" class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                                <span class="dataHeaderLabel">{!$Label.c.TRANSFER_DATE}</span><br/><ui:inputDate class="slds-input form-element__help dateInput" value="{!v.date}" displayDatePicker="true"/>
+                            </div>
+                            <aura:if isTrue="{!v.isUnitRun}">
+                                <div Style="width: 50%;padding: 0.7rem;" class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                                    <!-- <span class="dataHeaderLabel">{!$Label.c.UNITS_USED_DURING_TRANSFER}</span><br/><ui:inputNumber disabled="true" class="slds-input form-element__help" value="{!v.unitsRun}" placeholder="{!v.inventory.Item__r.Units_of_Measure__c}"/> -->
+                                    <!-- Below line is added by Chethan -->
+                                    <span class="dataHeaderLabel">{!$Label.c.UNITS_USED_DURING_TRANSFER}</span><br/>
+                                    <ui:inputNumber disabled="true" class="slds-input form-element__help" value="{!v.unitsRun}"/>
+                                </div>
+                            </aura:if>
+                        </div>
+                        <div class="slds-grid slds-wrap slds-grid">
+                            <div Style="width: 50%;padding: 0.7rem;" class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large">
+                                <span class="dataHeaderLabel">{!$Label.c.Comments}</span><br/><ui:inputTextArea class="slds-input form-element__help" value="{!v.comments}"/>
+                            </div>
+                            <div Style="width: 50%;padding: 0.7rem;" class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--large"></div>
+                        </div>
+                        
+                    </div>
+                    <!-- Accordion 3-->
+                    <div class="accordion">
+                        <div class="HeaderStyle" style="width: 100%;height: 50px;">
+                            
+                            {!$Label.c.CustomerTransfer_PolicyDetails}
+                            
+                        </div>
+                        <aura:if isTrue="{!!v.isNoPolicies}">
+                            <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal slds-no-row-hover">
+                                <thead>
+                                    <tr >
+                                        <th class="slds-truncate" scope="col">{!$Label.c.Select}</th>
+                                        <th class="slds-truncate" scope="col">{!$Label.c.Policy_Name}</th>
+                                        <th class="slds-truncate" scope="col">{!$Label.c.Is_Transferable}</th>
+                                        <th class="slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2" scope="col">{!$Label.c.Transfer_Fee}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <aura:iteration items="{!v.policy}" var="item" indexVar="i">
+                                        <tr class="slds-hint-parent  slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2 ">
+                                            <aura:renderIf isTrue="{!item.Policy_Definition__r.Transferable__c}">
+                                                <td class="slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2" data-label="isTransferable - ">
+                                                    <label class="slds-checkbox">
+                                                        <ui:inputCheckbox class="slds-checkbox" text="{!item.Id}" change="{!c.check}"/>
+                                                        <!--  <input class="slds-checkbox" name="default" type="checkbox" id="{!item.Id}" value="{!item.Id}" onchange="{!c.check}"/>-->
+                                                        <span class="slds-checkbox--faux"></span>
+                                                    </label>
+                                                </td>
+                                            </aura:renderIf>
+                                            <aura:renderIf isTrue="{!!item.Policy_Definition__r.Transferable__c}">
+                                                <td title="Not Transferable" class="slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2" data-label="isTransferable - "><ui:outputCheckbox class="slds-checkbox" value="false"/></td>
+                                            </aura:renderIf>
+                                            
+                                            <td class="slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2" data-label="{!$Label.c.Policy_Name_Compressed_Layout}">
+                                                <div>
+                                                    <ui:outputText value="{!item.Policy_Definition__r.Name}"/>
+                                                </div>
+                                            </td>
+                                            <td class="slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2" data-label="{!$Label.c.Is_Transferable_Compressed_Layout}"><ui:outputCheckbox value="{!item.Policy_Definition__r.Transferable__c}"/></td>
+                                            <td class="slds-size--1-of-1 slds-medium-size--1-of-2 slds-large-size--1-of-2" data-label="{!$Label.c.Transfer_Fee_Compressed_Layout}"><ui:outputText value="{!item.Policy_Definition__r.Transfer_Fee__c}"/></td>
+                                        </tr>
+                                    </aura:iteration>
+                                </tbody>
+                            </table>
+                        </aura:if>
+                        <aura:if isTrue="{!v.isNoPolicies}">
+                            <ui:outputText value="{!$Label.c.CustomerTransfer_NoPoliciesToDisplay}"/>
+                        </aura:if>
+                    </div>
+                    <br></br>
+                    
+                    <div style="width: 100%;height: 50px;">
+                        
+                        <ui:inputCheckbox value="{!v.isAcknowledged}" class="slds-checkbox"/>
+                        &nbsp;&nbsp;
+                        <ui:outputText value="{!$Label.c.CustomerTransfer_Acknowledgement}"/>
+                        
+                    </div>
+                    
+                    <center>
+                        <aura:if isTrue="{!v.isAcknowledged}">
+                            <a style="padding: 12px;" href="{!v.ProceedURL}" onclick="{!c.inventoryTransfer}">
+                                <span class="slds-button slds-button--brand ">
+                                    {!$Label.c.Confirm_Button}
+                                </span>
+                            </a>
+                        </aura:if>
+                        <a href="{!v.ProceedURL}" onclick="{!c.Cancel}">
+                            <span class="slds-button slds-button--neutral ">
+                                {!$Label.c.Cancel}
+                            </span>
+                        </a>
+                        
+                    </center>
+                </div>
+            </div>
+            
+        </div>
+    </aura:if>
+    
+</aura:component>

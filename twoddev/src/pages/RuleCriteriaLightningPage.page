@@ -1,0 +1,22 @@
+<apex:page standardController="Warranty_Rule_Criteria__c" extensions="RuleCriteriaLightningCmpContr" standardStylesheets="false" sidebar="false" recordSetVar="pat" showHeader="false">
+     <apex:includeLightning />
+    <div id="lightning"/>
+    <script>
+       
+        
+        
+        var totalPageURL = window.location.toString();
+        var protocalType= totalPageURL.split("//")[0];
+        var tempbaseURL = totalPageURL.split("//")[1].split("/");
+        var finalBaseURL = protocalType+'//'+tempbaseURL[0] + "{!$Site.Prefix}";
+        
+        
+        $Lightning.use("c:RuleCriteriaLightningApp", function() {
+                $Lightning.createComponent("c:RuleCriteriaLightningCmp",{"WarrantyRule":"","searchKey":"", BaseURL:finalBaseURL},                      
+              "lightning",
+              function(cmp) {
+                // do some stuff
+              });
+            });       
+    </script>
+</apex:page>

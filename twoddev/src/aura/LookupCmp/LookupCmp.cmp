@@ -1,0 +1,47 @@
+<!--/////////////////////////////////////
+
+Copyright � 2016  Tavant Technology Inc
+Name - LookupCmp
+Purpose - component for adding lookup in lightning component
+Date - 12/27/2016
+Last Edited by - AMAN SAWHNEY
+
+/////////////////////////////////////-->
+
+<aura:component extends="c:CruderCmp">
+    <aura:attribute name="objectType" type="String" default="Account"/>
+    <aura:attribute name="objectList" type="Object[]" default="[]"/>
+    <aura:attribute name="class" type="String" default=""/>
+    <aura:attribute name="objectName" type="String" default=""/>
+    <aura:attribute name="where" type="String" default=""/>
+    <aura:attribute name="fields" type="String" default="Id,Name"/>
+    <aura:attribute name="label" type="String" default="Account"/>
+    <aura:attribute name="placeholder" type="String" default=""/>
+    <aura:attribute name="comment" type="String" default=""/>
+    <aura:attribute name="isSelected" type="Boolean" default="false" description="to check whether the lookup is selected or written in random"/>
+    <aura:attribute name="disabled" type="Boolean" default="false"/>
+    <aura:attribute name="minCharacters" type="Integer" default="3"/>
+    <aura:attribute name="showList" type="Boolean" default="false"/>
+    <aura:attribute name="iterableId" type="Integer" default="0"/>
+    
+    <aura:registerEvent name="onLookupSelect" type="c:onLookupSelect"/>
+    <aura:registerEvent name="onBlur" type="c:onLookupBlur"/>
+    <aura:html tag="div" onblur="{!c.throwBlur}">
+        <ui:inputText label="{!v.label}" class="{!v.class}" disabled="{!v.disabled}" value="{!v.objectName}" 
+                      placeholder="{!v.placeholder}"  blur="{!c.throwBlur}" focus="{!c.setShowList}" 
+                      keyup="{!c.getObjects}" updateOn="keyup" aura:id="lookup-textbox" />
+        	
+            <div class="objectList" style="{!'display :'+ if( (v.objectList.length!=0),'block;','none;')}">
+                <ul class="lookup-un-List">
+                    <aura:if isTrue="{!(v.showList &amp;&amp; v.objectList.length!=0)}">
+                        <aura:iteration items="{!v.objectList}" var="obj">
+                            <aura:html tag="li" class="rowX">
+                                <ui:outputText value="{!obj.Name}" class="{!obj}" mousedown="{!c.setObject}"/>	
+                            </aura:html>
+                        </aura:iteration>
+                    </aura:if>
+                </ul>
+            </div>
+       
+    </aura:html>
+</aura:component>

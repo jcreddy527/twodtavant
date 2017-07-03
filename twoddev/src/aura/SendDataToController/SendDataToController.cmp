@@ -1,0 +1,70 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId" extends="c:GenericComponent" access="global" >
+	<aura:attribute name="accountRec"   		type="sObject" 		default="{  'sobjectType': 'Account'
+                                                                         }"/>
+    <aura:attribute name="contactRec"   		type="sObject" 		default="{  'sobjectType': 'Contact'
+                                                                         }"/>
+    <aura:attribute name="FirstName" 	type="string" />
+    <aura:attribute name="LastName" 	type="string" />
+    
+    <div class="slds-form-element slds-is-required">
+        <div class="slds-form-element__control">
+            <ui:inputText aura:id="quantity" label="LastName"
+                          class="slds-input"
+                          labelClass="slds-form-element__label"
+                          value="{!v.contactRec.LastName}"
+                          />
+        </div>
+    </div>
+    
+    
+    <!-- Mandatory field on Contact object -->
+    <div class="slds-form-element slds-is-required">
+        <div class="slds-form-element__control">
+            <ui:inputText aura:id="quantity" label="FirstName"
+                          class="slds-input"
+                          labelClass="slds-form-element__label"
+                          value="{!v.contactRec.FirstName}"
+                          />
+        </div>
+    </div>
+    
+    <div class="slds-form-element slds-is-required">
+        <div class="slds-form-element__control">
+            <ui:inputText aura:id="quantity" label="Title"
+                          class="slds-input"
+                          labelClass="slds-form-element__label"
+                          value="{!v.contactRec.Title}"
+                          />
+        </div>
+    </div>
+    
+    <div class="slds-form-element slds-is-required">
+        <div class="slds-form-element__control">
+            <ui:inputText aura:id="quantity" label="Email"
+                          class="slds-input"
+                          labelClass="slds-form-element__label"
+                          value="{!v.contactRec.Email}"
+                          />
+        </div> 
+    </div>
+    
+    <div class="slds-form-element slds-is-required">
+        <div class="slds-form-element__control">
+            <ui:inputText aura:id="quantity" label="LeadSource"
+                          class="slds-input"
+                          labelClass="slds-form-element__label"
+                          value="{!v.contactRec.LeadSource}"
+                          />
+        </div> 
+    </div>
+    
+    <div >
+        <center>
+            <br />
+            <div class="slds-x-small-buttons--horizontal">
+                <button class="slds-button slds-button--neutral" onclick = "{!c.saveRecord}" >{!$Label.c.Save}</button>
+            </div>
+        </center>
+    </div>
+
+</aura:component>

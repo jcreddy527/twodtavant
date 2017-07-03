@@ -1,0 +1,225 @@
+<apex:page standardController="Claim__c" extensions="RecoveryClaimpageCtrl" sidebar="false" showHeader="false" cache="false"> 
+    <apex:stylesheet value="{!URLFOR($Resource.slds, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.JQuery)}"/>
+    <style>
+    
+    .ClaimTextClass {
+        margin-top: 40px;
+        margin-bottom: 25px;
+    }
+    
+    h1{
+        
+        font-style: italic;
+        font-size: larger;
+    }
+    
+    h3{
+        
+        margin-top: 23px;
+        margin-bottom: 23px;
+    }
+       
+    .slds .slds-section-title {
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+    
+    .margin{
+        margin-top: 40px;
+        
+    }
+    
+    </style>
+    <apex:form >
+        
+    <apex:pageMessages id="mymsg"    />
+    <apex:pageBlock >    
+    
+      
+     <!--    <apex:pageBlockSection title="Warranty Claim details">    
+            <apex:pageBlockSectionItem >
+           
+            Name - <apex:outputField value="{!Claim__c.name}" ></apex:outputField>
+            </apex:pageBlockSectionItem>
+         </apex:pageBlockSection> -->
+           <apex:pageBlockSection title="WarrantyClaim details">
+             <apex:repeat value="{!$ObjectType.Claim__c.fieldsets.ClaimFieldSet}" var="fieldValue">
+                 <apex:outputField value="{!Claim__c[fieldValue]}"/>
+             </apex:repeat>
+          </apex:pageBlockSection>   
+          
+          
+          <apex:pageBlockSection title="Causal Part" columns="1">
+       <!--      <apex:pageBlockSectionItem >
+                <div><h1>Causal Part</h1></div>
+                </apex:pageBlockSectionItem> -->
+                <apex:pageBlockSectionItem >
+                      <apex:pageBlockTable value="{!CausalPartDataList}" var="key3" width="100%">
+                         <apex:column width="33%" headerValue="Casual Part Name">
+                           {!key3.Name}
+                         </apex:column>
+                         <apex:column width="33%" headerValue="Item Type">
+                           {!key3.Track_Type__c}  
+                         </apex:column>
+                         <apex:column width="33%" headerValue="Product Name">
+                           {!key3.Product_Name__c} 
+                         </apex:column>             
+                     </apex:pageBlockTable>
+               </apex:pageBlockSectionItem>
+          </apex:pageBlockSection>
+         
+   
+              
+        <apex:pageBlockSection title="Removed Parts"  rendered="{!ShowRemovedPartSection == True}"  columns="1">
+        
+            <apex:pageBlockSectionItem >
+                  <apex:pageBlockTable width="100%" value="{!RemovedPartList}" var="RemovedPartVar">
+                      <apex:column width="33%" headerValue="Removed Part Code">
+                          {!RemovedPartVar.Warranty_Product_on_Recovery_Claim__c}
+                  </apex:column>
+                  <apex:column width="33%" headerValue="Part Type">
+                         {!RemovedPartVar.RecordType.name}
+                  </apex:column>
+            
+                  <apex:column width="33%"  headerValue="Removed Part Product Name">
+                         {!RemovedPartVar.Warranty_Product_Name_on_Recovery_Claim__c}
+                  </apex:column>
+                  </apex:pageBlockTable>
+        </apex:pageBlockSectionItem>        
+        </apex:pageBlockSection>    
+      
+        <div class="margin"><apex:commandButton value="Search Contracts" action="{!SearchContractForParts}" rendered="{!ShowContractButton}" ></apex:commandButton></div>
+      
+      
+
+    
+        
+        <!-- use the map name as a value and takes a variable as a key -->
+        
+    <!--    <div class="margin" ><h1>Active Contracts:</h1></div> -->
+        <apex:variable value="{!0}" var="rowNum"/> 
+        <apex:variable value="{!0}" var="rowNum1"/> 
+        <apex:repeat value="{!mapObj}" var="key1" >
+        <apex:variable var="rowNum" value="{!rowNum + 1}"/> 
+        <apex:variable var="rowNum1" value="{!rowNum1 + 1}"/> 
+        <apex:pageBlockSection title="Active Contracts for part  {!key1} " >
+    <!--     <div class = "margin"> The Contracts For {!key1} Part </div> -->
+        </apex:pageBlockSection> 
+         <div>
+                   <apex:pageBlockTable width="100%"  value="{!mapObj[key1]}" var="key2" >
+                    
+                    <apex:column width="5%" headerValue="Select">
+                       <apex:facet name="header">
+                
+                       </apex:facet>
+                       <apex:inputCheckbox value="{!key2.isSelected}" id="InputId" styleClass="cbGroup cbGroup{!rowNum}" onclick="validateCheck(this,{!key2.IsCollateralApplicable},{!rowNum},'{!key2.PartType}')" >
+                           
+                    <!--        <apex:actionsupport action="{!SetMainContact}" event="onchange" reRender="MainContactSection" onSubmit="checkboxChanged(this)" /> -->
+                            
+                       </apex:inputCheckbox>
+                    </apex:column>                   
+                   
+                    
+                    <apex:column width="24%" headerValue="Product Name">
+                           {!key2.WarrantyProductName}
+                    </apex:column>
+                    
+                    <apex:column width="24%" headerValue="Contract  Name">
+                           {!key2.ContractName}
+                    </apex:column>
+                      <apex:column width="24%" headerValue="Supplier Account Name">
+                            {!key2.SupplierAccountName} 
+                    </apex:column>
+                    <apex:column width="24%" headerValue="Part Type">
+                            {!key2.PartType } 
+                    </apex:column>
+                    <apex:column width="24%" headerValue="Minimum Recovarable Percentage">
+                            {!key2.MinimumRecovareablePercentage} 
+                    </apex:column> 
+                     
+                    <!--<apex:column width="20%" rendered="{!if(key2.PartType = 'Causal', true, false)}">
+                        <apex:facet name="header">Is Collateral Applicable?</apex:facet>
+                        <apex:outputText value="{!key2.IsCollateralApplicable}"/>
+                    </apex:column>    -->
+                    <apex:column width="20%"  value="{!key2.IsCollateralApplicable}"  headerValue="Is Collateral Applicable?">   
+                        <apex:facet name="header">Is Collateral Applicable?</apex:facet>   
+                                         
+                    </apex:column>    
+                       <!--<apex:facet name="header">
+                
+                       </apex:facet>
+                       <apex:inputCheckbox value="{!key2.IsCollateralApplicable}" id="InputId1" styleClass="cbGroup1{!rowNum1}" onclick="validateCheck1(this)">
+                        -->    
+                        <!--</apex:inputCheckbox>-->
+                   
+              
+                  </apex:pageBlockTable>
+        </div>   
+        </apex:repeat>  
+        
+        
+        <div class="margin">
+        <apex:commandButton styleClass="margin" rendered="{!ShowCreateClaimButton == True}" value="Create Recovery Claim"  action="{!ShowCreatedClaim}"></apex:commandButton> 
+        </div>
+            
+        <apex:pageBlockSection title="Recovery Claims Created" columns="1" rendered="{!ShowRecoveryClaimTable == True}">
+        <apex:pageBlockSectionItem >
+        <apex:pageblocktable value="{!SupplyRecoveryClaimInfoList}" var="key4">
+           
+        <apex:column headerValue="Recovery Claim">
+             <a href="/{!key4.SupplyRecoveryClaimId}">{!key4.SupplyRecoveryClaimName}</a> 
+        </apex:column>
+         <apex:column headerValue="Contract">
+             {!key4.SupplyRecoveryContractName}
+        </apex:column>
+           
+        </apex:pageblocktable>
+        </apex:pageBlockSectionItem>    
+        </apex:pageBlockSection>         
+        
+        <div align="center" class="margin" draggable="false" >
+        <apex:commandButton styleClass="margin" action="{!Cancel}" value="Cancel"/>
+        </div>
+        
+    </apex:pageBlock>    
+    </apex:form>
+    <script>
+        function validateCheck(ctrl,isCollateral,valNum, casOrRem)
+        {           
+           if($(ctrl).is( ":checked" ) == true && casOrRem != "Causal")
+           {
+                //$('.' + $(ctrl).attr('class')).prop("checked",false);
+                //$(ctrl).prop("checked",true); 
+                
+                $('.cbGroup' + valNum).prop("checked",false);
+                $(ctrl).prop("checked",true);
+           }
+            else
+             if( $(ctrl).is( ":checked" ) == false && isCollateral == true) 
+            {
+                $('.cbGroup').removeAttr('disabled');    
+            }
+            else if($(ctrl).is( ":checked" ))            
+                //alert($(ctrl).attr('class'));
+            {
+                if(isCollateral == true)
+                {
+                    $('.cbGroup').prop("checked",false);
+                    $('.cbGroup').attr('disabled','true');
+                    $(ctrl).removeAttr('disabled');
+                    $(ctrl).prop("checked",true);                  
+                }
+                else
+                {
+                    $('.cbGroup' + valNum).prop("checked",false);
+                    $(ctrl).prop("checked",true); 
+                }
+                
+            }
+                        
+               
+        }         
+        
+    </script>
+</apex:page>

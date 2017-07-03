@@ -1,0 +1,3 @@
+<aura:component extensible="true" controller="CruderCntrl" implements="force:appHostable" >
+	{!v.body}
+</aura:component>

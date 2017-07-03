@@ -1,0 +1,24 @@
+<apex:page standardController="Claim__c" standardStylesheets="false" sidebar="false"  >
+
+<apex:includeLightning />
+<div id="lightning" />
+
+<script>
+
+var totalPageURL = window.location.toString();
+var protocalType= totalPageURL.split("//")[0];
+var tempbaseURL = totalPageURL.split("//")[1].split("/");
+var finalBaseURL = protocalType+'//'+tempbaseURL[0] + "{!JSENCODE($Site.Prefix)}";
+
+$Lightning.use("c:EditClaimApp", function() {
+              $Lightning.createComponent("c:EditClaimComponent",
+              { claimId : "{!JSENCODE(Claim__c.Id)}" , claimStatus : "{!JSENCODE(Claim__c.Claim_Status__c)}",BaseURL:finalBaseURL },
+              "lightning",
+              function(cmp) {
+                // do some stuff
+              });
+            });
+    
+</script>    
+
+</apex:page>

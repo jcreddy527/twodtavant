@@ -1,0 +1,108 @@
+<aura:component access="global" controller="BulkUploadController">
+
+<aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+
+    <!-- Lightning css resources -->
+    <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" />
+	<aura:attribute name="showSection1" type="Boolean" default="true" />
+    <aura:attribute name="showSection2" type="Boolean" default="false" />
+    <aura:attribute name="showSection3" type="Boolean" default="false" />
+	<aura:attribute name="stageCreated" type="Boolean" default="false" />
+	<aura:attribute name="batchId" type="Id" default="" />
+	<aura:attribute name="bLogId" type="Id" default="" />
+	<aura:attribute name="RecCnt" type="Integer" default="" />
+	<aura:attribute name="shwBatchDetails" type="Boolean" default="false" />
+    <aura:attribute name="bulkUploadHeading" type="String" default="{!$Label.c.Bulk_Upload}" />
+    <!-- value selected in picklist-->
+    <aura:attribute name="processTypeName" type="String" default="None" />
+    <aura:attribute name="customerSaveLoc" type="String" default="None" />
+
+   <div class="main-body">
+      <!-- header section -->
+      <header class="slds-text-heading--large slds-align--absolute-center header">
+          {!v.bulkUploadHeading}
+      </header>
+
+      <div class="containerC">
+         <div class="accordion-container">
+            <aura:if isTrue="{!v.showSection1}">
+               <lightning:button name="accordion-c-1-cancel" variant="destructive" label="{!$Label.c.Back_To_Main_Page}" onclick="{! c.cancel }" />
+               <div class="form-break" />
+            </aura:if>
+            <!-- Accordion 1 - Claim Basic Info -->
+            <div class="accordion">
+               <aura:if isTrue="{!v.showSection1}">
+                  <label class="accordion-heading slds-text-heading--medium" for="accordion-c-1" id="assist">
+                     {!$Label.c.Process_Type_Section}
+                     <span class="open-close"></span>
+                  </label>
+                  <input type="checkbox" class="design-checkbox" id="accordion-c-1" aura:id="accordion-c-1" />
+               
+                  <div class="accordion-body tab-open" aura:id="accordion-c-1-body">
+                     <div class="form">
+                        <div class="form-body">
+                           <div class="slds-grid slds-wrap slds-grid">
+                              <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                 <ui:inputSelect aura:id="processType" class="slds-input select-box-padder" label="{!$Label.c.Process_Type}" value="{!v.processTypeName}" change="{!c.handleProcessType}" />
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </aura:if>
+               <aura:if isTrue="{!v.showSection2}">
+                   <div class="accordion-body tab-open" aura:id="accordion-c-2-body">
+                       <div class="form">
+                           <div class="form-body">
+                               <div class="slds-grid slds-wrap slds-grid">
+                                   <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                       <ui:inputSelect aura:id="custSave" class="slds-input select-box-padder" label="{!$Label.c.Customer_Info_Save}" value="{!v.customerSaveLoc}" change="{!c.handleCustSave}" />
+                                   </div>
+                               </div>
+                               <div class="slds-grid slds-wrap slds-grid">
+                                   <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                       <input type="File" aura:id="inputFile" filename="uploadedFile" onchange="{!c.handleChooseFile}" />
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+               </aura:if>
+               <aura:if isTrue="{!v.shwBatchDetails}">
+                  <div class="slds-grid slds-wrap slds-grid--pull-padded slds-table--bordered CustomGridClas">  
+                   <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal">
+                       <thead>
+                           <tr class = "slds-text-heading--label">
+                               <th class="slds-cell-wrap  slds-truncate slds-is-sortable " scope="col">Job id</th>
+                                <th class="slds-cell-wrap  slds-truncate slds-is-sortable " scope="col">Total records</th>
+                                <th class="slds-cell-wrap  slds-truncate slds-is-sortable " scope="col">Batch log Id</th>
+                          </tr>
+                       </thead>
+                       <tbody>
+                        <tr class="slds-hint-parent">
+                               <td class="slds-truncate slds-cell-wrap" scope="row">{!v.batchId}</td>
+                               <td class="slds-truncate slds-cell-wrap" scope="row">{!v.RecCnt}</td>
+                               <td class="slds-truncate slds-cell-wrap" scope="row">{!v.bLogId}</td> 
+                        </tr>
+                       </tbody>
+                  </table>
+                  </div>
+                  <div style="padding-left: 40%;padding-top: 6%;padding-bottom: 5%;">
+                        <lightning:button class="slds-button  slds-button--brand"  label="Open Batch Log details" onclick="{!c.getBtchLogId}"/>
+                      <lightning:button class="slds-button  slds-button--brand"  label="Back to Upload Screen" onclick="{!c.backToUpload}"/>
+                  </div>
+               </aura:if>
+               <div class="slds-grid slds-wrap slds-grid">
+                   <div class="slds-size--6-of-12 slds-medium-size--6-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                       <div class="slds-button-group" role="group">
+                           <aura:if isTrue="{!v.showSection3}">
+                               <ui:button aura:id="startUpload" class="slds-button slds-button--brand" label="{!$Label.c.Upload}" press="{!c.startUploadProcess}" />
+                           </aura:if>
+                       </div>
+                   </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</aura:component>

@@ -1,0 +1,20 @@
+.THIS .slds-input {
+    
+width: 30%;    
+    
+}
+.THIS .label{
+    background: blue;
+}
+.THIS .row{
+    
+    display: flex;
+    
+}
+.THIS .col{
+    
+    width: 50%; /* depends on the number of columns */
+    
+    padding: 1em;
+    
+}

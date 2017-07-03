@@ -1,0 +1,19 @@
+<apex:page showHeader="false" sidebar="false" standardController="Shipment_Detail__c">
+<apex:stylesheet value="/resource/slds212/assets/styles/salesforce-lightning-design-system.min.css"/>
+<apex:includeLightning />
+<div id="lightning"/>   
+    <script>
+    var totalPageURL = window.location.toString();
+    var protocalType= totalPageURL.split("//")[0];
+    var tempbaseURL = totalPageURL.split("//")[1].split("/");
+    var finalBaseURL = protocalType+'//'+tempbaseURL[0] + "{!$Site.Prefix}";
+    $Lightning.use("c:ShipmentInspectionForOEMApp", function() {
+            $Lightning.createComponent("c:ShipmentInspectionForOEM",{"shipmentId":"{!Shipment_Detail__c.id}",BaseURL:finalBaseURL },                      
+              "lightning",
+              function(cmp) {
+                // do some stuff
+              });
+            });       
+    </script>
+
+</apex:page>

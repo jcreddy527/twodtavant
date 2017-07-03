@@ -1,0 +1,118 @@
+<aura:component extends="c:GenericComponent">
+    <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" />
+    <aura:attribute name="claimServiceInfo" type="sObject" 			default="{ 'sobjectType': 'Claim_Service_Information__c',
+                                                                             'Name': ''
+                                                                             }"/>
+    <aura:attribute name="tempClaimServiceInfo" type="sObject" 		default="{ 'sobjectType': 'Claim_Service_Information__c',
+                                                                             'Name': ''
+                                                                             }"/>
+    <aura:attribute name="claimName" 			type="String" 		default="CLm001"/>
+    <aura:attribute name="JobCodeList" 			type="sObject[]" />
+    <aura:attribute name="claimId"   			type="String" 		default="a061500000XA1ss"/>
+    <aura:handler name="init" 				value="{!this}" 	action="{!c.doInit}"/>
+    <aura:attribute name="jobCodeError" 		type="string" 		default=""/>
+    <aura:attribute name="serviceJobName" 		type="String"/>
+    <aura:attribute name="serviceJobId" 		type="String" default="null"/>
+    <aura:attribute name="isNewRecord"			type="boolean" 		default="false"/>
+    <aura:attribute name="isEdit"				type="boolean" 		default="true"/>
+    <aura:attribute name="claimError" 			type="string" 		default=""/>
+    <aura:attribute name="currentTab"			type="Integer" />
+    <aura:attribute name="NextTab"				type="Integer" />
+    <aura:attribute name="dmlErrors" 			type="String[]" 	default="" />
+    <aura:attribute name="standardHours" 		type="Integer" 		default="" />
+    <aura:attribute name="jobCodeDescription" 		type="String" 		default="" />
+    <aura:attribute name="showStandardHours" 	type="boolean" 		default="false" />
+    <aura:attribute name="serviceJobRec" 		type="sObject" 		default="" />
+    <aura:registerEvent name="ConfirmationEvent" type="c:ConfirmationEvent" />
+    
+    <center>
+        <div class="slds-spinner--large slds-hide" aura:id="SpinnerDiv">
+            <img src="{!v.context + '/resource/slds/assets/images/spinners/slds_spinner_brand.gif'}" alt="{!$Label.c.Loading}" />
+        </div>
+    </center>
+    
+    
+    <c:container class="demo-container ModalHeader" size="large" align="center">
+        <div class="slds-card">
+            <div class="slds-card__body" style="background-color: white;padding: 2%;">
+                
+                <br /><br />
+                
+                <aura:if isTrue="{!v.dmlErrors.length > 0}" >
+                    <ui:message title="Error" severity="error" closable="false">
+                        <aura:iteration items="{!v.dmlErrors}" var="item">
+                            {!item} <br/>
+                        </aura:iteration>
+                    </ui:message>
+                </aura:if>
+                
+                <form class="slds-form--stacked">
+                    
+                    
+                    
+                    <div class="slds-form-element slds-is-required">
+                        <div class="slds-form-element__control">
+                            <span class="slds-form-element__label">{!$Label.c.Job_Code}</span>
+                            
+                            <ui:inputSelect class="slds-input" aura:id="JobCode"  change="{!c.serviceJobHandler}">
+                                <ui:inputSelectOption text="" label="--None--"/>
+                                <aura:iteration items="{!v.JobCodeList}" var="val1">
+                                    <ui:inputSelectOption text="{!val1.Id}" label="{!val1.Name}" value="{!(v.serviceJobId!=null)}"/>
+                                </aura:iteration>
+                            </ui:inputSelect>
+                            <ul class="has-error uiInputDefaultError uiInput uiInputText uiInput--default uiInput--input" id="40:c" data-aura-rendered-by="1:1;0">
+                                <li class="form-element__help" data-aura-rendered-by="4:1;0">
+                                    <ui:outputText class="form-element__help" value="{!v.jobCodeError}"/>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <aura:if isTrue="{!v.showStandardHours}">
+                        <div class="slds-form-element slds-is-required">
+                            <div class="slds-form-element__control">
+                                <span class="slds-form-element__label">{!$Label.c.Standard_Labor_Hours}</span>
+                                <ui:outputNumber aura:id="standardHours" value="{!v.standardHours}"/>
+                            </div>
+                        </div>
+                        
+                        <div class="slds-form-element slds-is-required">
+                            <div class="slds-form-element__control">
+                                <span class="slds-form-element__label">{!$Label.c.Job_Code_Description}</span>
+                                <ui:outputText aura:id="standardHours" value="{!v.jobCodeDescription}"/>
+                            </div>
+                        </div>
+                    </aura:if>
+                    
+                    
+                    <div class="slds-form-element slds-is-required">
+                        <div class="slds-form-element__control">
+                            <ui:inputNumber aura:id="additionalLaborHour" label="{!$Label.c.Additional_Labor_Hours}"
+                                            class="slds-input"
+                                            labelClass="slds-form-element__label"
+                                            value="{!v.claimServiceInfo.Additional_Labor_Hour__c}"
+                                            required="false"/>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-form-element slds-is-required">
+                        <div class="slds-form-element__control">
+                            <ui:inputText aura:id="reasonForAdditionalHours" label="{!$Label.c.Reason_for_Labor_Hour}"
+                                          class="slds-input"
+                                          labelClass="slds-form-element__label"
+                                          value="{!v.claimServiceInfo.Reason_Additional_Labor_hour__c}"
+                                          required="false"/>
+                        </div>
+                    </div>
+                </form>
+                
+                <br /> <br />
+                
+            </div>
+        </div>
+        <center>
+            <button class="slds-button slds-button--neutral" onclick = "{!c.changeModalClose}" >{!$Label.c.Cancel}</button>
+            <button class="slds-button slds-button--brand" onclick = "{!c.saveClaimServiceInfo}">{!$Label.c.Save}</button>
+        </center>
+    </c:container>
+</aura:component>

@@ -1,0 +1,15 @@
+<aura:component extends="c:GenericComponent">
+    <aura:attribute name="claimId" 				type="String" 	 default="a061500000X9djt"/>
+    <aura:attribute name="claimName" 			type="String" 	 default="CLm001"/>
+    <aura:attribute name="JobCodeList" 			type="sObject[]" />
+    <aura:attribute name="isEnableModal"		type="boolean"	 default="fasle"/>
+    <aura:attribute name="claimServiceInfoRecs" type="sObject[]" />
+    <aura:attribute name="templateObject" 		type="sObject" 	 default="{ 'sobjectType': 'Claim_Service_Information__c',
+                                                                            'Name': ''
+                                                                           }"/>
+    <aura:handler name="init" 					value="{!this}"  action="{!c.doInit}" />
+    <aura:handler event="c:ClaimServiceEvent" 	action="{!c.doInit}"/>
+    <aura:attribute name="BaseURL" type="String"/>
+ 
+    <c:ClaimServiceInformationRecsHandler JobCodeList="{!v.JobCodeList}" BaseURL="{!v.BaseURL}" claimId="{!v.claimId}" claimName="{!v.claimName}" claimServiceInfos="{!v.claimServiceInfoRecs}"/>
+</aura:component>

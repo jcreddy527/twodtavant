@@ -1,0 +1,40 @@
+<apex:page standardController="Claim__c" sidebar="false" showHeader="false" >
+<style>
+.AppClass{
+    padding-top: 20px;
+    padding-bottom: 20px;
+    padding-left: 40px;
+    border: darkgray;
+    padding-right: 40px;    
+}
+</style>    
+    <apex:includeLightning />
+            
+    <div id="lightning"/>
+    <script>
+    var id = '{!Claim__c.Id}';
+
+    if("{!Claim__c.Claim_Status__c}" == "Draft") 
+        { 
+            alert('Recovery Claim Cannot be initiated on the Draft Claim');
+            window.location.href='/'+id;
+        }else{                 
+            var totalPageURL = window.location.toString();
+            var protocalType= totalPageURL.split("//")[0];
+            var tempbaseURL = totalPageURL.split("//")[1].split("/");
+            var finalBaseURL = protocalType+'//'+tempbaseURL[0] + "{!$Site.Prefix}";
+            
+            var RecordId = "{!$CurrentPage.parameters.id}";
+                $Lightning.use("c:SupplierRecoveryClaimApp", function() {
+                  $Lightning.createComponent("c:SupplierRecoveryClaimCmp",
+                          { ClaimRecordId : RecordId,
+                            baseURL : finalBaseURL },
+                          "lightning",
+                          function(cmp) {
+                       });
+                });
+        
+        }
+    </script>
+    
+</apex:page>

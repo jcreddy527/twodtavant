@@ -1,0 +1,251 @@
+<!--/////////////////////////////////////
+
+Copyright � 2016  Tavant Technology Inc
+Name - actionClaim
+Purpose - component used for claim processing.
+Date - 12/27/2016
+Last Edited by - AMAN SAWHNEY
+
+/////////////////////////////////////-->
+
+<aura:component controller="ActionClaimController" implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId" access="global">
+    <!-- Lightning css resources -->
+    <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" /> 
+    
+    <!-- attribute and handlers -->
+    <aura:attribute name="showSpinner" type="boolean"/>
+    <aura:attribute name="showTable" type="boolean" />    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />    
+    <aura:handler event="aura:doneRendering" action="{!c.doneRendering}"/>
+    <aura:attribute name="isDoneRendering" type="Boolean" default="false"/>    
+    <aura:attribute name="message" type="String"/>
+    <aura:attribute name="renderSpan" type="Boolean" default="true"/>
+    <aura:attribute name="error" type="Boolean" default="false"/>    
+    <aura:attribute name="currClaimStatus" type="String"/>
+    <aura:attribute name="ClaimSobj" type="String"/>
+    <aura:attribute name="claimNumber" type="String"/> 
+    <aura:attribute name="claimStatus" type="String"/>   
+    <aura:attribute name="Comments" type="String" default=""/>
+    <aura:attribute name="previousComments" type="String" default=""/>
+    <aura:attribute name="approvalActions" type="List"/>    
+    <aura:attribute name="actionCostFields" type="List"/>
+    <aura:attribute name="columnHead1" type="String" default="{!$Label.c.ClaimActionHeader1}"/>
+    <aura:attribute name="columnHead2" type="String" default="{!$Label.c.ClaimActionHeader2}"/>
+    <aura:attribute name="columnHeadFlat" type="String" default="{!$Label.c.ClaimActionHeader3}"/>
+    <aura:attribute name="columnHeadPercent" type="String" default="{!$Label.c.ClaimActionHeader4}"/>
+    <aura:attribute name="responsibleCode" type="List"/>
+    <aura:attribute name="costFields" type="string"/>    
+    <aura:attribute name="prefix" type="List" default="['Total_','Final_','Percent_','Approved_']"/>  
+    <aura:attribute name="TypeofCosts" type="List"/>    
+    <aura:attribute name="Cost" type="String" default="_Cost__c"/>   
+    <aura:attribute name="clm" type="Claim__c" />
+    <aura:attribute name="newClm" type="Claim__c" />
+    <aura:attribute name="strClm" type="String" />    
+    <aura:attribute name="isPercent" type="Boolean" default="true"/>
+    <aura:attribute name="isFlat" type="Boolean" default="true"/>
+    <aura:attribute name="ProceedURL" type="string" />
+    <aura:attribute name="showError" type="boolean"/>
+    <aura:attribute name="showResponsibleCode" type="boolean" default="false"/>
+    <aura:attribute name="openComments" type="Boolean" default="false"/>
+    <aura:attribute name="openCommentsValue" type="String" default=""/>
+    <aura:attribute name="BaseURL" type="string" />
+    <aura:attribute name="tempLabelAttr" type="String"/>
+    <aura:attribute name="errorSpan" type="Boolean" default="false"/>
+    <aura:attribute name="buttonSpan" type="Boolean" default="true"/>
+    <aura:attribute name="radioSpan" type="Boolean" default="true"/>
+    <aura:attribute name="ignoreSUM" type="Boolean" default="false"/>
+    <aura:attribute name="AllowPaymentDef" type="boolean" default="false"/>
+    <style>   
+        #group{
+            background-color: #f2f2f2;       
+            width:100%;   
+        }     
+  		#spinner{
+            background-color: #333;
+            opacity: 0.8;
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            z-index: 100;
+            height: 200%;
+            width: 100%;
+            overflow: hidden;    	
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+    </style>
+    
+    <!-- header section -->
+    <header class="slds-text-heading--large slds-align--absolute-center heading">
+        {!$Label.c.ClaimActionTitle}
+    </header>
+    
+    <!-- spinner -->
+    <aura:if isTrue="{!v.showSpinner}">
+    	<div class="slds-form-element" id="spinner">
+			<center><ui:spinner aura:id="spinner"/></center>
+        </div>
+    </aura:if>
+    
+   	<!-- body section -->
+    <center>
+    	<div class="slds-form-element" id="group">        
+    		<br/><br/>
+            <aura:if isTrue="{!v.errorSpan}">
+                <div style="color:red;">{!$Label.c.Please_Check_The_Entered_Values}</div>
+            </aura:if>
+         	<aura:if isTrue="{!v.renderSpan}">               
+            	<fieldset class="slds-box slds-theme--default slds-container--large">
+                	<legend id="newexpenseform" class="slds-text-heading--small slds-p-vertical--medium">
+                    	<legend class="slds-form-element__legend slds-form-element__label"><b>{!$Label.c.ClaimActionFieldSet1}</b></legend>
+                	</legend>               
+                	<table>
+                        <tr>
+                            <td><label class="slds-form-element__label" >{!$Label.c.ClaimActionNumber}:</label>&nbsp;<ui:outputText value="{!v.claimNumber}" />  </td>
+                            <td><label class="slds-form-element__label" >{!$Label.c.ClaimActionStatus}:</label>&nbsp;<ui:outputText value="{!v.claimStatus}" />  </td>
+                        </tr>
+                        <br/>
+                        <tr>
+                            <td><label class="slds-form-element__label" >{!$Label.c.ApprovalActions}</label>
+                                &nbsp;&nbsp;
+                                <ui:inputSelect aura:id="Actions" change="{!c.onActionChange}">
+                                    <aura:iteration items="{!v.approvalActions}" var="aa" >
+                                        <ui:inputSelectOption text="{!aa}"  label="{!aa}"/>
+                                    </aura:iteration>
+                                </ui:inputSelect>
+                                <p><ui:outputText class="result" aura:id="actionsValue" value="" /></p>
+                            </td>
+                            <aura:if isTrue="{!v.showResponsibleCode}">  
+                                <td><label class="slds-form-element__label" >{!$Label.c.ClaimActionResponseCode}</label>
+                                    &nbsp;&nbsp;
+                                    <ui:inputSelect aura:id="resCode" change="{!c.onResCodeChange}">
+                                        <aura:iteration items="{!v.responsibleCode}" var="rc">
+                                            <ui:inputSelectOption text="{!rc}"/>
+                                        </aura:iteration>
+                                    </ui:inputSelect>
+                                    <p><ui:outputText class="result" aura:id="resCodevalue" value="" /></p>
+                                </td>
+                            </aura:if> 
+                    	</tr>
+                        <br/>
+                        <tr>
+                           <aura:if isTrue="{!v.radioSpan}">
+                           		<aura:if isTrue="{!v.AllowPaymentDef}">                              
+                                   <td>
+                                       <label class="slds-checkbox">
+                                            <ui:inputCheckbox aura:id="ignoreSUM" value="{!v.ignoreSUM}"/>
+                                            <span>{!$Label.c.Claim_Action_Override_Payment_Def}&nbsp;&nbsp;</span>
+                                            <span class="slds-checkbox--faux"></span>
+                                       </label>
+                                   </td>
+                               </aura:if>
+                            </aura:if>
+                        </tr>
+                	</table>              
+            	</fieldset>             
+                <fieldset class="slds-box slds-theme--default slds-container--large">
+                    <legend id="newexpenseform" class="slds-text-heading--small slds-p-vertical--medium">
+                        <legend class="slds-form-element__legend slds-form-element__label"><b>{!$Label.c.ClaimActionFieldSet2}</b></legend>
+                    </legend>
+                	<aura:if isTrue="{!v.showTable}">
+                    	<table class="slds-table slds-table--bordered slds-table--cell-buffer">                    
+                        	<thead>
+                            	<tr class="slds-text-title--caps">
+                                    <th scope="col">
+                                        <div class="slds-truncate"><b>{!$Label.c.ClaimActionFirstRowHeader} </b></div>
+                                    </th>                                                               
+                                    <th scope="col">
+                                    	<div class="slds-truncate" style="padding-bottom: 8px;"><label class="slds-form-element__label" >{!v.columnHead1}({!$Locale.currency})</label></div>
+                                    </th>
+                                    <th scope="col">
+                                    	<div class="slds-truncate" style="padding-bottom: 8px;"><label class="slds-form-element__label" >{!v.columnHead2}({!$Locale.currency})</label></div>
+                                    </th>
+                                     <th scope="col">
+                                         <div class="slds-truncate" style="padding-bottom: 8px;"><label class="slds-form-element__label" >{!v.columnHeadFlat}</label>
+                                         <aura:if isTrue="{!v.radioSpan}">
+                                         	<input id="radioFlat" name="radioButton" type="radio" class="radio-btn" value="flat" onclick="{!c.flatRadioButton}" />
+                                     	 </aura:if></div>                         
+                                     </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" style="padding-bottom: 8px;"><label class="slds-form-element__label" >{!v.columnHeadPercent}({!$Locale.currency})</label>
+                                        <aura:if isTrue="{!v.radioSpan}">
+                                            <input id="radioPercent" name="radioButton" type="radio" class="radio-btn" value="percent" onclick="{!c.percentRadioButton}"/>
+                                        </aura:if></div>  
+                                    </th>
+                        		</tr>                      
+                    		</thead>                    
+                    		<aura:iteration items="{!v.actionCostFields}" var="costValue" indexVar="index">
+                        		<tr>
+                                    <td scope="row" ><label class="slds-form-element__label" ><span id="{!costValue}" readonly='true' /></label></td>                           
+                                    <td><div class="slds-truncate" style="padding-bottom: 8px;"><span id="{!'Total_'+costValue}" readonly='true' /></div></td>
+                                    <td><div class="slds-truncate" style="padding-bottom: 8px;"><span id="{!'Final_'+costValue}" readonly='true'/></div></td>
+                                    <td><div class="slds-truncate" style="padding-bottom: 8px;"><input type="text" id="{!'Percent_' + costValue }" disabled="{!v.isFlat}" data-index="{!index}" onchange="{!c.changeApprovedValues}" /></div></td>
+                                    <td><div class="slds-truncate" style="padding-bottom: 8px;"><input type="text" id="{!'Approved_'+ costValue }" disabled="{!v.isPercent}" data-index="{!index}" onchange="{!c.changePercentValues}"/></div></td>
+                                </tr>                               
+                    		</aura:iteration>
+                            <tr>
+                                	<td scope="row" ><label class="slds-form-element__label" > {!$Label.c.ClaimActionTotalRow} </label></td>                           
+                                    <td><div class="slds-truncate" style="padding-bottom: 8px;"><span id="RequestTotal" readonly='true' /></div></td>
+                                    <td><div class="slds-truncate" style="padding-bottom: 8px;"><span id="ModifiedTotal" readonly='true'/></div></td>
+                                    <td><div class="slds-truncate" style="padding-bottom: 8px;"></div></td>
+                                    <td><div class="slds-truncate" style="padding-bottom: 8px;"><span id="ApprovedTotal" readonly='true'/></div></td>
+                            </tr> 
+                		</table>
+                		<br/>
+                   		<table>
+                            <tr>
+                            <td style="width:45%;float:left;">
+                                <label class="slds-form-element__label" >{!$Label.c.ClaimActionPreviousComments} :</label>
+                                <ui:outputTextArea aura:id="previousComments" value="{!v.previousComments}"/>
+                            </td>
+                            <td style="width:45%;float:right;">
+                                 
+                                  <label class="slds-form-element__label" >{!$Label.c.ClaimActionComments}</label>
+                                  <ui:inputTextArea aura:id="comments" cols="5"  value="{!v.Comments}" class="slds-textarea required"/> 
+                                
+                            </td>
+                            </tr>
+                   		</table>
+                   	</aura:if>
+                    <aura:if isTrue="{!v.openComments}">
+            	   		<table>
+            				<tr>                       	
+                        		<td style="width:70%;">
+                                    <label class="slds-form-element__label" >{!$Label.c.ClaimActionComments}</label>
+                                    <ui:inputTextArea aura:id="opencomments" cols="5" required="true" value="{!v.Comments}" class="slds-textarea" /> 
+                        		</td>
+                       		</tr>
+                 		</table>
+            		</aura:if>
+                    <br/>
+                    <aura:if isTrue="{!v.buttonSpan}">
+                        <center>
+                            <a style="padding: 12px;" href="{!v.ProceedURL}" onclick="{!c.SaveAndReturn}"> <span class="slds-button slds-button--brand "> {!$Label.c.Save_And_Return}</span> </a> 
+                            <a href="{!v.ProceedURL}" onclick="{!c.Cancel}"> <span class="slds-button slds-button--destructive "> {!$Label.c.Cancel} </span> </a>                    
+                        </center> 
+                    </aura:if>
+            	</fieldset>
+            </aura:if>
+            <aura:if isTrue="{!v.showError}">
+				<div>
+                    <div aria-hidden="false" aria-labelledby="prompt-heading-id" aria-describedby="prompt-message-wrapper" role="alertdialog" class="slds-modal slds-modal--prompt slds-fade-in-open">
+                    <div class="slds-modal__container slds-modal--prompt" role="document" id="prompt-message-wrapper" tabindex="0">
+                    <div class="slds-modal__header slds-theme--error slds-theme--alert-texture">
+                        <h2 class="slds-text-heading--medium" id="prompt-heading-id">{!$Label.c.Error}</h2>
+                    </div>
+                    <div class="slds-modal__content slds-p-around--medium">
+                    <div>
+                        <p>{!$Label.c.ClaimActionErrorMsg}</p>
+                    </div>
+                    </div>
+                    <div class="slds-modal__footer slds-theme--default">
+                        <button class="slds-button slds-button--neutral" onclick="{!c.Cancel}">{!$Label.c.OK}</button>
+                    </div>
+                    </div>
+                    </div>
+                    <div class="slds-backdrop slds-backdrop--open"></div>
+		        </div>
+		   </aura:if>      
+    	</div>
+   	</center>   
+</aura:component>

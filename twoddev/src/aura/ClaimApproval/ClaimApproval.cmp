@@ -1,0 +1,156 @@
+<aura:component extends="c:GenericCrudComponent"  controller="SobjectRecLockUnlockUpdService"  implements="flexipage:availableForAllPageTypes,force:hasRecordId">
+  <aura:attribute name="claimId"  type="String" default="a061500000Qi6VA"/>
+    <aura:attribute name="BaseURL" type="String" />
+    <aura:attribute name="refreshSummary" type="boolean" default="false"/>
+    <aura:attribute name="cancelUrl" type="String" default="" />
+    <aura:attribute name="showApprove" type="boolean" default="false" />
+    <aura:attribute name="showReject" type="boolean" default="false" />
+    <aura:attribute name="validateClicked" type="Boolean" default="true"/>
+  <aura:attribute name="claimRecord"  type="Claim__c" 	default="{'sobjectType':'Claim__c',
+    'Id' : null,
+    'Name': '',
+    'Percent_Labor_Cost__c':0.00,
+    'Approved_Labor_Cost__c':0.00,
+    'Percent_TravelByDistance_Cost__c':0.00,
+    'Approved_TravelByDistance_Cost__c':0.00,
+    'Percent_TravelByHours_Cost__c':0.00,
+    'Approved_TravelByHours_Cost__c':0.00,
+    'Percent_Parts_Cost__c':0.00,
+    'Approved_Parts_Cost__c':0.00,
+    'Percent_Meals_Cost__c':0.00,
+    'Approved_Meals_Cost__c':0.00,
+    'Percent_Parking_Cost__c':0.00,
+    'Approved_Parking_Cost__c':0.00,
+    'Percent_Claim_Cost__c':0.00,
+    }"	/>
+    <aura:attribute name="numRecords" type="Integer" default="2" />
+    <aura:attribute name="currentTab" type="Integer" default="2" />
+    <aura:attribute name="isNextClicked" type="Boolean" />
+    <aura:attribute name="isPrevClicked" type="Boolean" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+	<aura:handler name="change" value="{!v.validateClicked}" action="{!c.doInit}"/>
+    <aura:handler name="change" value="{!v.claimRecord.Claim_Status__c}" action="{!c.ShowApproveReject}"/>
+    
+    <c:container class="demo-container" size="large" align="center">
+        
+      <div class="slds-tabs--scoped" aura:id="tabDivId" >
+        <ul aura:id="tabListid"  class="slds-tabs--scoped__nav" role="tablist">
+
+          <li id="litem-tab-1" aura:id="litem-tab-1" class="slds-tabs__item slds-text-heading--label"  role="presentation"><a id="tab-1" value="tab-1" class="slds-tabs--scoped__link" href="" onclick="{!c.setCurrentTab}" role="tab" tabindex="1" aria-selected="true" aria-controls="tab-default-1">{!$Label.c.Approved_Cost_Tab}<span class="slds-badge slds-theme--inverse"></span></a></li>
+          <li id="litem-tab-2" aura:id="litem-tab-2"  class="slds-tabs__item slds-text-heading--label slds-active" 	role="presentation"><a aura:id="tab-2" value="tab-2" class="slds-tabs--scoped__link" href="" onclick="{!c.setCurrentTab}" role="tab" tabindex="2" aria-selected="false" aria-controls="tab-default-2">{!$Label.c.Claim_Summary} </a></li>
+        </ul>
+
+        <!-- Tab for Claim basic Detail information -->
+        <div id="divitem-tab-1" class="slds-tabs__content slds-hide" role="tabpanel">
+          <div class="slds-grid">
+            <div class="slds-col--padded slds-size--1-of-1 claim-grid">
+              <div class="slds-container--center slds-container--small claim-form">
+                <form class="slds-form--stacked">
+                  <div class="slds-form-element__label slds-text-heading--small slds-theme--shade" style="width:100%">{!$Label.c.Approved_Cost}</div>
+
+                  <br/>
+                  <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal" >
+                    <thead>
+                      <tr class="slds-text-heading--label">
+                        <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+                          <div class="slds-truncate"></div>
+                        </th>
+                        <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+                          <div class="slds-truncate">{!$Label.c.Percent}</div>
+                        </th>
+                        <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+                          <div class="slds-truncate">{!$Label.c.Cost}</div>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="slds-hint-parent">
+                        <td class="slds-truncate" scope="row" ><label class="slds-form-element__helper">{!$Label.c.Labor}</label></td>
+                        <td class="slds-truncate" scope="row" data-label="{!$Label.c.Percent}"><ui:inputNumber aura:id="percentLaborCost" class="slds-input percentLaborCost" disabled="{!v.claimRecord.Final_Labor_Cost__c == 0}" value="{!v.claimRecord.Percent_Labor_Cost__c}" change="{!c.populateRelativeField}"/></td>
+                        <td class="slds-truncate" scope="row" data-label="{!$Label.c.Cost}"><ui:inputNumber aura:id="approvedLaborCost" class="slds-input approvedLaborCost" disabled="{!v.claimRecord.Final_Labor_Cost__c == 0}" value="{!v.claimRecord.Approved_Labor_Cost__c}" change="{!c.populateRelativeField}"/></td>
+                      </tr>
+                      <tr class="slds-hint-parent">
+                        <td class="slds-truncate" scope="row"><label class="slds-form-element__helper">{!$Label.c.Travel_Distance}</label></td>
+                        <td class="slds-truncate" scope="row" data-label="{!$Label.c.Percent}"><ui:inputNumber aura:id="percentTravelByDistanceCost" class="slds-input percentTravelByDistanceCost" disabled="{!v.claimRecord.Final_TravelByDistance_Cost__c == 0}" value="{!v.claimRecord.Percent_TravelByDistance_Cost__c}" change="{!c.populateRelativeField}"/>
+                      </td>
+                      <td class="slds-truncate" scope="row" data-label="{!$Label.c.Cost}"><ui:inputNumber aura:id="approvedTravelByDistanceCost" class="slds-input approvedTravelByDistanceCost" disabled="{!v.claimRecord.Final_TravelByDistance_Cost__c == 0}" value="{!v.claimRecord.Approved_TravelByDistance_Cost__c}" change="{!c.populateRelativeField}"/>
+                    </td>
+                  </tr>
+                  <tr class="slds-hint-parent">
+                    <td class="slds-truncate" scope="row"><label class="slds-form-element__helper">{!$Label.c.Travel_Hours}</label></td>
+                    <td class="slds-truncate"  scope="row" data-label="{!$Label.c.Percent}"><ui:inputNumber aura:id="percentTravelByHoursCost" class="slds-input percentTravelByHoursCost" disabled="{!v.claimRecord.Final_TravelByHours_Cost__c == 0}" value="{!v.claimRecord.Percent_TravelByHours_Cost__c}" change="{!c.populateRelativeField}"/>
+                  </td>
+                  <td class="slds-truncate" scope="row" data-label="{!$Label.c.Cost}"><ui:inputNumber aura:id="approvedTravelByHoursCost" class="slds-input approvedTravelByHoursCost" disabled="{!v.claimRecord.Final_TravelByHours_Cost__c == 0}" value="{!v.claimRecord.Approved_TravelByHours_Cost__c}" change="{!c.populateRelativeField}"/></td>
+              </tr>
+              <tr class="slds-hint-parent">
+                <td class="slds-truncate" scope="row"><label class="slds-form-element__helper">{!$Label.c.Parts}</label></td>
+                <td class="slds-truncate" scope="row" data-label="{!$Label.c.Percent}"><ui:inputNumber aura:id="percentPartsCost" class="slds-input percentPartsCost" disabled="{!v.claimRecord.Final_Parts_Cost__c == 0}" value="{!v.claimRecord.Percent_Parts_Cost__c}" change="{!c.populateRelativeField}"/></td>
+                <td class="slds-truncate" scope="row" data-label="{!$Label.c.Cost}"><ui:inputNumber aura:id="approvedPartsCost" class="slds-input approvedPartsCost" disabled="{!v.claimRecord.Final_Parts_Cost__c == 0}" value="{!v.claimRecord.Approved_Parts_Cost__c}" change="{!c.populateRelativeField}"/></td>
+              </tr>
+              <tr class="slds-hint-parent">
+                <td class="slds-truncate" scope="row"><label class="slds-form-element__helper">{!$Label.c.Meals}</label></td>
+                <td class="slds-truncate" scope="row" data-label="{!$Label.c.Percent}"><ui:inputNumber aura:id="percentMealsCost" class="slds-input percentMealsCost" disabled="{!v.claimRecord.Final_Meals_Cost__c == 0}" value="{!v.claimRecord.Percent_Meals_Cost__c}" change="{!c.populateRelativeField}"/></td>
+                <td class="slds-truncate" scope="row" data-label="{!$Label.c.Cost}"><ui:inputNumber aura:id="approvedMealsCost" class="slds-input approvedMealsCost" disabled="{!v.claimRecord.Final_Meals_Cost__c == 0}" value="{!v.claimRecord.Approved_Meals_Cost__c}" change="{!c.populateRelativeField}"/></td>
+              </tr>
+              <tr class="slds-hint-parent">
+                <td class="slds-truncate" scope="row"><label class="slds-form-element__helper">{!$Label.c.Parking}</label></td>
+                <td class="slds-truncate" scope="row" data-label="{!$Label.c.Percent}"><ui:inputNumber aura:id="percentParkingCost" class="slds-input percentParkingCost" disabled="{!v.claimRecord.Final_Parking_Cost__c == 0}" value="{!v.claimRecord.Percent_Parking_Cost__c}" change="{!c.populateRelativeField}"/></td>
+                <td class="slds-truncate" scope="row" data-label="{!$Label.c.Cost}"><ui:inputNumber aura:id="approvedParkingCost" class="slds-input approvedParkingCost" disabled="{!v.claimRecord.Final_Parking_Cost__c == 0}" value="{!v.claimRecord.Approved_Parking_Cost__c}" change="{!c.populateRelativeField}"/></td>
+              </tr>
+            </tbody>
+          </table>
+          <br/>
+
+
+          <fieldset class="slds-form--compound">
+            <div class="form-element__group">
+              <div class="slds-form-element__row">
+                <label class="slds-checkbox slds-form-element__control slds-size--1-of-3">
+                  <ui:inputCheckbox class="slds-input" value="{!v.claimRecord.Approved_Ignore_Sum__c}"/>
+                  <span class="slds-form-element__helper " >{!$Label.c.Ignore_Sum}</span>&nbsp;&nbsp;&nbsp;&nbsp;
+                  <span class="slds-checkbox--faux"></span>
+                </label>
+                <aura:if isTrue='{!v.claimRecord.Approved_Ignore_Sum__c}'>
+                  <label class="slds-form-element__control slds-size--1-of-3">
+                    <span class="slds-form-element__helper">{!$Label.c.Approved_Claim_Cost}</span>
+                    <ui:inputNumber aura:id="approvedClaimCost" class="slds-input" value="{!v.claimRecord.Approved_Claim_Cost__c}"/>
+                  </label>
+                </aura:if>
+              </div>
+            </div>
+          </fieldset>
+
+
+          <br/>
+          <center>
+            <a href="{!v.cancelUrl}"> <span class="slds-button slds-button--brand "> Cancel </span> </a>&nbsp;&nbsp;
+            <button class="slds-button slds-button--brand" onclick = "{!c.goNext}">Next</button>
+          </center>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="divitem-tab-2" class="slds-tabs__content slds-show" role="tabpanel">
+  <div class="slds-grid">
+    <div class="slds-col--padded slds-size--1-of-1 claim-grid">
+      <div class="slds-container--center slds-container--small claim-form">
+        <c:ClaimSummary claimId="{!v.claimId}" refreshSummary="{!v.refreshSummary}" validateClicked="{!v.validateClicked}"/>
+        <br/>
+        <center>
+          <button class="slds-button slds-button--brand" onclick = "{!c.goPrevious}">Previous</button>
+          <!--<button class="slds-button slds-button-brand" onclick = "{!c.submitClaim}">Proceed</button>-->
+            <aura:renderIf isTrue="{!v.showApprove}">
+          		<button class="slds-button slds-button--brand" onclick = "{!c.ApproveClaim}">Approve</button>
+            </aura:renderIf>
+            <aura:renderIf isTrue="{!v.showReject}">
+          		<button class="slds-button slds-button--brand" onclick = "{!c.RejectClaim}">Reject</button>
+            </aura:renderIf>
+        </center>            
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</c:container>
+</aura:component>

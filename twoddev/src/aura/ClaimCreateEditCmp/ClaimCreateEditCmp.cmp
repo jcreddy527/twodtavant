@@ -1,0 +1,1654 @@
+<aura:component extends="c.CruderCmp" controller="ClaimCreateEditExt">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    
+    <!-- aura system error handeler -->
+    <aura:handler event="aura:systemError" action="{!c.handleAuraError}"/>
+    
+    <!-- component variables -->
+    <aura:attribute name="userLangId" type="String" default="en_US"/>
+    <aura:attribute name="accordionColor" type="String" default=""/>
+    <aura:attribute name="claimPageHeading" type="String" default="{!$Label.c.Claim_Create_Heading}"/>
+    <aura:attribute name="isEdit" type="Boolean"/>
+    <aura:attribute name="error" type="Object"/>
+    <aura:attribute name="modalAndElementDisplayBool" type="Object"/>
+    <aura:attribute name="spinnerBool" type="Object"/>
+    <aura:attribute name="currentClaim" type="Object"/>
+    <aura:attribute name="accordionValidationIndicator" type="Object"/>
+    <aura:attribute name="modalData" type="Object"/>
+    <aura:attribute name="relatedListData" type="Object"/>
+    <aura:attribute name="customSettingManager" type="Object"/>
+    <aura:attribute name="site" type="String" default=''/>
+    <aura:attribute name="claimListViewId" type="String" default=''/>
+    <aura:attribute name="fieldModInitEditBoolean" type="Boolean" default='false'/>
+    <aura:attribute name="acknowledgedForValidate" type="Boolean" default='false'/>
+    <aura:attribute name="upcomingScheduleList" type="String"/>
+    <aura:attribute name="inventoryScheduleDescription" type="String"/>
+    <aura:attribute name="inventoryScheduleDate" type="String"/>
+    <aura:attribute name="scheduleSetValue" type="String" default=''/>
+    <aura:attribute name="DOF" type="String" default="Date Of Failure"/>
+    <aura:attribute name="gracePeriod" type="Integer" default="0"/>
+    <aura:attribute name="finalScehdule" type="Object"/>
+    
+    <!-- added by Dharmil for Fault Code Job Code logic -->
+    <aura:attribute name="faultCodeListForJobCode" type="String"/>
+    <aura:attribute name="isModelParentJobCodeList" type="Boolean"/>
+    <aura:attribute name="isModelParentJobCodeCustomSetting" type="Boolean"/>
+    
+    <!--18-NOV-2016-->
+    
+    <!-- page form variables -->
+    <aura:attribute name="product" type="Object"/>
+    <aura:attribute name="inventory" type="Object"/>
+    <aura:attribute name="dealer" type="Object"/>
+    <aura:attribute name="applicablePolicy" type="Object"/>
+    <aura:attribute name="paymentDefinition" type="Object"/>
+    <aura:attribute name="rate" type="Object"/>
+    
+    <aura:attribute name="isDealerEditable" type="Boolean" default="true"/>
+    <aura:attribute name="isInventoryScheduleEditable" type="Boolean" default="true"/>
+    <aura:attribute name="selectedSchedule" type="String" />
+    <!--18-NOV-2016-->
+    <aura:attribute name="causalPart" type="Object"/>
+    <aura:attribute name="installedPartRecordTypeList" type="Object[]"/>
+    <aura:attribute name="removedPartRecordTypeList" type="Object[]"/>
+    
+    <!-- selected variables -->
+    <aura:attribute name="selectedJobCode" type="Object"/>
+    <aura:attribute name="selectedNonSerializedInstalledPart" type="Object"/>
+    <aura:attribute name="selectedSerializedInstalledPart" type="Object"/>
+    <aura:attribute name="selectedNonSerializedRemovedPart" type="Object"/>
+    <aura:attribute name="selectedSerializedRemovedPart" type="Object"/>
+    <aura:attribute name="selectedNONOEMPart" type="Object"/>
+    
+    <aura:attribute name="claimType" type="String" default=""/>
+    <aura:attribute name="failureRepairDateDiffBig" type="Boolean"/>
+    <aura:attribute name="claimPicklist" type="Object[]"/>
+    <aura:attribute name="faultCode" type="String"/>
+    <aura:attribute name="faultCodeList" type="Object[]"/>
+    
+    <aura:attribute name="claimServiceInfoList" type="Object[]"/>
+    <aura:attribute name="installedPartList" type="Object[]"/>
+    <aura:attribute name="removedPartList" type="Object[]"/>
+    <aura:attribute name="nonOEMPartList" type="Object[]"/>
+    <aura:attribute name="partsToBeShippedList" type="Object[]"/>
+    <aura:attribute name="inventoryScheduleList" type="Object[]"/>
+    
+    <aura:attribute name="unitType" type="String" default=""/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <!-- picklist values-->
+    <aura:attribute name="claimRecordTypeList" type="Object[]"/>
+    <aura:attribute name="hostNonHostList" type="Object[]"/>
+    <aura:attribute name="smrReasonList" type="Object[]"/>
+    <aura:attribute name="causedByList" type="Object[]"/>
+    <aura:attribute name="faultFoundList" type="Object[]"/>
+    
+    <!-- campaign member variable for field mod claim -->
+    <aura:attribute name="campaignMember" type="Object"/>
+    <aura:attribute name="claimTemp" type="Object"/>
+    
+    <!-- value selected in picklist-->
+    <aura:attribute name="claimCustomRecordTypeName" type="String" default="Serialized"/>
+    <aura:attribute name="hostNonHostType" type="Object"/>
+    <aura:attribute name="smrReason" type="Object"/>
+    
+    <!-- date fields-->
+    <aura:attribute name="purchaseDate" type="Date" default="2016-10-10"/>
+    <aura:attribute name="repairDate" type="Date" default="2016-10-10"/>
+    <aura:attribute name="failureDate" type="Date" default="2016-10-10"/>
+    
+    <!-- change handeler for date fields, needed because uidatepicker does not fire change event-->
+    <aura:handler name="change" value="{!v.purchaseDate}" action="{!c.purchaseDateChangeHandeler}"/>
+    <aura:handler name="change" value="{!v.repairDate}" action="{!c.repairDateChangeHandeler}"/>
+    <aura:handler name="change" value="{!v.failureDate}" action="{!c.failureDateChangeHandeler}"/>
+    
+    <!--Aditya integration -->
+    <!--Custom setting Values for partPrice Integrtion-->
+    <aura:attribute name="partpriceSettings" type="Boolean"/>
+    <aura:attribute name="partPriceException" type="Boolean"/>
+    <aura:attribute name="partPriceErrorMsg" type="String"/>
+    <aura:attribute name="partPriceNotFound" type="Boolean" default="false"/>
+    <!--/Aditya integration -->
+    
+    <aura:attribute name="description"
+                    type="string"
+                    default="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software "/>
+    
+    <div class="main-body">
+        <div class="alertbox">{!v.body}</div>
+        <div class="page-spinner-container">
+            <aura:if isTrue="{!v.spinnerBool.pageSpinner}">
+                <div class="slds-spinner_container">
+                    <div class="slds-spinner--brand slds-spinner slds-spinner--medium" role="alert">
+                        <span class="slds-assistive-text">Loading</span>
+                        <div class="slds-spinner__dot-a"></div>
+                        <div class="slds-spinner__dot-b"></div>
+                    </div>
+                </div>
+            </aura:if>
+        </div>
+        
+        <header class="slds-text-heading--large slds-align--absolute-center header">
+            {!v.claimPageHeading}
+        </header>
+        
+        <div class="containerC">
+            
+            <div class="accordion-container">
+                
+                <!--///added on 17-NOV-2016///-->
+                <lightning:button name="accordion-c-1-cancel" variant="destructive" label="Cancel claim and return" onclick="{! c.cancel }"/>
+                <div class="form-break"/>
+                
+                <!-- Accordion 1 - Claim Basic Info -->
+                <div class="accordion">
+                    <label class="accordion-heading slds-text-heading--medium" for="accordion-c-1" id="assist">
+                        {!$Label.c.Claim_Section_1}
+                        <span class="open-close"></span>
+                    </label>
+                    <input type="checkbox" class="design-checkbox" id="accordion-c-1" aura:id="accordion-c-1" onchange="{!c.validateAccordionOpen}"/>
+                    
+                    <div class="accordion-body tab-open" aura:id="accordion-c-1-body">
+                        <div class="form">
+                            <div class="form-body">
+                                
+                                <div class="slds-grid slds-wrap slds-grid">
+                                    <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                        
+                                        <ui:inputSelect aura:id="claimCustomRecordTypeName" disabled="{!v.isEdit}" class="slds-input select-box-padder" label="{!$Label.c.Claim_Record_Type}" value="{!v.claimCustomRecordTypeName}" change="{!c.basicInfoHandeler}">
+                                            <aura:if isTrue="{!v.claimRecordTypeList.length!=0}">
+                                                <aura:iteration items="{!v.claimRecordTypeList}" var="recordType">
+                                                    <ui:inputSelectOption text="{!recordType.value}" label="{!recordType.label}" value="{!(v.claimCustomRecordTypeName == recordType.value)}"/>
+                                                </aura:iteration>
+                                            </aura:if>
+                                        </ui:inputSelect>
+                                    </div>
+                                    
+                                </div>
+                                
+                                <aura:if isTrue="{!(v.claimCustomRecordTypeName!='Claim Template')}">
+                                    
+                                    <div class="slds-grid slds-wrap slds-grid ">
+                                        <aura:if isTrue="{!(v.claimCustomRecordTypeName!='Claim Template')}">
+                                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                                <!--18-NOV-2016-->
+                                                
+                                                <c:LookupCmp aura:id="dealer"
+                                                             objectType="Account"
+                                                             objectName="{!v.currentClaim.Account__r.Name}"
+                                                             disabled="{!(!v.isDealerEditable)}"
+                                                             class="slds-input required"
+                                                             label="{!$Label.c.Dealer}"
+                                                             onBlur="{!c.fillError}"
+                                                             where="AND Warranty_Account_Type__c='Dealer'"
+                                                             onLookupSelect="{!c.basicInfoHandeler}"
+                                                             minCharacters="{!v.customSettingManager.Minimum_Lookup_Characters}"
+                                                             placeholder="{!$Label.c.Dealer_Name_Placeholder}"/>
+                                                
+                                                <aura:if isTrue="{!v.error.accordion1.fieldError.dealer!=''}">
+                                                    <div class="field-error">
+                                                        {!v.error.accordion1.fieldError.dealer}
+                                                    </div>
+                                                </aura:if>
+                                            </div>
+                                        </aura:if>
+                                        
+                                        <aura:if isTrue="{!(v.claimCustomRecordTypeName=='Serialized' || v.claimCustomRecordTypeName=='Field Modification' ||v.claimCustomRecordTypeName=='Preventive Maintenance')}">
+                                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium"> 
+                                                <c:LookupCmp aura:id="inventory"
+                                                             objectType="Inventory__c"
+                                                             disabled="{!v.isEdit}"
+                                                             objectName="{!v.currentClaim.Inventory__r.Name}"
+                                                             fields="Id,name,Item__c,Units_Run__c,Item__r.Name,Item__r.Description__c,
+                                                                     Item__r.Parent_Product__r.Id,Item__r.Parent_Product__r.Name,Item__r.Parent_Product__r.Description__c,
+                                                                     Item__r.Parent_Product__r.Parent_Product__r.Id,
+                                                                     Item__r.Parent_Product__r.Type__c,
+                                                                     Item__r.Item_Type__c,Item__r.Units_of_Measure__c,Install_Date__c"
+                                                             class="slds-input required"
+                                                             onBlur="{!c.fillError}"
+                                                             onLookupSelect="{!c.basicInfoHandeler}"
+                                                             minCharacters="{!v.customSettingManager.Minimum_Lookup_Characters}"
+                                                             label="{!$Label.c.Inventory}" 
+                                                             placeholder="{!$Label.c.Inventory_Name_Placeholder}"/>
+                                                <aura:if isTrue="{!v.error.accordion1.fieldError.inventory!=''}">
+                                                    <div class="field-error">
+                                                        {!v.error.accordion1.fieldError.inventory}
+                                                    </div>
+                                                </aura:if>
+                                            </div>
+                                        </aura:if>
+                                        <aura:if isTrue="{!(v.claimCustomRecordTypeName=='Non-Serialized')}">
+                                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                                <c:LookupCmp aura:id="product"
+                                                             objectType="Warranty_Product__c"
+                                                             objectName="{!v.currentClaim.Warranty_Product__r.Name}"
+                                                             fields="Id,Name,Parent_Product__r.Name,Units_of_Measure__c,Item_Type__c,Description__c,Parent_Product__r.Description__c,Product_Name__c"
+                                                             where="AND Track_Type__c='Non-Serialized'"
+                                                             disabled="{!v.isEdit}"
+                                                             class="slds-input required"
+                                                             onBlur="{!c.fillError}"
+                                                             onLookupSelect="{!c.basicInfoHandeler}"
+                                                             minCharacters="{!v.customSettingManager.Minimum_Lookup_Characters}"
+                                                             label="{!$Label.c.Item_Number}"
+                                                             placeholder="{!$Label.c.Product_Name_Placeholder}"/>
+                                                <aura:if isTrue="{!v.error.accordion1.fieldError.product!=''}">
+                                                    <div class="field-error">
+                                                        {!v.error.accordion1.fieldError.product}
+                                                    </div>
+                                                </aura:if>
+                                            </div>
+                                        </aura:if>
+                                    </div>
+                                    
+                                    
+                                    
+                                    <div class="slds-grid slds-wrap slds-grid ">
+                                        
+                                        <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                            <ui:inputText value="{!v.claimType}" class="slds-input output" disabled="true" label="{!$Label.c.Claim_Type}"/>
+                                        </div>
+                                        <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                            <ui:inputText value="{!(v.product.Parent_Product__r.Name || v.inventory.Item__r.Parent_Product__r.Name)}" class="slds-input output" disabled="true" label="{!$Label.c.Product_Name}"/>
+                                        </div>
+                                        <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                            <ui:inputText aura:id="modelDescription" value="{!(v.product.Parent_Product__r.Description__c || v.inventory.Item__r.Parent_Product__r.Description__c)}" class="slds-input output" disabled="true" label="{!$Label.c.Model_Description}"/>
+                                        </div>
+                                    </div>
+                                    <div class="slds-grid slds-wrap slds-grid ">
+                                        <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                            <label class="slds-checkbox">
+                                                <ui:inputCheckbox aura:id="preAuthorization" value="{!v.currentClaim.Request_SMR__c}" change="{!c.basicInfoHandeler}"/>
+                                                <span>{!$Label.c.Pre_authorization}&nbsp;&nbsp;</span>
+                                                <span class="slds-checkbox--faux border-highlighten"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <aura:if isTrue="{!v.currentClaim.Request_SMR__c}">
+                                        <div class="slds-grid slds-wrap slds-grid ">
+                                            <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                <ui:inputSelect class="slds-input select-box-padder" label="{!$Label.c.Reasons_for_Pre_authorization}" aura:id="reasonsForPreAuth" change="{!c.basicInfoHandeler}"/>
+                                            </div>
+                                        </div>
+                                    </aura:if>
+                                    
+                                    <div class="slds-grid slds-wrap slds-grid">
+                                        <aura:if isTrue="{!(v.claimCustomRecordTypeName=='Non-Serialized')}">
+                                            <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                                <ui:inputSelect class="slds-input select-box-padder" label="{!$Label.c.Host_Non_Host}" aura:id="hostNonHost" change="{!c.basicInfoHandeler}"/>
+                                            </div>
+                                            <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                                <aura:if isTrue="{!(!v.isEdit)}">
+                                                    <ui:inputDate aura:id="purchaseDate" class="slds-input required" label="{!$Label.c.Date_of_Purchase}" value="{!v.purchaseDate}" displayDatePicker="true"/>
+                                                    <aura:if isTrue="{!v.error.accordion1.fieldError.purchaseDate!=''}">
+                                                        <div class="field-error">
+                                                            {!v.error.accordion1.fieldError.purchaseDate}
+                                                        </div>
+                                                    </aura:if>
+                                                    <aura:set attribute="else">
+                                                        <label class="customLabel">
+                                                            <span>{!$Label.c.Date_of_Purchase}</span>
+                                                        </label>
+                                                        <ui:outputDate class="slds-input output" value="{!v.purchaseDate}" />
+                                                    </aura:set>
+                                                </aura:if>
+                                            </div>
+                                        </aura:if>
+                                        
+                                        <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                            <aura:if isTrue="{!(!v.isEdit)}">
+                                                <ui:inputDate aura:id="failureDate" class="slds-input required" label="{!v.DOF}" value="{!v.failureDate}" updateOn="change" blur="{!c.fetchSchedule}" select="{!c.fillError}" displayDatePicker="true"/>
+                                                <aura:if isTrue="{!v.error.accordion1.fieldError.failureDate!=''}">
+                                                    <div class="field-error">
+                                                        {!v.error.accordion1.fieldError.failureDate}
+                                                    </div>
+                                                </aura:if>
+                                                <aura:set attribute="else">
+                                                    <label class="customLabel">
+                                                        <span>{!v.DOF}</span>
+                                                    </label>
+                                                    <ui:outputDate class="slds-input output" value="{!v.failureDate}" />
+                                                </aura:set>
+                                            </aura:if>
+                                        </div>
+                                        
+                                        <aura:if isTrue="{!(v.claimCustomRecordTypeName!='Preventive Maintenance')}">
+                                        <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                            
+                                            <aura:if isTrue="{!(!v.isEdit)}">
+                                            	<ui:inputDate aura:id="repairDate" class="slds-input required" label="{!$Label.c.Date_of_Repair}" value="{!v.repairDate}" displayDatePicker="true"/>
+                                                <aura:if isTrue="{!v.error.accordion1.fieldError.repairDate!=''}">
+                                                    <div class="field-error">
+                                                        {!v.error.accordion1.fieldError.repairDate}
+                                                    </div>
+                                                </aura:if>
+                                                <aura:set attribute="else">
+                                                    <label class="customLabel">
+                                                        <span>{!$Label.c.Date_of_Repair}</span>
+                                                    </label>
+                                                    <ui:outputDate class="slds-input output" value="{!v.repairDate}" />
+                                                </aura:set>
+                                            </aura:if>
+                                            
+                                        </div>
+                                        </aura:if>
+                                        
+                                        
+                                        <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                            <aura:if isTrue="{!(v.claimCustomRecordTypeName!='Non-Serialized')}">
+                                            <ui:inputNumber aura:id="unitsUsage" value="{!v.currentClaim.Units_Run__c}" class="slds-input required" label="{!$Label.c.Units_Usage  + v.unitType }" change="{!c.fetchSchedule}" blur="{!c.fillError}" updateOn="keyup"/>
+                                            <aura:if isTrue="{!v.error.accordion1.fieldError.unitsUsage!='' || v.error.accordion1.fieldError.unitsUsage!=0}">
+                                                <div class="field-error">
+                                                    {!v.error.accordion1.fieldError.unitsUsage}
+                                                </div>
+                                            </aura:if>
+                                            <aura:set attribute="else">
+                                            	<ui:inputNumber aura:id="unitsUsage" value="{!v.currentClaim.Units_Run__c}" class="slds-input" label="{!$Label.c.Units_Usage  + v.unitType }" updateOn="keyup"/>
+                                            </aura:set>
+                                        </aura:if>
+                                        </div>
+                                        
+                                    </div>
+                                    
+                                    <aura:if isTrue="{!(v.claimCustomRecordTypeName=='Field Modification')}">
+                                        <div class="slds-grid slds-wrap slds-grid ">
+                                            <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                                <ui:inputSelect class="slds-input select-box-padder" disabled="{!v.isEdit}" label="{!$Label.c.Campaign}" aura:id="campaignMember" change="{!c.basicInfoHandeler}"/>
+                                            </div>
+                                            <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                                <ui:inputDate class="slds-input select-box-padder output" value="{!v.campaignMember.Service_Campaign__r.Start_Date__c}" disabled="true" label="{!$Label.c.Campaign_Start_Date}" aura:id="campaignStartDate"/>
+                                            </div>
+                                            <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                                <ui:inputDate class="slds-input select-box-padder output" value="{!v.campaignMember.Service_Campaign__r.End_Date__c}" disabled="true" label="{!$Label.c.Campaign_End_Date}" aura:id="campaignEndDate"/>
+                                            </div>
+                                        </div>
+                                    </aura:if>
+                                    
+                                    <aura:if isTrue="{!v.failureRepairDateDiffBig}">
+                                        <div class="slds-grid slds-wrap slds-grid">
+                                            <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                <ui:inputTextArea aura:id="reasonForDelay"
+                                                                  value="{!v.currentClaim.Delay_Reason__c}"
+                                                                  label="{!$Label.c.Reason_for_Delay}"
+                                                                  class="slds-input required"
+                                                                  resizable="false"
+                                                                  required="true"
+                                                                  blur="{!c.fillError}"
+                                                                  change="{!c.fillError}"
+                                                                  updateOn="keyup"/>
+                                                <aura:if isTrue="{!v.error.accordion1.fieldError.reasonForDelay!=''}">
+                                                    <div class="field-error">
+                                                        {!v.error.accordion1.fieldError.reasonForDelay}
+                                                    </div>
+                                                </aura:if>
+                                            </div>
+                                        </div>
+                                    </aura:if>
+                                    
+                                </aura:if>
+                                
+                                <aura:if isTrue="{!(v.claimCustomRecordTypeName=='Claim Template-x')}">
+                                    <div class="slds-grid slds-wrap slds-grid">
+                                        <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                            <c:LookupCmp aura:id="rate"
+                                                         objectType="Rates_Details__c"
+                                                         objectName="{!v.currentClaim.Rate__r.Name}"
+                                                         fields="Id,Name"
+                                                         disabled="{!v.isEdit}"
+                                                         class="slds-input"
+                                                         onBlur="{!c.fillError}"
+                                                         onLookupSelect="{!c.basicInfoHandeler}"
+                                                         minCharacters="{!v.customSettingManager.Minimum_Lookup_Characters}"
+                                                         label="{!$Label.c.Rate}"
+                                                         placeholder="{!$Label.c.Rate_Detail_Name_Placeholder}"/>
+                                        </div>
+                                        <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                            <c:LookupCmp aura:id="paymentDefinition"
+                                                         objectType="Payment_Definitions__c"
+                                                         objectName="{!v.currentClaim.Claim_Template_Payment_Definition__r.Name}"
+                                                         fields="Id,Name"
+                                                         disabled="{!v.isEdit}"
+                                                         class="slds-input"
+                                                         onBlur="{!c.fillError}"
+                                                         onLookupSelect="{!c.basicInfoHandeler}"
+                                                         minCharacters="{!v.customSettingManager.Minimum_Lookup_Characters}"
+                                                         label="{!$Label.c.Payment_Definition}"
+                                                         placeholder="{!$Label.c.Payment_Definition_Placeholder}"/>
+                                        </div>
+                                    </div>
+                                </aura:if>
+                                
+                                <!-- Logically second accordion-->
+                                <aura:if isTrue="{!(v.currentClaim.Inventory__c != '' &amp;&amp; v.claimCustomRecordTypeName == 'Preventive Maintenance')}">
+                                        <div class="slds-grid slds-wrap slds-grid ">
+                                            <aura:if isTrue="{!!v.isEdit}">
+                                                <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium" >
+                                                    <ui:inputSelect value="{!v.selectedSchedule}"  blur="{!c.fillError}" class="slds-input select-box-padder" disabled="{!v.isEdit}" label="Scheduler" aura:id="upcomingScheduler"/>
+                                                    
+                                                    <aura:if isTrue="{!v.error.accordion1.fieldError.upcomingScheduler!=''}">
+                                                        <div class="field-error">
+                                                            {!v.error.accordion1.fieldError.upcomingScheduler}
+                                                        </div>
+                                                    </aura:if>
+                                                </div>
+                                            </aura:if>
+                                            <aura:if isTrue="{!v.isEdit}">
+                                                <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium" >
+                                                    <ui:inputText value="{!v.selectedSchedule}" class="slds-input select-box-padder" disabled="true" label="Scheduler" aura:id="upcomingScheduler" change="{!c.fetchDetails}"/>
+                                                </div>
+                                            </aura:if>
+                                            
+                                            <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                                <ui:inputText value="{!v.inventoryScheduleDescription}" class="slds-input output" disabled="true" label="Description"/>
+                                            </div>
+                                            <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                                <!-- <ui:inputText value="{!v.inventoryScheduleDate}" class="slds-input output" disabled="true" label="Service Eligible Onwards"/> -->
+                                            </div> 
+                                        </div>
+                                        <!--<c:InventorySchedule inventoryScheduleList="{!v.inventoryScheduleList}" />-->
+                                        <!--<aura:iteration items="{!v.inventoryScheduleList}" var="obj">
+                                             Name : {!obj.Name} 
+                                            </aura:iteration>-->
+                                        
+                                    </aura:if>
+                                    
+                                <div class="slds-grid slds-wrap slds-grid">
+                                    <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                        
+                                        <c:LookupCmp aura:id="causalPart"
+                                                     objectType="Warranty_Product__c"
+                                                     fields="Id,Name,Item_Type__c,Description__c,Product_Name__c"
+                                                     class="slds-input required"
+                                                     where="And Item_Type__c='Part'"
+                                                     onBlur="{!c.fillError}"
+                                                     minCharacters="{!v.customSettingManager.Minimum_Lookup_Characters}"
+                                                     onLookupSelect="{!c.faultCodeAccHandeler}"
+                                                     label="{!$Label.c.Causal_Part}"
+                                                     objectName="{!v.currentClaim.Causal_Part_Number__r.Name}"
+                                                     placeholder="{!$Label.c.Causal_Part_Placeholder}"/>
+                                        
+                                        <aura:if isTrue="{!v.error.accordion1.fieldError.causalPart!=''}">
+                                            <div class="field-error">
+                                                {!v.error.accordion1.fieldError.causalPart}
+                                            </div>
+                                        </aura:if>
+                                    </div>
+                                    <div class="slds-size--12-of-12 slds-medium-size--8-of-12 slds-large-size--8-of-12 slds-p-around--medium">
+                                        <ui:inputText aura:id="causalPartDescription" disabled="true" value="{!v.causalPart.Description__c}" class="slds-input output" label="Causal Part Description"/>
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-grid slds-wrap slds-grid">
+                                    <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                        
+                                        <ui:inputSelect aura:id="faultCode" value="{!v.currentClaim.Fault_Code__c}" class="slds-input select-box-padder required" label="{!$Label.c.Fault_Code}" change="{!c.faultCodeAccHandeler}" disabled="{!v.faultCodeList.length==0}"/>
+                                        <aura:if isTrue="{!v.error.accordion1.fieldError.faultCode!=''}">
+                                            <div class="field-error">
+                                                {!v.error.accordion1.fieldError.faultCode}
+                                            </div>
+                                        </aura:if>
+                                    </div>
+                                    <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                        <ui:inputSelect aura:id="faultFound" class="slds-input select-box-padder" label="{!$Label.c.Fault_Found}"/>
+                                    </div>
+                                    
+                                    <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                        
+                                        <ui:inputSelect aura:id="causedBy" class="slds-input select-box-padder" label="{!$Label.c.Caused_By}"/>
+                                    </div>
+                                </div>
+                                <aura:if isTrue="{!(v.claimCustomRecordTypeName!='Claim Template')}">
+                                    <div class="slds-grid slds-wrap slds-grid">
+                                        <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                            <ui:inputText label="{!$Label.c.Work_Order_Label}" value="{!v.currentClaim.Work_order__c}" class="slds-input" required="true"/>
+                                        </div>
+                                        <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                            <ui:inputText label="{!$Label.c.Service_Ticket_Label}" value="{!v.currentClaim.Service_Ticket__c}" class="slds-input" required="true"/>
+                                        </div>
+                                    </div>
+                                </aura:if>
+                                <div class="slds-grid slds-wrap slds-grid">
+                                    <div class="slds-size--6-of-12 slds-medium-size--6-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                        <div class="slds-button-group" role="group">
+                                            <aura:if isTrue="{!(!v.isEdit)}">
+                                                <ui:button aura:id="accordion-c-1-save" class="slds-button slds-button--brand" label="{!$Label.c.Save_Claim}" press="{!c.validateAccordionOpen}"/>
+                                            </aura:if>
+                                            <aura:if isTrue="{!v.isEdit}">
+                                                <ui:button aura:id="accordion-c-1-update" class="slds-button slds-button--brand" label="{!$Label.c.Update_Claim}" press="{!c.validateAccordionOpen}"/>
+                                            </aura:if>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!--warning text-->
+                                <aura:if isTrue="{!(!v.isEdit &amp;&amp; v.claimCustomRecordTypeName!='Claim Template')}">
+                                    <div class="slds-grid slds-wrap slds-grid">
+                                        <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                            <span class="red normal-text">*</span><span class="normal-text">{!$Label.c.Date_Will_Not_Be_Editable_Warning}</span>
+                                        </div>
+                                    </div>
+                                </aura:if>
+                                
+                                <!--/ Logically second accordion -->
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Accordion 3 - Claim Service Info -->
+                <div class="accordion">
+                    <label class="accordion-heading slds-text-heading--medium" for="accordion-c-3">{!$Label.c.Claim_Section_3}
+                        <span></span>
+                        
+                    </label>
+                    <input type="checkbox" class="design-checkbox" id="accordion-c-3" aura:id="accordion-c-3" onchange="{!c.validateAccordionOpen}"/>
+                    <div class="accordion-body tab-close" aura:id="accordion-c-3-body">
+                        <div class="form">
+                            <div class="form-body">
+                                <div class="jobcode-container">
+                                    
+                                    <div class="jobcode-spinner-container relative">
+                                        <aura:if isTrue="{!v.spinnerBool.claimServiceInfoSpinner}">
+                                            <div class="slds-spinner_container">
+                                                <div class="slds-spinner--brand slds-spinner slds-spinner--medium" role="alert">
+                                                    <div class="slds-spinner__dot-a"></div>
+                                                    <div class="slds-spinner__dot-b"></div>
+                                                </div>
+                                            </div>
+                                        </aura:if>
+                                    </div>
+                                    
+                                    <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                                        <thead>
+                                            <tr class="slds-text-title--caps">
+                                                <th class="slds-cell-shrink" scope="col">
+                                                    <label class="slds-checkbox">
+                                                        <ui:inputCheckbox disabled="true"/>
+                                                        <span class="slds-checkbox--faux"></span>
+                                                        <span class="slds-assistive-text">Select All</span>
+                                                    </label>
+                                                </th>
+                                                <th scope="col" class="slds-is-resizable">
+                                                    <div class="slds-resizable" title="{!$Label.c.Job_Code}">{!$Label.c.Job_Code}</div>
+                                                </th>
+                                                <th scope="col" class="slds-is-resizable">
+                                                    <div class="slds-resizable" title="{!$Label.c.Job_Code_Description}">{!$Label.c.Job_Code_Description}</div>
+                                                </th>
+                                                <th scope="col" class="slds-is-resizable">
+                                                    <div class="slds-resizable" title="{!$Label.c.Standard_Labor_Hours}">{!$Label.c.Standard_Labor_Hours}</div>
+                                                </th>
+                                                <th scope="col" class="slds-is-resizable">
+                                                    <div class="slds-resizable" title="{!$Label.c.Additional_Labor_Hours}">{!$Label.c.Additional_Labor_Hours}</div>
+                                                </th>
+                                                <th scope="col" class="slds-is-resizable">
+                                                    <div class="slds-resizable" title="{!$Label.c.Reason_for_Labor_Hour}">{!$Label.c.Reason_for_Labor_Hour}</div>
+                                                </th>
+                                                <th scope="col" class="slds-is-resizable">
+                                                    <div class="slds-resizable" title=""></div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <aura:iteration items="{!v.claimServiceInfoList}" var="obj">
+                                                <tr>
+                                                    <td role="gridcell" class="slds-cell-shrink" data-label="Select row Cloudhub">
+                                                        <label class="slds-checkbox">
+                                                            <ui:inputCheckbox text="{!obj}" disabled="true" change="{!c.serviceInfoHandeler}" aura:id="{!obj.Id}"/>
+                                                            <span class="slds-checkbox--faux"></span>
+                                                            <span class="slds-assistive-text"></span>
+                                                        </label>
+                                                    </td>
+                                                    <td data-label="{!$Label.c.Job_Code}" class="slds-cell-wrap">
+                                                        <div title="{!$Label.c.Job_Code}">{!obj.Service_Job_Code__r.Name}</div>
+                                                    </td>
+                                                    <td data-label="{!$Label.c.Job_Code_Description}">
+                                                        <div title="{!$Label.c.Job_Code_Description}">{!obj.Service_Job_Code__r.Description__c}</div>
+                                                    </td>
+                                                    <td data-label="{!$Label.c.Standard_Labor_Hours}">
+                                                        <div title="{!$Label.c.Standard_Labor_Hours}">{!obj.Service_Job_Code__r.Standard_Labor_Hour__c}</div>
+                                                    </td>
+                                                    <td data-label="{!$Label.c.Additional_Labor_Hours}">
+                                                        <div title="{!$Label.c.Additional_Labor_Hours}">{!obj.Additional_Labor_Hour__c}</div>
+                                                    </td>
+                                                    <td data-label="{!$Label.c.Reason_for_Labor_Hour}">
+                                                        <div title="{!$Label.c.Reason_for_Labor_Hour}">{!obj.Reason_Additional_Labor_hour__c}</div>
+                                                    </td>
+                                                    <td scope="row" data-label="">
+                                                        <div title="">
+                                                            <ui:outputText class="clickable-text" value="Edit" title="{!obj.Id}" click="{!c.serviceInfoHandeler}"/>
+                                                            &nbsp;&nbsp;
+                                                            <ui:outputText class="clickable-text" value="Delete" title="{!obj.Id}" click="{!c.serviceInfoHandeler}"/>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </aura:iteration>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="slds-grid slds-wrap slds-grid">
+                                    <div class="slds-size--6-of-12 slds-medium-size--6-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                        <div class="slds-button-group" role="group">
+                                            <ui:button class="slds-button slds-button--brand" label="{!$Label.c.Add_Table_Row}" aura:id="addClaimServiceInfo" press="{!c.serviceInfoHandeler}"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <aura:if isTrue="{!(v.currentClaim.Id!='')}">
+                                    <div class="slds-grid slds-wrap slds-grid">
+                                        <div id="fileUpload" class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium"></div>
+                                    </div>
+                                </aura:if>
+                                
+                            </div>
+                        </div>
+                        
+                        <aura:if isTrue="{!v.modalAndElementDisplayBool.claimServiceInfoModal}">
+                            <div class="job-code-create-modal">
+                                <div role="dialog" tabindex="-1" aria-labelledby="header43" class="slds-modal slds-fade-in-open">
+                                    <div class="slds-modal__container">
+                                        <div class="slds-modal__header">
+                                            <h2 id="header43" class="slds-text-heading--medium">{!v.modalData.claimServiceInfo.title}</h2>
+                                        </div>
+                                        <div class="slds-modal__content slds-p-around--medium">
+                                            <div class="slds-grid slds-wrap slds-grid">
+                                                <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                    
+                                                    <!-- added by Dharmil for Fault code and Job Code logic query controlled by custom setting value -->
+                                                    <aura:if isTrue="{!v.isModelParentJobCodeCustomSetting}">
+                                                        <c:LookupCmp aura:id="jobCode"
+                                                                     objectType="Warranty_Code__c"
+                                                                     class="slds-input required"
+                                                                     label="{!$Label.c.Job_Code}"
+                                                                     where="{! 'AND Parent_Warranty_Code__c IN (' + v.faultCodeListForJobCode + ')' +
+                                                                            ' AND Lang_Id__c=\'' + v.userLangId + '\'' + ' AND RecordType.DeveloperName=\'Job_Code\''}"
+                                                                     placeholder="{!$Label.c.Job_Code_Placeholder}"
+                                                                     fields="Id,Name,Description__c,Standard_Labor_Hour__c"
+                                                                     onLookupSelect="{!c.serviceInfoHandeler}"
+                                                                     minCharacters="{!v.customSettingManager.Minimum_Lookup_Characters}"
+                                                                     onBlur="{!c.fillError}"/>
+                                                    </aura:if>                                                                      
+                                                    
+                                                    <aura:if isTrue="{!!v.isModelParentJobCodeCustomSetting}"> 
+                                                        <c:LookupCmp aura:id="jobCode"
+                                                                     objectType="Warranty_Code__c"
+                                                                     class="slds-input required"
+                                                                     label="{!$Label.c.Job_Code}"
+                                                                     where="{! 'AND Parent_Warranty_Code__c =\'' + v.currentClaim.Fault_Code__c + '\'' +
+                                                                            ' AND Lang_Id__c=\'' + v.userLangId + '\'' + ' AND RecordType.DeveloperName=\'Job_Code\''}"
+                                                                     placeholder="{!$Label.c.Job_Code_Placeholder}"
+                                                                     fields="Id,Name,Description__c,Standard_Labor_Hour__c"
+                                                                     onLookupSelect="{!c.serviceInfoHandeler}"
+                                                                     minCharacters="{!v.customSettingManager.Minimum_Lookup_Characters}"
+                                                                     onBlur="{!c.fillError}"/>
+                                                    </aura:if>                                                             
+                                                    
+                                                    
+                                                    <aura:if isTrue="{!v.error.accordion3.fieldError.jobCode!=''}">
+                                                        <div class="field-error">
+                                                            {!v.error.accordion3.fieldError.jobCode}
+                                                        </div>
+                                                    </aura:if>
+                                                </div>
+                                                <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                    <ui:inputText aura:id="jobcodeDescription" disabled="true"
+                                                                  value="{!v.selectedJobCode.Description__c}"
+                                                                  class="slds-input output" label="{!$Label.c.Description}"/>
+                                                </div>
+                                                <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                    <ui:inputNumber aura:id="standardLabourHours" disabled="true" value="{!v.selectedJobCode.Standard_Labor_Hour__c}" class="slds-input output" label="{!$Label.c.Standard_Labor_Hours}"/>
+                                                </div>
+                                                <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                    <ui:inputNumber aura:id="additionalLabourHours" value="0" class="slds-input" label="{!$Label.c.Additional_Labor_Hours}" change="{!c.fillError}" updateOn="keyup"/>
+                                                    <aura:if isTrue="{!v.error.accordion3.fieldError.additionalLabourHours!=''}">
+                                                        <div class="field-error">
+                                                            {!v.error.accordion3.fieldError.additionalLabourHours}
+                                                        </div>
+                                                    </aura:if>
+                                                </div>
+                                                
+                                                <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                    <ui:inputTextArea aura:id="reasonForAdditionalHours"
+                                                                      disabled="{!(!v.modalAndElementDisplayBool.reasonForAdditionalHoursNeeded)}"
+                                                                      label="{!$Label.c.Reason_for_Labor_Hour}"
+                                                                      class="slds-input required"
+                                                                      resizable="false"
+                                                                      change="{!c.fillError}"
+                                                                      updateOn="keyup"
+                                                                      blur="{!c.fillError}"/>
+                                                    <aura:if isTrue="{!v.error.accordion3.fieldError.reasonForAdditionalHoursNeeded!=''}">
+                                                        <div class="field-error">
+                                                            {!v.error.accordion3.fieldError.reasonForAdditionalHoursNeeded}
+                                                        </div>
+                                                    </aura:if>
+                                                </div>
+                                                
+                                            </div>
+                                        </div>
+                                        <div class="slds-modal__footer">
+                                            <ui:button aura:id="cancelClaimServiceInfoButton" class="slds-button slds-button--destructive" label="Cancel" press="{!c.serviceInfoHandeler}"/>
+                                            <aura:if isTrue="{!v.modalData.claimServiceInfo.mode=='Create'}">
+                                                <ui:button aura:id="saveClaimServiceInfoButton" class="slds-button slds-button--brand" label="Save" press="{!c.serviceInfoHandeler}"/>
+                                                <ui:button aura:id="saveNextClaimServiceInfoButton" class="slds-button slds-button--brand" label="Save &amp; Next" press="{!c.serviceInfoHandeler}"/>
+                                            </aura:if>
+                                            <aura:if isTrue="{!v.modalData.claimServiceInfo.mode=='Edit'}">
+                                                <ui:button aura:id="editClaimServiceInfoButton" class="slds-button slds-button--brand" label="Update" press="{!c.serviceInfoHandeler}"/>
+                                            </aura:if>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-backdrop slds-backdrop--open"></div>
+                            </div>
+                        </aura:if>
+                        
+                    </div>
+                </div>
+                
+                <!-- Accordion 4 - Installed And Removed Parts -->
+                <div class="accordion">
+                    <label class="accordion-heading slds-text-heading--medium" for="accordion-c-4">{!$Label.c.Claim_Section_4}
+                        <span></span>
+                    </label>
+                    <input type="checkbox" class="design-checkbox" id="accordion-c-4" aura:id="accordion-c-4" onchange="{!c.validateAccordionOpen}"/>
+                    <div class="accordion-body tab-close" aura:id="accordion-c-4-body">
+                        
+                        <div class="form">
+                            
+                            <!--installed part form body-->
+                            <div class="form-heading">{!$Label.c.Installed_Parts}</div>
+                            <div class="form-body">
+                                <div class="installed-part-container">
+                                    <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                                        <thead>
+                                            <tr class="slds-text-title--caps">
+                                                <th class="slds-cell-shrink" scope="col">
+                                                    <label class="slds-checkbox">
+                                                        <ui:inputCheckbox disabled="true"/>
+                                                        <span class="slds-checkbox--faux"></span>
+                                                        <span class="slds-assistive-text">Select All</span>
+                                                    </label>
+                                                </th>
+                                                <th scope="col" class="slds-is-resizable">
+                                                    <div class="slds-resizable" title="{!$Label.c.Part_Number}">{!$Label.c.Part_Number}</div>
+                                                </th>
+                                                <th scope="col" class="slds-is-resizable">
+                                                    <div class="slds-resizable" title="{!$Label.c.Serial_Number}">{!$Label.c.Serial_Number}</div>
+                                                </th>
+                                                <th scope="col" class="slds-is-resizable">
+                                                    <div class="slds-resizable" title="{!$Label.c.Quantity}">{!$Label.c.Quantity}</div>
+                                                </th>
+                                                <th scope="col" class="slds-is-resizable">
+                                                    <div class="slds-resizable" title="{!$Label.c.Custom_Price}">{!$Label.c.Custom_Price}</div>
+                                                </th>
+                                                <th scope="col" class="slds-is-resizable">
+                                                    <div class="slds-resizable" title=""></div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <aura:iteration items="{!v.installedPartList}" var="obj">
+                                                <tr>
+                                                    <td role="gridcell" class="slds-cell-shrink" data-label="Select row Cloudhub">
+                                                        <label class="slds-checkbox">
+                                                            <ui:inputCheckbox disabled="true"/>
+                                                            <span class="slds-checkbox--faux"></span>
+                                                            <span class="slds-assistive-text">Select row Cloudhub</span>
+                                                        </label>
+                                                    </td>
+                                                    <td data-label="{!$Label.c.Part_Number}" class="slds-cell-wrap">
+                                                        <div title="{!$Label.c.Part_Number}">{!obj.Warranty_Product__r.Name}</div>
+                                                    </td>
+                                                    <td scope="row" data-label="{!$Label.c.Serial_Number}">
+                                                        <div title="{!$Label.c.Serial_Number}">{!obj.Inventory__r.Name}</div>
+                                                    </td>
+                                                    <td data-label="{!$Label.c.Quantity}">
+                                                        <div title="{!$Label.c.Quantity}">{!obj.Quantity__c}</div>
+                                                    </td>
+                                                    <!--Aditya Integration-->
+                                                    <td data-label="{!$Label.c.Unit_Price}">
+                                                        <div title="{!$Label.c.Unit_Price}">{!obj.Price__c}</div>
+                                                    </td>
+                                                    <!--
+                                                    <td data-label="{!$Label.c.Custom_Price}">
+                                                        <div title="{!$Label.c.Unit_Price}">{!obj.Custom_Price_c}</div>
+                                                    </td>-->
+                                                    <!--/Aditya Integration-->
+                                                    <td scope="row" data-label="">
+                                                        <div title="">
+                                                            <ui:outputText class="clickable-text EditInstalledPart" value="Edit" title="{!obj.Id}" click="{!c.relatedPartListHandeler}"/>
+                                                            &nbsp;&nbsp;
+                                                            <ui:outputText class="clickable-text DeleteInstalledPart" value="Delete" title="{!obj.Id}" click="{!c.relatedPartListHandeler}"/>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </aura:iteration>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="slds-grid slds-wrap slds-grid">
+                                    <div class="slds-size--6-of-12 slds-medium-size--6-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                        <div class="slds-button-group" role="group">
+                                            <ui:button class="slds-button slds-button--brand" label="{!$Label.c.Add_Table_Row}" aura:id="addInstalledPart" press="{!c.relatedPartListHandeler}"/>
+                                            <ui:button class="slds-button slds-button--brand" label="Get Part Prices" aura:id="partPriceGetterButton" press="{!c.relatedPartListHandeler}" disabled="true"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!--Removed part form body-->
+                            <div class="form-heading">{!$Label.c.Removed_Parts}</div>
+                            <div class="form-body">
+                                <div class="removed-part-container">
+                                    <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                                        <thead>
+                                            <tr class="slds-text-title--caps">
+                                                <th class="slds-cell-shrink" scope="col">
+                                                    <label class="slds-checkbox">
+                                                        <ui:inputCheckbox disabled="true"/>
+                                                        <span class="slds-checkbox--faux"></span>
+                                                        <span class="slds-assistive-text">Select All</span>
+                                                    </label>
+                                                </th>
+                                                <th scope="col" class="slds-is-resizable">
+                                                    <div class="slds-resizable" title="{!$Label.c.Part_Number}">{!$Label.c.Part_Number}</div>
+                                                </th>
+                                                <th scope="col" class="slds-is-resizable">
+                                                    <div class="slds-resizable" title="{!$Label.c.Serial_Number}">{!$Label.c.Serial_Number}</div>
+                                                </th>
+                                                
+                                                <th scope="col" class="slds-is-resizable">
+                                                    <div class="slds-resizable" title="{!$Label.c.Quantity}">{!$Label.c.Quantity}</div>
+                                                </th>
+                                                <th scope="col" class="slds-is-resizable">
+                                                    <div class="slds-resizable" title=""></div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <aura:iteration items="{!v.removedPartList}" var="obj">
+                                                <tr>
+                                                    <td role="gridcell" class="slds-cell-shrink" data-label="Select row Cloudhub">
+                                                        <label class="slds-checkbox">
+                                                            <ui:inputCheckbox disabled="true"/>
+                                                            <span class="slds-checkbox--faux"></span>
+                                                            <span class="slds-assistive-text">Select row Cloudhub</span>
+                                                        </label>
+                                                    </td>
+                                                    <td data-label="{!$Label.c.Part_Number}" class="slds-cell-wrap">
+                                                        <div title="{!$Label.c.Part_Number}">{!obj.Warranty_Product__r.Name}</div>
+                                                    </td>
+                                                    <td data-label="{!$Label.c.Serial_Number}" class="slds-cell-wrap">
+                                                        <div title="{!$Label.c.Serial_Number}">{!obj.Inventory__r.Name}</div>
+                                                    </td>
+                                                    <td data-label="{!$Label.c.Quantity}">
+                                                        <div title="{!$Label.c.Quantity}">{!obj.Quantity__c}</div>
+                                                    </td>
+                                                    <td scope="row" data-label="">
+                                                        <div title="">
+                                                            <aura:if isTrue="{!obj.Warranty_Product__c !='' &amp;&amp; obj.Warranty_Product__c!=undefined}">
+                                                                <ui:outputText class="clickable-text EditRemovedPart" value="Edit" title="{!obj.Id}" click="{!c.relatedPartListHandeler}"/>
+                                                            </aura:if>
+                                                            &nbsp;&nbsp;
+                                                            <ui:outputText class="clickable-text DeleteRemovedPart" value="Delete" title="{!obj.Id}" click="{!c.relatedPartListHandeler}"/>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </aura:iteration>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="slds-grid slds-wrap slds-grid">
+                                    <div class="slds-size--6-of-12 slds-medium-size--6-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                        <div class="slds-button-group" role="group">
+                                            <ui:button class="slds-button slds-button--brand" label="Add Row" aura:id="addRemovedPart" press="{!c.relatedPartListHandeler}"/>
+                                            <!--  <ui:button class="slds-button slds-button-brand" label="Delete Selected"/>-->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!--non-OEM part form body-->
+                            <div class="form-heading">{!$Label.c.Non_OEM_Parts}</div>
+                            <div class="form-body">
+                                <div class="nonOEM-part-container">
+                                    <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                                        <thead>
+                                            <tr class="slds-text-title--caps">
+                                                <th class="slds-cell-shrink" scope="col">
+                                                    <label class="slds-checkbox">
+                                                        <ui:inputCheckbox disabled="true"/>
+                                                        <span class="slds-checkbox--faux"></span>
+                                                        <span class="slds-assistive-text">Select All</span>
+                                                    </label>
+                                                </th>
+                                                <th scope="col" class="slds-is-resizable">
+                                                    <div class="slds-resizable" title="{!$Label.c.Part_Number}">{!$Label.c.Part_Number}</div>
+                                                </th>
+                                                <th scope="col" class="slds-is-resizable">
+                                                    <div class="slds-resizable" title="{!$Label.c.Quantity}">{!$Label.c.Quantity}</div>
+                                                </th>
+                                                <th scope="col" class="slds-is-resizable">
+                                                    <div class="slds-resizable" title="{!$Label.c.Custom_Price}">{!$Label.c.Custom_Price}</div>
+                                                </th>
+                                                <th scope="col" class="slds-is-resizable">
+                                                    <div class="slds-resizable" title="{!$Label.c.Invoice_Number}">{!$Label.c.Invoice_Number}</div>
+                                                </th>
+                                                <th scope="col" class="slds-is-resizable">
+                                                    <div class="slds-resizable" title="{!$Label.c.Invoice_Date}">{!$Label.c.Invoice_Date}</div>
+                                                </th>
+                                                <th scope="col" class="slds-is-resizable">
+                                                    <div class="slds-resizable" title=""></div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <aura:iteration items="{!v.nonOEMPartList}" var="obj">
+                                                <tr>
+                                                    <td role="gridcell" class="slds-cell-shrink" data-label="Select row Cloudhub">
+                                                        <label class="slds-checkbox">
+                                                            <ui:inputCheckbox disabled="true"/>
+                                                            <span class="slds-checkbox--faux"></span>
+                                                            <span class="slds-assistive-text">Select row Cloudhub</span>
+                                                        </label>
+                                                    </td>
+                                                    <td data-label="{!$Label.c.Part_Number}" class="slds-cell-wrap">
+                                                        <div title="{!$Label.c.Part_Number}">{!obj.Miscellaneous_Part_Name__c}</div>
+                                                    </td>
+                                                    <td data-label="{!$Label.c.Quantity}">
+                                                        <div title="{!$Label.c.Quantity}">{!obj.Quantity__c}</div>
+                                                    </td>
+                                                    <td data-label="{!$Label.c.Custom_Price}">
+                                                        <div title="{!$Label.c.Custom_Price}">{!obj.Custom_Part_Cost__c}</div>
+                                                    </td>
+                                                    <td data-label="{!$Label.c.Invoice_Number}">
+                                                        <div title="{!$Label.c.Invoice_Number}">{!obj.Invoice_Number__c}</div>
+                                                    </td>
+                                                    <td data-label="{!$Label.c.Invoice_Date}">
+                                                        <div title="{!$Label.c.Invoice_Date}">{!obj.Invoice_Date__c}</div>
+                                                    </td>
+                                                    <td scope="row" data-label="">
+                                                        <div title="">
+                                                            <ui:outputText class="clickable-text EditNONOEMPart" value="Edit" title="{!obj.Id}" click="{!c.relatedPartListHandeler}"/>
+                                                            &nbsp;&nbsp;
+                                                            <ui:outputText class="clickable-text DeleteNONOEMPart" value="Delete" title="{!obj.Id}" click="{!c.relatedPartListHandeler}"/>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </aura:iteration>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="slds-grid slds-wrap slds-grid">
+                                    <div class="slds-size--6-of-12 slds-medium-size--6-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                        <div class="slds-button-group" role="group">
+                                            <ui:button class="slds-button slds-button--brand" label="{!$Label.c.Add_Table_Row}" aura:id="addNONOEMPart" press="{!c.relatedPartListHandeler}"/>
+                                            <!--  <ui:button class="slds-button slds-button-brand" label="Delete Selected"/>-->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </div>
+                        
+                        <aura:if isTrue="{!v.modalAndElementDisplayBool.installedPartsModal}">
+                            <div class="job-code-create-modal">
+                                <div role="dialog" tabindex="-1" aria-labelledby="header43" class="slds-modal slds-fade-in-open">
+                                    <div class="slds-modal__container">
+                                        <div class="slds-modal__header">
+                                            <h2 id="header43" class="slds-text-heading--medium">{!v.modalData.installedParts.title}</h2>
+                                        </div>
+                                        <div class="slds-modal__content slds-p-around--medium">
+                                            <div class="slds-grid slds-wrap slds-grid">
+                                                
+                                                <!--Aditya integration -->
+                                                <aura:if isTrue="{!v.partPriceException}">
+                                                    <div class="slds-size--12-of-12 slds-notify slds-notify--toast" role="alert">
+                                                        <span class="slds-assistive-text">Info</span>
+                                                        <button class="slds-button slds-notify__close slds-button--icon-inverse" title="Close">
+                                                            <span class="slds-assistive-text">Close</span>
+                                                        </button>
+                                                        <div class="slds-notify__content">
+                                                            <h2 class="slds-text-heading--small">{!$Label.c.PartPrice_Msg_Prefix}-{!v.partPriceErrorMsg}</h2>
+                                                        </div>
+                                                    </div>
+                                                </aura:if>
+                                                <!--/Aditya integration -->
+                                                
+                                                <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                    <c:LookupCmp aura:id="nonSerializedInstalledPart"
+                                                                 objectType="Warranty_Product__c"
+                                                                 fields="Id,Name,Units_of_Measure__c,Item_Type__c,Description__c,Product_Name__c"
+                                                                 where="AND Track_Type__c='Non-Serialized'"
+                                                                 class="slds-input"
+                                                                 onBlur="{!c.relatedPartListHandeler}"
+                                                                 onLookupSelect="{!c.relatedPartListHandeler}"
+                                                                 label="{!$Label.c.Non_Serialized_Part}"
+                                                                 minCharacters="{!v.customSettingManager.Minimum_Lookup_Characters}"
+                                                                 placeholder="{!$Label.c.Non_Serialized_Part_Placeholder}"/>
+                                                    
+                                                    <aura:if isTrue="{!v.error.accordion4.fieldError.nonSerializedInstalledPart!=''}">
+                                                        <div class="field-error">
+                                                            {!v.error.accordion4.fieldError.nonSerializedInstalledPart}
+                                                        </div>
+                                                    </aura:if>
+                                                    
+                                                </div>
+                                                <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                    
+                                                    <c:LookupCmp aura:id="serializedInstalledPart"
+                                                                 objectType="Inventory__c"
+                                                                 fields="Id,name,Item__r.Description__c,Item__r.Name"
+                                                                 class="slds-input"
+                                                                 onBlur="{!c.relatedPartListHandeler}"
+                                                                 onLookupSelect="{!c.relatedPartListHandeler}"
+                                                                 where="AND Item__r.Item_Type__c='Part'"
+                                                                 label="{!$Label.c.Serialized_Part}"
+                                                                 minCharacters="{!v.customSettingManager.Minimum_Lookup_Characters}"
+                                                                 placeholder="{!$Label.c.Serialized_Part_Placeholder}"/>
+                                                    <aura:if isTrue="{!v.error.accordion4.fieldError.serializedInstalledPart!=''}">
+                                                        <div class="field-error">
+                                                            {!v.error.accordion4.fieldError.serializedInstalledPart}
+                                                        </div>
+                                                    </aura:if>
+                                                    
+                                                </div>
+                                                
+                                                <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                    
+                                                    <ui:inputTextArea disabled="true"
+                                                                      value="{! (v.selectedNonSerializedInstalledPart!=null ? v.selectedNonSerializedInstalledPart.Description__c :
+                                                                             (v.selectedSerializedInstalledPart!=null? v.selectedSerializedInstalledPart.Item__r.Description__c:''))}"
+                                                                      class="slds-input output"
+                                                                      label="{!$Label.c.Description}"/>
+                                                    
+                                                </div>
+                                                
+                                                <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                   <!-- <ui:inputNumber aura:id="customCost" class="slds-input" label="{!$Label.c.Unit_Price}"/> -->
+                                                    <ui:inputNumber aura:id="customCost" class="slds-input" label="{!$Label.c.Unit_Price}" change="{!c.fillError}" blur="{!c.fillError}" updateOn="keyup"/>
+                                                    <aura:if isTrue="{!v.error.accordion4.fieldError.customCost!=''}">
+                                                        <div class="field-error">
+                                                            {!v.error.accordion4.fieldError.customCost}
+                                                        </div>
+                                                    </aura:if> 
+                                                    
+                                                   <!-- Aditya Integration-->
+                                                    <!--
+                                                    <ui:inputNumber aura:id="customCost" class="slds-input required" label="{!$Label.c.Custom_Price}" change="{!c.fillError}" blur="{!c.fillError}" updateOn="keyup"/>
+                                                    <aura:if isTrue="{!v.error.accordion4.fieldError.customCost!=''}">
+                                                        <div class="field-error">
+                                                            {!v.error.accordion4.fieldError.customCost}
+                                                        </div>
+                                                    </aura:if>
+                                                 -->
+                                                    <!--/Aditya Integration-->
+                                                    
+                                                </div>
+                                                <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                    <ui:inputNumber aura:id="quantity" value="1" class="slds-input required" label="{!$Label.c.Quantity}" change="{!c.fillError}" blur="{!c.fillError}" updateOn="keyup"/>
+                                                    <aura:if isTrue="{!v.error.accordion4.fieldError.quantity!=''}">
+                                                        <div class="field-error">
+                                                            {!v.error.accordion4.fieldError.quantity}
+                                                        </div>
+                                                    </aura:if>
+                                                </div>
+                                                <aura:if isTrue="{!v.error.accordion4.fieldError.commonError!=''}">
+                                                    <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                        <div class="slds-notify padder" role="alert">
+                                                            <div class="slds-notify__content">
+                                                                <h2 class="slds-text-heading--small">{!v.error.accordion4.fieldError.commonError}</h2>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </aura:if>
+                                            </div>
+                                        </div>
+                                        <div class="slds-modal__footer">
+                                            <ui:button aura:id="cancelInstalledPart" class="slds-button slds-button--destructive" label="Cancel" press="{!c.relatedPartListHandeler}"/>
+                                            <aura:if isTrue="{!v.modalData.installedParts.mode=='Create'}">
+                                                <ui:button aura:id="saveInstalledPartButton" class="slds-button slds-button--brand" label="Save" press="{!c.relatedPartListHandeler}"/>
+                                                <ui:button aura:id="saveNextInstalledPartButton" class="slds-button slds-button--brand" label="Save &amp; Next" press="{!c.relatedPartListHandeler}"/>
+                                            </aura:if>
+                                            <aura:if isTrue="{!v.modalData.installedParts.mode=='Edit'}">
+                                                <ui:button aura:id="updateInstalledPartButton" class="slds-button slds-button--brand" label="Update" press="{!c.relatedPartListHandeler}"/>
+                                            </aura:if>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-backdrop slds-backdrop--open"></div>
+                            </div>
+                        </aura:if>
+                        
+                        <aura:if isTrue="{!v.modalAndElementDisplayBool.removedPartModal}">
+                            <div class="job-code-create-modal">
+                                <div role="dialog" tabindex="-1" aria-labelledby="header43" class="slds-modal slds-fade-in-open">
+                                    <div class="slds-modal__container">
+                                        <div class="slds-modal__header">
+                                            <h2 id="header43" class="slds-text-heading--medium">{!v.modalData.removedParts.title}</h2>
+                                        </div>
+                                        <div class="slds-modal__content slds-p-around--medium">
+                                            <div class="slds-grid slds-wrap slds-grid">
+                                                
+                                                <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                    <c:LookupCmp aura:id="nonSerializedRemovedPart"
+                                                                 objectType="Warranty_Product__c"
+                                                                 fields="Id,Name,Units_of_Measure__c,Item_Type__c,Description__c,Product_Name__c"
+                                                                 where="AND Track_Type__c='Non-Serialized'"
+                                                                 class="slds-input"
+                                                                 onBlur="{!c.relatedPartListHandeler}"
+                                                                 onLookupSelect="{!c.relatedPartListHandeler}"
+                                                                 label="{!$Label.c.Non_Serialized_Part}"
+                                                                 minCharacters="{!v.customSettingManager.Minimum_Lookup_Characters}"
+                                                                 placeholder="{!$Label.c.Non_Serialized_Part_Placeholder}"/>
+                                                    
+                                                    <aura:if isTrue="{!v.error.accordion4.fieldError.nonSerializedRemovedPart!=''}">
+                                                        <div class="field-error">
+                                                            {!v.error.accordion4.fieldError.nonSerializedRemovedPart}
+                                                        </div>
+                                                    </aura:if>
+                                                    
+                                                </div>
+                                                <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                    
+                                                    <c:LookupCmp aura:id="serializedRemovedPart"
+                                                                 objectType="Inventory__c"
+                                                                 fields="Id,name,Item__r.Description__c"
+                                                                 class="slds-input"
+                                                                 onBlur="{!c.relatedPartListHandeler}"
+                                                                 onLookupSelect="{!c.relatedPartListHandeler}"
+                                                                 where="AND Item__r.Item_Type__c='Part'"
+                                                                 label="{!$Label.c.Serialized_Part}"
+                                                                 minCharacters="{!v.customSettingManager.Minimum_Lookup_Characters}"
+                                                                 placeholder="{!$Label.c.Serialized_Part_Placeholder}"/>
+                                                    <aura:if isTrue="{!v.error.accordion4.fieldError.serializedIRemovedPart!=''}">
+                                                        <div class="field-error">
+                                                            {!v.error.accordion4.fieldError.serializedIRemovedPart}
+                                                        </div>
+                                                    </aura:if>
+                                                    
+                                                </div>
+                                                
+                                                <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                    
+                                                    <ui:inputTextArea disabled="true"
+                                                                      value="{! (v.selectedNonSerializedRemovedPart!=null ? v.selectedNonSerializedRemovedPart.Description__c :
+                                                                             (v.selectedSerializedRemovedPart!=null? v.selectedSerializedRemovedPart.Item__r.Description__c:''))}"
+                                                                      class="slds-input output"
+                                                                      label="{!$Label.c.Description}"/>
+                                                    
+                                                </div>
+                                                
+                                                <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                    <ui:inputNumber aura:id="removedPartQuantity" value="1" class="slds-input required" label="{!$Label.c.Quantity}" change="{!c.fillError}" blur="{!c.fillError}" updateOn="keyup"/>
+                                                    <aura:if isTrue="{!v.error.accordion4.fieldError.removedPartQuantity!=''}">
+                                                        <div class="field-error">
+                                                            {!v.error.accordion4.fieldError.removedPartQuantity}
+                                                        </div>
+                                                    </aura:if>
+                                                </div>
+                                                <aura:if isTrue="{!v.error.accordion4.fieldError.commonErrorForRemovedPart!=''}">
+                                                    <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                        <div class="slds-notify padder" role="alert">
+                                                            <div class="slds-notify__content">
+                                                                <h2 class="slds-text-heading--small">{!v.error.accordion4.fieldError.commonErrorForRemovedPart}</h2>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </aura:if>
+                                            </div>
+                                        </div>
+                                        <div class="slds-modal__footer">
+                                            <ui:button aura:id="cancelRemovedPart" class="slds-button slds-button--destructive" label="Cancel" press="{!c.relatedPartListHandeler}"/>
+                                            <aura:if isTrue="{!v.modalData.removedParts.mode=='Create'}">
+                                                <ui:button aura:id="saveRemovedPartButton" class="slds-button slds-button--brand" label="Save" press="{!c.relatedPartListHandeler}"/>
+                                                <ui:button aura:id="saveNextRemovedPartButton" class="slds-button slds-button--brand" label="Save &amp; Next" press="{!c.relatedPartListHandeler}"/>
+                                            </aura:if>
+                                            <aura:if isTrue="{!v.modalData.removedParts.mode=='Edit'}">
+                                                <ui:button aura:id="updateRemovedPartButton" class="slds-button slds-button--brand" label="Update" press="{!c.relatedPartListHandeler}"/>
+                                            </aura:if>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-backdrop slds-backdrop--open"></div>
+                            </div>
+                        </aura:if>
+                        
+                        <aura:if isTrue="{!v.modalAndElementDisplayBool.nonOEMPartModal}">
+                            <div class="job-code-create-modal">
+                                <div role="dialog" tabindex="-1" aria-labelledby="header43" class="slds-modal slds-fade-in-open">
+                                    <div class="slds-modal__container">
+                                        <div class="slds-modal__header">
+                                            <h2 id="header43" class="slds-text-heading--medium">{!v.modalData.nonOEMParts.title}</h2>
+                                        </div>
+                                        <div class="slds-modal__content slds-p-around--medium">
+                                            <div class="slds-grid slds-wrap slds-grid">
+                                                
+                                                <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                    <ui:inputText aura:id="nonOEMPartName" disabled="{!v.modalData.nonOEMParts.mode=='Edit'}" value="" class="slds-input required" placeholder="{!$Label.c.Miscellaneous_Part_Number_Placeholder}"
+                                                                  label="{!$Label.c.Part_Number}" change="{!c.fillError}" updateOn="keyup"/>
+                                                    <aura:if isTrue="{!v.error.accordion4.fieldError.nonOEMPartName!=''}">
+                                                        <div class="field-error">
+                                                            {!v.error.accordion4.fieldError.nonOEMPartName}
+                                                        </div>
+                                                    </aura:if>
+                                                    
+                                                </div>
+                                                
+                                                <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                    <ui:inputNumber aura:id="nonOEMPartCustomCost" value="0" class="slds-input required" label="{!$Label.c.Custom_Price}" change="{!c.fillError}" blur="{!c.fillError}" updateOn="keyup"/>
+                                                    <aura:if isTrue="{!v.error.accordion4.fieldError.nonOEMPartCustomCost!=''}">
+                                                        <div class="field-error">
+                                                            {!v.error.accordion4.fieldError.nonOEMPartCustomCost}
+                                                        </div>
+                                                    </aura:if>
+                                                </div>
+                                                <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                    <ui:inputNumber aura:id="nonOEMPartQuantity" value="1" class="slds-input required" label="{!$Label.c.Quantity}" change="{!c.fillError}" blur="{!c.fillError}" updateOn="keyup"/>
+                                                    <aura:if isTrue="{!v.error.accordion4.fieldError.nonOEMPartQuantity!=''}">
+                                                        <div class="field-error">
+                                                            {!v.error.accordion4.fieldError.nonOEMPartQuantity}
+                                                        </div>
+                                                    </aura:if>
+                                                </div>
+                                                <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                    <ui:inputTextArea aura:id="nonOEMPartDescription" class="slds-input required" label="{!$Label.c.Description}" change="{!c.fillError}" updateOn="keyup"/>
+                                                    <aura:if isTrue="{!v.error.accordion4.fieldError.nonOEMPartDescription!=''}">
+                                                        <div class="field-error">
+                                                            {!v.error.accordion4.fieldError.nonOEMPartDescription}
+                                                        </div>
+                                                    </aura:if>
+                                                </div>
+                                                <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                    <ui:inputText aura:id="Invoice Number" class="slds-input" label="{!$Label.c.Invoice_Number}" updateOn="keyup"/>
+                                                </div>
+                                                <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                                    <ui:inputDate aura:id="Invoice Date" class="slds-input" label="{!$Label.c.Invoice_Date}" displayDatePicker="true" change="{!c.fillError}" select="{!c.fillError}"/>
+                                                    <aura:if isTrue="{!v.error.accordion4.fieldError.invoiceDate!=''}">
+                                                        <div class="field-error">
+                                                            {!v.error.accordion4.fieldError.invoiceDate}
+                                                        </div>
+                                                    </aura:if>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="slds-modal__footer">
+                                            <ui:button aura:id="cancelNONOEMPart" class="slds-button slds-button--destructive" label="Cancel" press="{!c.relatedPartListHandeler}"/>
+                                            <aura:if isTrue="{!v.modalData.nonOEMParts.mode=='Create'}">
+                                                <ui:button aura:id="saveNONOEMButton" class="slds-button slds-button--brand" label="Save" press="{!c.relatedPartListHandeler}"/>
+                                                <ui:button aura:id="saveNextNONOEMButton" class="slds-button slds-button--brand" label="Save &amp; Next" press="{!c.relatedPartListHandeler}"/>
+                                            </aura:if>
+                                            <aura:if isTrue="{!v.modalData.nonOEMParts.mode=='Edit'}">
+                                                <ui:button aura:id="updateNONOEMButton" class="slds-button slds-button--brand" label="Update" press="{!c.relatedPartListHandeler}"/>
+                                            </aura:if>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="slds-backdrop slds-backdrop--open"></div>
+                            </div>
+                        </aura:if>
+                        
+                    </div>
+                </div>
+                
+                <!-- Accordion 5 - Additional Info -->
+                <div class="accordion">
+                    <label class="accordion-heading slds-text-heading--medium" for="accordion-c-5">{!$Label.c.Claim_Section_5}
+                        <span></span>
+                    </label>
+                    <input type="checkbox" class="design-checkbox" id="accordion-c-5" aura:id="accordion-c-5" onchange="{!c.validateAccordionOpen}"/>
+                    <div class="accordion-body tab-close" aura:id="accordion-c-5-body">
+                        <div class="form">
+                            <div class="form-heading">
+                                {!$Label.c.Expense_Details}
+                            </div>
+                            <div class="form-body">
+                                <div class="slds-grid slds-wrap slds-grid">
+                                    <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                        <ui:inputNumber label="{!$Label.c.Travel_Hours}" value="{!v.currentClaim.TravelByHours__c}" class="slds-input" required="true" aura:id="trav_hr" change="{!c.validateNegativeNumber}" />
+                                        <label style="display:none;color:red;font-size:14px;" id="travelHrError">Negative Number not allowed </label>
+                                    </div>
+                                    <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                        <ui:inputNumber label="{!$Label.c.Travel_Distance}" value="{!v.currentClaim.TravelByDistance__c}" class="slds-input" required="true" aura:id="trav_dist" change="{!c.validateNegativeNumber}" />
+                                        <label style="display:none;color:red;font-size:14px;" id="travelDistError">Negative Number not allowed </label>
+                                    </div>
+                                    <div class="slds-size--12-of-12 slds-medium-size--4-of-12 slds-large-size--4-of-12 slds-p-around--medium">
+                                        <ui:inputText label="{!$Label.c.Travel_Location}" value="{!v.currentClaim.TravelByLocation__c}" class="slds-input" required="true" />
+                                    </div>
+                                </div>
+                                <div class="slds-grid slds-wrap slds-grid">
+                                    <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                        <ui:inputNumber label="{!$Label.c.Freight_Charges}" value="{!v.currentClaim.Total_Category1_Cost__c}" class="slds-input" required="true" aura:id="freight_charges" change="{!c.validateNegativeNumber}" />
+                                        <label style="display:none;color:red;font-size:14px;" id="frieghtError">Negative Number not allowed </label>
+                                        <!--<ui:inputNumber label="{!$Label.c.Total_Meals_Cost}" value="{!v.currentClaim.Total_Meals_Cost__c}" class="slds-input" required="true"/>-->
+                                    </div>
+                                    <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                        <ui:inputNumber label="{!$Label.c.Miscellaneous_Cost}" value="{!v.currentClaim.Total_Category2_Cost__c}" class="slds-input" required="true" aura:id="miscel_charges" change="{!c.validateNegativeNumber}" />
+                                        <label style="display:none;color:red;font-size:14px;" id="miscellError">Negative Number not allowed </label>
+                                        <!--<ui:inputNumber label="{!$Label.c.Total_Parking_Cost}" value="{!v.currentClaim.Total_Parking_Cost__c}" class="slds-input" required="true"/>-->
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-break"/>
+                            
+                            <div class="form-heading">
+                                {!$Label.c.Claim_Notes}
+                            </div>
+                            <div class="form-body">
+                                <div class="slds-grid slds-wrap slds-grid">
+                                    <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                        <ui:inputTextArea aura:id="faultFoundComment"
+                                                          value="{!v.currentClaim.Fault_Code_Comment__c}"
+                                                          change="{!c.fillError}"
+                                                          blur="{!c.fillError}"
+                                                          updateOn="keyup"
+                                                          label="{!$Label.c.Fault_Found_Comments}"
+                                                          class="slds-input required"
+                                                          resizable="false"
+                                                          required="true"/>
+                                        <aura:if isTrue="{!v.error.accordion5.fieldError.faultFoundComment!=''}">
+                                            <div class="field-error">
+                                                {!v.error.accordion5.fieldError.faultFoundComment}
+                                            </div>
+                                        </aura:if>
+                                    </div>
+                                    <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                        <ui:inputTextArea aura:id="causeComment"
+                                                          value="{!v.currentClaim.CasualPart_Comments__c}"
+                                                          change="{!c.fillError}"
+                                                          blur="{!c.fillError}"
+                                                          updateOn="keyup"
+                                                          label="{!$Label.c.Casual_Part_Comments}"
+                                                          class="slds-input required"
+                                                          resizable="false"
+                                                          required="true"/>
+                                        <aura:if isTrue="{!v.error.accordion5.fieldError.causalPartComment!=''}">
+                                            <div class="field-error">
+                                                {!v.error.accordion5.fieldError.causalPartComment}
+                                            </div>
+                                        </aura:if>
+                                    </div>
+                                </div>
+                                <div class="slds-grid slds-wrap slds-grid">
+                                    <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                        <ui:inputTextArea aura:id="workPerformedComment"
+                                                          value="{!v.currentClaim.work_Performed_comments__c}"
+                                                          change="{!c.fillError}"
+                                                          blur="{!c.fillError}"
+                                                          updateOn="keyup"
+                                                          label="{!$Label.c.Work_Performed_Comments}"
+                                                          class="slds-input required"
+                                                          resizable="false"
+                                                          required="true"/>
+                                        <aura:if isTrue="{!v.error.accordion5.fieldError.workPerformedComment!=''}">
+                                            <div class="field-error">
+                                                {!v.error.accordion5.fieldError.workPerformedComment}
+                                            </div>
+                                        </aura:if>
+                                    </div>
+                                    <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                        <ui:inputTextArea label="{!$Label.c.Description}" value="{!v.currentClaim.Description__c}" class="slds-input" resizable="false" required="true"/>
+                                    </div>
+                                </div>
+                                <div class="slds-grid slds-wrap slds-grid">
+                                    <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                        <ui:button aura:id="updateCommentsAndCostButton" class="slds-button slds-button--brand" label="{!$Label.c.Save_Additional_Info}" press="{!c.additionalInfoHandeler}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Accordion 6 - Claim Summary -->
+                <div class="accordion">
+                    <label class="accordion-heading slds-text-heading--medium" for="accordion-c-6">{!$Label.c.Claim_Section_6}
+                        <span></span>
+                    </label>
+                    <input type="checkbox" class="design-checkbox" id="accordion-c-6" aura:id="accordion-c-6" onchange="{!c.validateAccordionOpen}"/>
+                    <div class="accordion-body tab-close" aura:id="accordion-c-6-body">
+                        
+                        <div class="form">
+                            <div class="form-body">
+                                <div class="slds-grid slds-wrap slds-grid ">
+                                    <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                        <label class="slds-checkbox">
+                                            <ui:inputCheckbox aura:id="acknowledgedForValidate" value="{!v.acknowledgedForValidate}"/>
+                                            <span><b>{!$Label.c.Claim_Acknowledgement_Text} &nbsp;&nbsp;</b></span>
+                                            <span class="slds-checkbox--faux border-highlighten"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-button-group selective-padder" role="group">
+                                    <aura:if isTrue="{!(v.claimCustomRecordTypeName!='Field Modification' &amp;&amp; v.claimCustomRecordTypeName!='Claim Template'  &amp;&amp; v.acknowledgedForValidate)}">
+                                        <ui:button aura:id="Validate" class="slds-button slds-button--brand" label="{!$Label.c.Validate}" press="{!c.claimSummaryHandeler}"/>
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.acknowledgedForValidate}">
+                                        <ui:button aura:id="Proceed" class="slds-button slds-button--brand" label="{!$Label.c.Move_To_Detail_Page}" press="{!c.claimSummaryHandeler}"/>
+                                    </aura:if>
+                                </div>
+                                
+                            </div>
+                            
+                            <aura:if isTrue="{!(v.claimCustomRecordTypeName!='Field Modification' &amp;&amp; v.claimCustomRecordTypeName!='Claim Template')}">
+                                <aura:if isTrue="{!v.applicablePolicy!=null}">
+                                    <div class="form-heading">
+                                        {!$Label.c.Policy_Details}
+                                    </div>
+                                    <div class="form-body">
+                                        
+                                        <div class="slds-grid slds-wrap slds-grid">
+                                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                                <ui:inputText label="{!$Label.c.Policy_Selected}" value="{!v.applicablePolicy.Name}" disabled="true" class="slds-input output"/>
+                                            </div>
+                                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                                <ui:inputNumber format="0.00" label="{!$Label.c.Final_Claim_Cost}" value="{!v.currentClaim.Final_Claim_Cost__c}" disabled="true" class="slds-input output"/>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="slds-grid slds-wrap slds-grid">
+                                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                                <ui:inputNumber format="0.00" label="{!$Label.c.Total_Labour_Cost}" value="{!v.currentClaim.Total_Labor_Cost__c}" disabled="true" class="slds-input output"/>
+                                            </div>
+                                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                                <ui:inputNumber format="0.00" label="{!$Label.c.Final_Labour_Cost}" value="{!v.currentClaim.Final_Labor_Cost__c}" disabled="true" class="slds-input output"/>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="slds-grid slds-wrap slds-grid">
+                                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                                <ui:inputNumber format="0.00" label="{!$Label.c.Total_Travel_By_Distance_Cost}" value="{!v.currentClaim.Total_TravelByDistance_Cost__c}" disabled="true" class="slds-input output"/>
+                                            </div>
+                                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                                <ui:inputNumber format="0.00" label="{!$Label.c.Final_Travel_By_Distance_Cost}" value="{!v.currentClaim.Final_TravelByDistance_Cost__c}" disabled="true" class="slds-input output"/>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="slds-grid slds-wrap slds-grid">
+                                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                                <ui:inputNumber format="0.00" label="{!$Label.c.Total_Travel_By_Hours_Cost}" value="{!v.currentClaim.Total_TravelByHours_Cost__c}" disabled="true" class="slds-input output"/>
+                                            </div>
+                                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                                <ui:inputNumber format="0.00" label="{!$Label.c.Final_Travel_By_Hours_Cost}" value="{!v.currentClaim.Final_TravelByHours_Cost__c}" disabled="true" class="slds-input output"/>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="slds-grid slds-wrap slds-grid">
+                                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                                <ui:inputNumber format="0.00" label="{!$Label.c.Total_Freight_Charges}" value="{!v.currentClaim.Total_Category1_Cost__c}" disabled="true" class="slds-input output"/>
+                                            </div>
+                                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                                <ui:inputNumber format="0.00" label="{!$Label.c.Final_Freight_Charges}" value="{!v.currentClaim.Final_Category1_Cost__c}" disabled="true" class="slds-input output"/>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="slds-grid slds-wrap slds-grid">
+                                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                                <ui:inputNumber format="0.00" label="{!$Label.c.Total_Miscellaneous_Cost}" value="{!v.currentClaim.Total_Category2_Cost__c}" disabled="true" class="slds-input output"/>
+                                            </div>
+                                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                                <ui:inputNumber format="0.00" label="{!$Label.c.Final_Miscellaneous_Cost}" value="{!v.currentClaim.Final_Category2_Cost__c}" disabled="true" class="slds-input output"/>
+                                            </div>
+                                        </div>
+                                        
+                                        <!--
+                                      <div class="slds-grid slds-wrap slds-grid">
+                                          <div class="slds-size-12-of-12 slds-medium-size-6-of-12 slds-large-size-6-of-12 slds-p-around-medium">
+                                              <ui:inputNumber format="0.00" label="{!$Label.c.Total_Meals_Cost}" value="{!v.currentClaim.Total_Meals_Cost__c}" disabled="true" class="slds-input output"/>
+                                          </div>
+                                          <div class="slds-size-12-of-12 slds-medium-size-6-of-12 slds-large-size-6-of-12 slds-p-around-medium">
+                                              <ui:inputNumber format="0.00" label="{!$Label.c.Final_Meals_Cost}" value="{!v.currentClaim.Final_Meals_Cost__c}" disabled="true" class="slds-input output"/>
+                                          </div>
+                                      </div>
+
+                                      <div class="slds-grid slds-wrap slds-grid">
+                                          <div class="slds-size-12-of-12 slds-medium-size-6-of-12 slds-large-size-6-of-12 slds-p-around-medium">
+                                              <ui:inputNumber format="0.00" label="{!$Label.c.Total_Parking_Cost}" value="{!v.currentClaim.Total_Parking_Cost__c}" disabled="true" class="slds-input output"/>
+                                          </div>
+                                          <div class="slds-size-12-of-12 slds-medium-size-6-of-12 slds-large-size-6-of-12 slds-p-around-medium">
+                                              <ui:inputNumber format="0.00" label="{!$Label.c.Final_Parking_Cost}" value="{!v.currentClaim.Final_Parking_Cost__c}" disabled="true" class="slds-input output"/>
+                                          </div>
+                                      </div>
+                                      -->
+                                        
+                                        <div class="slds-grid slds-wrap slds-grid">
+                                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                                <ui:inputNumber format="0.00" label="{!$Label.c.Total_Parts_Cost}" value="{!v.currentClaim.Total_Parts_Cost__c}" disabled="true" class="slds-input output"/>
+                                            </div>
+                                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                                <ui:inputNumber format="0.00" label="{!$Label.c.Final_Parts_Cost}" value="{!v.currentClaim.Final_Parts_Cost__c}" disabled="true" class="slds-input output"/>
+                                            </div>
+                                            
+                                            <!--<aura:if isTrue="{!v.currentClaim.Parts_Profit__c!=null &amp;&amp; v.currentClaim.Parts_Profit__c!=undefined &amp;&amp; v.currentClaim.Parts_Profit__c!=0}">
+                                                    <ui:inputNumber format="0.00" label="{!$Label.c.Parts_Profit}" value="{!v.currentClaim.Parts_Profit__c}" disabled="true" class="slds-input output"/>
+                                                    <aura:set attribute="else">
+                                                        <ui:inputNumber format="0.00" label="{!$Label.c.Parts_Profit}" value="0" disabled="true" class="slds-input output"/>
+                                                    </aura:set>
+                                                </aura:if>
+                                             -->
+                                        </div>
+                                    </div>
+                                     
+                                </aura:if>
+                                <aura:if isTrue="{!v.applicablePolicy==null}">
+                                    <center>
+                                        <div class="slds-notify padder" role="alert" data-aura-rendered-by="5168:0">
+                                            <div class="slds-notify__content" data-aura-rendered-by="5169:0">
+                                                <h2 class="slds-text-heading--small" data-aura-rendered-by="5170:0">
+                                                    No applicable policy
+                                                </h2>
+                                            </div>
+                                        </div>
+                                    </center>
+                                </aura:if>
+                                
+                                <div class="form-break"/>
+                                
+                                <aura:if isTrue="{!v.partsToBeShippedList.length!=0}">
+                                    <div class="form-heading">{!$Label.c.PartReturnSummary}</div>
+                                    <div class="form-body">
+                                        <div class="partsToBeShipped-container">
+                                            <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                                                <thead>
+                                                    <tr class="slds-text-title--caps">
+                                                        <th class="slds-cell-shrink" scope="col">
+                                                            <label class="slds-checkbox">
+                                                                <ui:inputCheckbox disabled="true"/>
+                                                                <span class="slds-checkbox--faux"></span>
+                                                                <span class="slds-assistive-text">Select All</span>
+                                                            </label>
+                                                        </th>
+                                                        <th scope="col" class="slds-is-resizable">
+                                                            <div class="slds-resizable" title="{!$Label.c.Part_Number}">{!$Label.c.Part_Number}</div>
+                                                        </th>
+                                                        <th scope="col" class="slds-is-resizable">
+                                                            <div class="slds-resizable" title="{!$Label.c.Serial_Number}">{!$Label.c.Serial_Number}</div>
+                                                        </th>
+                                                        <th scope="col" class="slds-is-resizable">
+                                                            <div class="slds-resizable" title="{!$Label.c.Quantity}">{!$Label.c.Quantity}</div>
+                                                        </th>
+                                                        <th scope="col" class="slds-is-resizable">
+                                                            <div class="slds-resizable" title="{!$Label.c.Return_Location}">{!$Label.c.Return_Location}</div>
+                                                        </th>
+                                                        <th scope="col" class="slds-is-resizable">
+                                                            <div class="slds-resizable" title="{!$Label.c.Shipment_Due_Date}">{!$Label.c.Shipment_Due_Date}</div>
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <aura:iteration items="{!v.partsToBeShippedList}" var="obj">
+                                                        <tr>
+                                                            <td role="gridcell" class="slds-cell-shrink" data-label="Select row Cloudhub">
+                                                                <label class="slds-checkbox">
+                                                                    <ui:inputCheckbox disabled="true"/>
+                                                                    <span class="slds-checkbox--faux"></span>
+                                                                    <span class="slds-assistive-text">Select row Cloudhub</span>
+                                                                </label>
+                                                            </td>
+                                                            <td data-label="{!$Label.c.Part_Number}" class="slds-cell-wrap">
+                                                                <div title="{!$Label.c.Part_Number}">{!obj.Warranty_Product__r.Name}</div>
+                                                            </td>
+                                                            <td data-label="{!$Label.c.Serial_Number}" class="slds-cell-wrap">
+                                                                <div title="{!$Label.c.Serial_Number}">{!obj.Inventory__r.Name}</div>
+                                                            </td>
+                                                            <td data-label="{!$Label.c.Quantity}">
+                                                                <div title="{!$Label.c.Quantity}">{!obj.Quantity__c}</div>
+                                                            </td>
+                                                            <td data-label="{!$Label.c.Return_Location}">
+                                                                <div title="{!$Label.c.Return_Location}">{!obj.Return_Location__r.Name}</div>
+                                                            </td>
+                                                            <td data-label="{!$Label.c.Shipment_Due_Date}">
+                                                                <div title="{!$Label.c.Shipment_Due_Date}">
+                                                                    <ui:outputNumber value="{!obj.Part_Return_Configuration__r.Days_Due_Within__c}"/>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </aura:iteration>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </aura:if>
+                                <aura:if isTrue="{!v.partsToBeShippedList.length==0}">
+                                    <center>
+                                        <div class="slds-notify padder" role="alert" data-aura-rendered-by="5168:0">
+                                            <div class="slds-notify__content" data-aura-rendered-by="5169:0">
+                                                <h2 class="slds-text-heading--small" data-aura-rendered-by="5170:0">
+                                                    No Parts To Be shipped
+                                                </h2>
+                                            </div>
+                                        </div>
+                                    </center>
+                                </aura:if>
+                                
+                                <div class="form-break"/>
+                                
+                                <div class="form-body">
+                                    <div class="slds-grid slds-wrap slds-grid ">
+                                        <div class="slds-size--12-of-12 slds-medium-size--12-of-12 slds-large-size--12-of-12 slds-p-around--medium">
+                                            <label class="slds-checkbox">
+                                                <ui:inputCheckbox aura:id="acknowledgedForValidate" value="{!v.acknowledgedForValidate}"/>
+                                                <span><b>{!$Label.c.Claim_Acknowledgement_Text} &nbsp;&nbsp;</b></span>
+                                                <span class="slds-checkbox--faux border-highlighten"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="slds-button-group selective-padder" role="group">
+                                        <aura:if isTrue="{!v.acknowledgedForValidate}">
+                                            <ui:button aura:id="Validate" class="slds-button slds-button--brand" label="{!$Label.c.Validate}" press="{!c.claimSummaryHandeler}"/>
+                                            <ui:button aura:id="Proceed" class="slds-button slds-button--brand" label="{!$Label.c.Move_To_Detail_Page}" press="{!c.claimSummaryHandeler}"/>
+                                        </aura:if>
+                                    </div>
+                                </div>
+                            </aura:if>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</aura:component>

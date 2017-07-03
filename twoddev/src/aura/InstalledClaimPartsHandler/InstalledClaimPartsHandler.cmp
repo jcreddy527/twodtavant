@@ -1,0 +1,185 @@
+<aura:component extends="c:GenericComponent">
+    <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" />
+	  <aura:attribute name="claimId" 			   type="String" 		default="a061500000X9djt"/>
+    <aura:attribute name="claimName" 			 type="String" 		default="CLm001"/>
+    <aura:attribute name="inventoryId"		 type="String" 		/>
+    <aura:attribute name="inventoryName"		type="String" 		/>
+    <aura:attribute name="warrantyProductId"	type="String" 		/>
+    <aura:attribute name="warrantyProductName"	type="String" 		/>
+    <aura:attribute name="costValue" 		    type="Integer" />
+    <aura:attribute name="inventoryError"		type="String" 		default=""/>
+    <aura:attribute name="installedPartsIds"	type="String[]" 	default=""/>
+    <aura:attribute name="installedParts" 		type="sObject[]" 	default=""/>
+    <aura:attribute name="deleteObjParts" 		type="sObject[]" 	default=""/>
+    <aura:attribute name="installedPart" 		type="sObject" 		default="{  'sobjectType': 'Claim_Part__c' ,
+                                                                             	'Inventory__c' : ''}"/>
+    <aura:attribute name="removedParts" 		type="sObject" 		default="{  'sobjectType': 'Removed_Claim_Part__c' ,
+                                                                             	'Inventory__c' : ''}"/>
+    <aura:attribute name="deleteRecordNumbers"	type="String[]" 	default=""/>
+    <aura:attribute name="emptyNumber"	type="String[]" 	/>
+    <aura:attribute name="isDisabledWarranty"	type="boolean" />
+    <aura:attribute name="isDisabledInventory"	        type="boolean" />
+    <aura:attribute name="isNewRecord"			            type="boolean" default="false"/>
+    <aura:attribute name="installedPartRecordTypes" 		type="sObject[]" default=""/>
+    <aura:attribute name="removedPartRecordTypes" 		type="sObject[]" default=""/>
+    <aura:handler name="init" 				value="{!this}" 	action="{!c.doInit}" />
+    <aura:attribute name="isEnableModal" type="boolean" default="false"/>
+	 <aura:handler event="c:ConfirmationModelEvent" 	action="{!c.deleteRecordsByResponse}"/>
+    <!-- To avoid the duplicate inventory ids -->
+    <aura:attribute name="avoidIds" 		type="String[]" default=""/>
+
+    <aura:attribute name="isInvSave" type="boolean" default="false"/>
+    <aura:attribute name="isWarrantySave" type="boolean" default="false"/>
+
+    <aura:handler event="c:DeselectPartIds" 	action="{!c.removeSelectedItems}"/>
+    <aura:handler event="c:ModalCloseEvent" 	action="{!c.changeModalClose}"/>
+
+    <aura:attribute name="BaseURL" type="String" />
+
+    <aura:method name="sampleMethod" action="{!c.doInit}" access="PUBLIC" >
+    </aura:method>
+    <aura:attribute name="dmlErrors" 			type="String[]" 				default="" />
+	<aura:attribute name="isDeleteClicked" 			 type="Boolean" default="false"/>
+    <aura:attribute name="isDeleteDisabled" 			 type="Boolean" default="false"/>
+    <aura:attribute name="isDeletable" type="Boolean" default="false" />
+
+    <div class="slds-form--inline">
+            <label class="slds-form-element__label slds-text-heading--small slds-theme--shade" style="width:100%">{!$Label.c.Installed_Parts}</label>
+        <br></br>
+        	<center>
+        		  <button class="slds-button slds-button--brand" onclick = "{!c.addNewRow}">{!$Label.c.Add_Installed_Part}</button>
+              <button class="slds-button slds-button--brand" onclick = "{!c.deleteRecords}" disabled="{!v.isDeleteDisabled}" >{!$Label.c.Delete_Installed_Part}</button>
+        	</center>
+        <br></br>
+    </div>
+
+    <aura:if isTrue="{!v.dmlErrors.length > 0}" >
+      <ui:message title="Error" severity="error" closable="false">
+        <aura:iteration items="{!v.dmlErrors}" var="item">
+          {!item} <br/>
+        </aura:iteration>
+      </ui:message>
+    </aura:if>
+		
+
+        <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal">
+            <!-- Header to the table header -->
+            <thead>
+                <tr class="slds-text-heading--label">
+                    <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">{!$Label.c.Serial_Number}</th>
+                    <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">{!$Label.c.Part_Number}</th>
+                    <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">{!$Label.c.Quantity}</th>
+                    <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">{!$Label.c.Custom_Price}</th>
+                    <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">{!$Label.c.Total_Amount}</th>
+                    <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">{!$Label.c.Invoice_Number}</th>
+                    <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">{!$Label.c.Invoice_Date}</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <!-- Body iteration to add the data in the table format -->
+            <tbody aura:id="tbody" >
+                <aura:iteration items="{!v.installedParts}" var="item" indexVar="i">
+                    <tr>
+                        <!-- To get the id value of the record added the check box -->
+
+                        <td class="slds-truncate" scope="row" data-label="{!$Label.c.Serial_Number}">
+                            <div class="slds-form-element slds-is-required" disabled = "true">
+                                <div class="slds-form-element__control" >
+                                    <ui:outputText class="form-element__help" value="{!item.Inventory__r.Name}"/>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="slds-truncate" scope="row" data-label="{!$Label.c.Part_Number}">
+                            <div class="slds-form-element slds-is-required">
+                                <div class="slds-form-element__control">
+                                    <ui:outputText class="form-element__help" value="{!item.Warranty_Product__r.Name}"/>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="slds-truncate" scope="row" data-label="{!$Label.c.Quantity}">
+                            <div class="slds-form-element slds-is-required">
+                                <div class="slds-form-element__control">
+                                    <ui:outputText class="form-element__help" value="{!item.Quantity__c}"/>
+                                </div>
+                            </div>
+                        </td>
+                         <td class="slds-truncate" scope="row" data-label="{!$Label.c.Custom_Price}">
+                            <div class="slds-form-element slds-is-required">
+                                <div class="slds-form-element__control">
+                                    <ui:outputCurrency class="form-element__help" value="{!item.Price__c}"/>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="slds-truncate" scope="row" data-label="{!$Label.c.Total_Amount}">
+                            <div class="slds-form-element slds-is-required">
+                                <div class="slds-form-element__control">
+                                    <!--
+                                    <aura:if isTrue="{!item.Price__c != null}">
+                                        <ui:outputCurrency class="form-element__help" value="{!item.Price__c}"/>
+                                    </aura:if>
+                                    <aura:if isTrue="{!item.Price__c == null}">
+                                    -->
+                                        <ui:outputCurrency class="form-element__help" value="{!item.Total_Amount__c}"/>
+                                    <!--
+                                    </aura:if>
+                                  -->
+                                </div>
+                            </div>
+                        </td>
+                        
+						 <td class="slds-truncate" scope="row" data-label="{!$Label.c.Invoice_Number}">
+                            <div class="slds-form-element slds-is-required">
+                                <div class="slds-form-element__control">
+                                    <ui:outputText class="form-element__help" value="{!item.Invoice_Number__c}"/>
+                                </div>
+                            </div>
+                        </td>
+                        
+                         <td class="slds-truncate" scope="row" data-label="{!$Label.c.Custom_Price}">
+                            <div class="slds-form-element slds-is-required">
+                                <div class="slds-form-element__control">
+                                    <ui:outputDate class="form-element__help" value="{!item.Invoice_Date__c}"/>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <td>
+
+                            <span class="slds-icon__container" onclick = "{!c.editClaimPart}" value = "{!i}" tabIndex="{!i}">
+                                <c:svg class="slds-icon slds-icon--x-small slds-icon-text-default " xlinkHref="{!v.BaseURL + '/resource/slds/assets/icons/utility-sprite/svg/symbols.svg#edit'}" ariaHidden="false"/>
+                            </span>
+                            &nbsp;&nbsp;
+                            <span class="slds-icon__container" onclick = "{!c.deleteClaimPart}" value = "{!i}" tabIndex="{!i}">
+                                <c:svg class="slds-icon slds-icon--x-small slds-icon-text-default " xlinkHref="{!v.BaseURL +'/resource/slds/assets/icons/utility-sprite/svg/symbols.svg#delete'}" ariaHidden="false"/>
+                            </span>
+                        </td>
+
+                    </tr>
+                </aura:iteration>
+            </tbody>
+        </table>
+
+    <!--
+		Enable modal to create new record or to edit the record
+	-->
+    <aura:if isTrue="{!v.isEnableModal}">
+        <c:ModalCmp isLarge="true" isShowCancel="false" BaseURL="{!v.BaseURL}">
+            <aura:set attribute="body">
+                <c:InstalledPartHandler costValue="{!v.costValue}" isInvSave="{!v.isInvSave}" isWarrantySave="{!v.isWarrantySave}" removedPartRecordTypes="{!v.removedPartRecordTypes}" installedPartRecordTypes="{!v.installedPartRecordTypes}" claimId="{!v.claimId}" isNewRecord="{!v.isNewRecord}" isDisabledInventory="{!v.isDisabledInventory}" isDisabledWarranty="{!v.isDisabledWarranty}" installedPart="{!v.installedPart}" inventoryId="{!v.inventoryId}" inventoryName="{!v.inventoryName}" warrantyProductName="{!v.warrantyProductName}" warrantyProductId="{!v.warrantyProductId}" />
+            </aura:set>
+    	  </c:ModalCmp>
+    </aura:if>
+	<aura:if isTrue="{!v.isDeleteClicked}">
+            <SPAN>
+                <c:Confirmation isPopup="{!v.isDeleteClicked}" response="{!v.isDeletable}">
+                    <aura:set attribute="body">
+                        <h1> Are you sure you want to delete? </h1>
+                    </aura:set>
+                </c:Confirmation>
+            </SPAN>
+    </aura:if>
+</aura:component>

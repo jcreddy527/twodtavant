@@ -1,0 +1,10 @@
+<apex:page controller="BulkUploadValidate">
+<apex:form >
+<apex:pageMessages />
+<apex:pageblock >
+          <apex:pageBlockButtons >
+            <apex:commandButton action="{!validate}" value="validate"/>
+          </apex:pageBlockButtons>
+ </apex:pageblock>
+ </apex:form>
+ </apex:page>

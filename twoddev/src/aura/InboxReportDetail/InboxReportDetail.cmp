@@ -1,0 +1,33 @@
+<aura:component extends="c:GenericCrudComponent" >
+    <aura:attribute name="returnUrl" type="String"/>
+    <aura:attribute name="reportDetail" type="sobject" default="{ sobjectType : 'Report',
+                                                                Id : null,
+                                                                Name : '',
+                                                                DeveloperName : ''}"/>
+    <aura:attribute name="folderStatus" type="String" default="Close" />
+    <aura:attribute name="Report_Image" type="String" />
+    <aura:attribute name="recordCount" type="Integer" />
+    <aura:attribute name="sitePrefix" type="string" default=""/>
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+
+
+
+   <span class="slds-pill__label slds-wrap">
+      <img src="{!v.Report_Image}" width="30" height="30"/>
+
+
+
+
+    <span class="slds-pill__label slds-wrap">
+        <span class="slds-wrap" onmouseover="{!c.changeIcon}" onmouseout="{!c.retainIcon}">
+        	<ui:outputURL target="_blank" value="{!v.returnUrl+'/'+v.reportDetail.Id}" label="{!v.reportDetail.Name}" />
+            <div class="slds-spinner--small slds-show" aura:id="spinnerID">
+              <img src="{!v.sitePrefix!=''? v.sitePrefix+'/resource/slds/assets/images/spinners/slds_spinner_brand.gif' :
+              '/resource/slds/assets/images/spinners/slds_spinner_brand.gif'}" alt="Loading..." />
+            </div>
+            <p class="slds-wrap"><b>{!v.recordCount}</b></p>
+        </span>
+      </span>
+    </span>
+</aura:component>

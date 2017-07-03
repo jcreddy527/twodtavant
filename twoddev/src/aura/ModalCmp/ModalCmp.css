@@ -1,0 +1,10 @@
+.THIS {
+}
+.THIS .slds-modal__header {
+    position: relative;
+    border-top-right-radius: 0.25rem;
+    border-top-left-radius: 0.25rem;
+    border-bottom: 2px solid #d8dde6;
+    padding: 0rem 1rem !important;
+    text-align: center;
+}

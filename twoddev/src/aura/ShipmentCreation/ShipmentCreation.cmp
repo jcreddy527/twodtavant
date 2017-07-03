@@ -1,0 +1,161 @@
+<!--/////////////////////////////////////
+
+Copyright � 2016  Tavant Technology Inc
+Name - ShipmentCreation
+Purpose - component for shipment creation
+Date - 12/27/2016
+Last Edited by - AMAN SAWHNEY
+
+/////////////////////////////////////-->
+
+<aura:component controller="ShipmentCreation" extends="c.CruderCmp">
+    <ltng:require styles="/resource/slds212/assets/styles/salesforce-lightning-design-system.css"/>
+    <aura:attribute name="ShipmentPageHeading" type="String" default="{!$Label.c.Create_Shipment}"/>
+    <aura:attribute name="showTable" type="boolean"/>
+    <aura:attribute name="spinnerBool" type="Object"/>
+    <aura:attribute name="mainClaimWrapperList" type="Object[]"/>
+    <aura:attribute name="backupClaimWrapperList" type="Object[]"/>
+    <aura:attribute name="selectedMainClaimWrapper" type="Object"/>
+    <aura:attribute name="selectedClaimId" type="string"/>
+    <aura:attribute name="spinnerAndPageBool" type="Object"/>
+    <aura:attribute name="fromClaimId" type="String" default=""/>
+    <aura:attribute name="sitePrefix" type="string" default=""/>
+    <aura:attribute name="claimWhereCondition" type="string" default=""/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <aura:if isTrue="{!v.spinnerAndPageBool.pageSpinner}">
+        <lightning:spinner aura:id="main-pageload-spinner" variant="brand"/>
+    </aura:if>
+    <aura:if isTrue="{!v.spinnerAndPageBool.actionSpinner}">
+        <lightning:spinner aura:id="actionSpinner" variant="brand"/>
+    </aura:if>
+    {!v.body}
+    <div class="main-body" style="{!(v.spinnerAndPageBool.showMainBody==true? 'opacity:1':'opacity:0')}">
+        
+        <header class="slds-text-heading--large slds-align--absolute-center header">
+            {!v.ShipmentPageHeading}
+        </header>
+        <div class="containerC">
+            <div class="form">
+                
+                <div class="padder">
+                    <ui:button aura:id="cancelShipmentButton" class="slds-button slds-button--destructive" label="{!$Label.c.Cancel}" press="{!c.cancel}"/>
+                    <ui:button aura:id="createShipmentButton" class="slds-button slds-button--brand" label="{!$Label.c.Create_Shipment}" press="{!c.createShipment}"/>
+                </div>
+                <div class="slds-grid">
+                    <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                        
+                        <aura:if isTrue="{!((v.fromClaimId==undefined || v.fromClaimId==null || v.fromClaimId=='') &amp;&amp; v.claimWhereCondition!='')}">    
+                            <div class="slds-size--12-of-12 slds-medium-size--6-of-12 slds-large-size--6-of-12 slds-p-around--medium">
+                                <c:LookupCmp aura:id="claim"
+                                                  objectType="Claim__c"
+                                                  class="slds-input required"
+                                                  label="{!$Label.c.Claim}"
+                                                  onLookupSelect="{!c.searchResetClaim}"
+                                                  where="{!v.claimWhereCondition}"
+                                                  onBlur="{!c.resetTheMainList}"
+                                                  minCharacters="2"
+                                                  placeholder="{!$Label.c.Type_Claim_Number}"/>
+                            </div>
+                        </aura:if>    
+                    </div>
+                </div>
+                <aura:iteration items="{!v.mainClaimWrapperList}" var="cw">
+                    <div class="form-heading">
+                        <span class="slds-radio">
+                            <aura:if isTrue="{!v.mainClaimWrapperList.length!=1}">
+                                <label class="slds-radio__label">
+                                    <ui:inputRadio name="claim-wrapper" value="{!cw.isSelected}" text="{!cw.claimNumber}" change="{!c.selectTargetClaim}"/>
+                                    <span class="slds-radio--faux"></span>
+                                    <span class="slds-form-element__label">{!cw.claimNumber}</span>
+                                </label>
+                                <aura:set attribute="else">
+                                    <span class="slds-form-element__label">{!cw.claimNumber}</span>
+                                </aura:set>
+                            </aura:if>
+                        </span>
+                    </div>
+                    <div class="form-body">
+                        <div class="removed-part-container">
+                            <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                                <thead>
+                                    <tr class="slds-text-title--caps">
+                                        <th class="slds-cell-shrink" scope="col">
+                                            <th scope="col" class="slds-is-resizable"></th>
+                                        </th>
+                                        <th scope="col" class="slds-is-resizable">
+                                            <div class="slds-resizable" title="{!$Label.c.Quantity}">{!$Label.c.Quantity}</div>
+                                        </th>
+                                        <th scope="col" class="slds-is-resizable">
+                                            <div class="slds-resizable" title="{!$Label.c.Return_Location}">{!$Label.c.Return_Location}</div>
+                                        </th>
+                                        <th scope="col" class="slds-is-resizable">
+                                            <div class="slds-resizable" title="{!$Label.c.Shipment_Quantity}">{!$Label.c.Shipment_Quantity}</div>
+                                        </th>
+                                        <th scope="col" class="slds-is-resizable">
+                                            <div class="slds-resizable" title="{!$Label.c.Part_Number}">{!$Label.c.Part_Number}</div>
+                                        </th>
+                                        <th scope="col" class="slds-is-resizable">
+                                            <div class="slds-resizable" title="{!$Label.c.Serial_Number}">{!$Label.c.Serial_Number}</div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <aura:iteration items="{!cw.removePartListWrap}" var="obj" indexVar="index">
+                                        <tr>
+                                            <td role="gridcell" class="slds-cell-shrink" data-label="Select row Cloudhub">
+                                                <label class="slds-checkbox">
+                                                    <ui:inputCheckbox value="{!obj.isSelected}" text="{!obj.removePartWr.Id}" labelClass="{!index}" disabled="{!(!cw.isSelected)}" change="{!c.selectRemovedPart}"/>
+                                                    <span class="slds-checkbox--faux"></span>
+                                                    <span class="slds-assistive-text"></span>
+                                                </label>
+                                            </td>
+                                            <td data-label="{!$Label.c.Quantity}" class="slds-cell-wrap">
+                                                <div title="{!$Label.c.Quantity}">{!obj.removePartWr.Quantity__c}</div>
+                                            </td>
+                                            <td data-label="{!$Label.c.Return_Location}" class="slds-cell-wrap">
+                                                <div title="{!$Label.c.Return_Location}">{!obj.removePartWr.Return_Location__r.Name}</div>
+                                            </td>
+                                            <td data-label="{!$Label.c.Shipment_Quantity}" class="slds-cell-wrap">
+                                                <div title="{!$Label.c.Shipment_Quantity}">
+                                                    <ui:inputNumber labelClass="{!index}" blur="{!c.setShippedQty}" value="{!obj.shippedQty}" disabled="{!(!obj.isSelected)}"/></div>
+                                            </td>
+                                            <td data-label="{!$Label.c.Shipment_Quantity}" class="slds-cell-wrap">
+                                                <div title="{!$Label.c.Shipment_Quantity}">
+                                                    <aura:if isTrue="{!obj.removePartWr.Warranty_Product__c!=null}">
+                                                        {!obj.removePartWr.Warranty_Product__r.Name}
+                                                    </aura:if>
+                                                    <aura:if isTrue="{!obj.removePartWr.Inventory__c!=null}">
+                                                        {!obj.removePartWr.Inventory__r.Item__r.Name}
+                                                    </aura:if>
+                                                </div>
+                                            </td>
+                                            <td data-label="{!$Label.c.Serial_Number}" class="slds-cell-wrap">
+                                                <div title="{!$Label.c.Serial_Number}">{!obj.removePartWr.Inventory__r.Name}</div>
+                                            </td>
+                                            
+                                        </tr>
+                                    </aura:iteration>
+                                </tbody>
+                            </table>
+                            <!--<div class="form-break"/>
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-size-12-of-12 slds-medium-size-6-of-12 slds-large-size-6-of-12">
+                                    <ui:inputTextArea label="Shipper Comment" class="slds-input" disabled="{!(!cw.isSelected)}"/>
+                                </div>
+                            </div>-->
+                        </div>
+                        
+                    </div>
+                    <div class="form-break"/>
+                </aura:iteration>
+                <div class="padder">
+                    <ui:button aura:id="cancelShipmentButton" class="slds-button slds-button--destructive" label="{!$Label.c.Cancel}" press="{!c.cancel}"/>
+                    <ui:button aura:id="createShipmentButton" class="slds-button slds-button--brand" label="{!$Label.c.Create_Shipment}" press="{!c.createShipment}"/>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div></div>
+</aura:component>

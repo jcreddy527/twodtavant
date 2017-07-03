@@ -1,0 +1,93 @@
+.THIS .Heading{
+    border-bottom-style: ridge;
+    font-weight: bold;
+    border-top-style: ridge;  
+}
+
+.THIS .slds-card__body {
+    padding: 0.5rem 0;
+    background-color: black;
+}
+
+.THIS .slds-box {
+    padding: 1rem;
+    border-radius: 0.25rem;
+    background-clip: padding-box;
+    border: 1px solid #d8dde6;
+    background-color: #edebeb;
+}
+
+.THIS .ButtonCss{
+
+    font-size: 0.75 em; text-decoration: none; color: #fff; border: 1px solid #000; padding: 4px 15px; transition: background-color .5s; 
+ 
+}
+
+.THIS .slds-card__footer {
+    padding: 0.25rem 1rem 0.5rem;
+    margin-top: 2%;
+}
+
+.THIS .ButtonCss:hover { 
+    background-color: rgba(0,0,0,.3);
+}
+
+
+.THIS h1 {
+    color: black;
+}
+
+.THIS .TabResponse {
+    max-width: 3rem !important;
+}
+
+.THIS .TabResponseWidth {
+       white-space: normal;
+}
+
+@media all and (min-width: 259px) {
+
+    .THIS .claim-form{ 
+    border: groove;
+    padding: 30px;
+    border-radius: 0px;
+    background-color: White;}
+    
+    .THIS .slds-container--medium{
+     max-width: 100%;   
+    }
+    
+    .THIS .claim-grid{
+        
+        
+    }
+    
+    .THIS .slds-container--large {
+        max-width: 120rem;
+    }
+
+}
+
+
+@media all and (min-width: 459px) {
+
+    .THIS .claim-form{ 
+    border: outset;
+    padding: 30px;
+    border-radius: 10px;
+    background-color: White;}
+    
+    .THIS .slds-container--medium{
+     max-width: 75%;   
+    }
+    
+    .THIS .claim-grid{
+        background-color: #EDEBEB;
+        padding: 30px;
+    }
+    
+    .THIS .slds-container--large {
+        max-width: 80rem;
+    }
+
+}

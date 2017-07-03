@@ -1,0 +1,6 @@
+<aura:event type="APPLICATION" description="Self Fire to the same component">
+    <aura:attribute name="ContractID" type="String" description=""/>
+    <aura:attribute name="WarrantyProductID" type="String" description=""/>
+    <aura:attribute name="ContractRecord" type="Map" description=""/>
+    <aura:attribute name="IsSelected" type="Boolean" description=""/>
+</aura:event>

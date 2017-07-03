@@ -1,0 +1,35 @@
+<apex:page standardController="Inventory__c" standardStylesheets="false" sidebar="false" >
+    <apex:includeLightning />
+    <div id="lightning" />
+    
+    <script>
+    
+   
+    var totalPageURL = window.location.toString();
+var protocalType= totalPageURL.split("//")[0];
+var tempbaseURL = totalPageURL.split("//")[1].split("/");
+var finalBaseURL = protocalType+'//'+tempbaseURL[0] + "{!JSENCODE($Site.Prefix)}";
+
+    if("{!JSENCODE(Inventory__c.Type__c)}"=="Retail"){
+        $Lightning.use("c:CustomerTransferApp", function() {
+            $Lightning.createComponent("c:CustomerTransfer",
+                                       {inventoryId : "{!JSENCODE(Inventory__c.Id)}",BaseURL:finalBaseURL},
+                                       "lightning",
+                                       function(cmp) {
+                                           // do some stuff
+                                       });
+        });
+    }
+    if("{!JSENCODE(Inventory__c.Type__c)}"=="Stock"){
+        $Lightning.use("c:D2DTransferApp", function() {
+            $Lightning.createComponent("c:D2DTransfer",
+                                       {inventoryId : "{!JSENCODE(Inventory__c.Id)}",BaseURL:finalBaseURL},
+                                       "lightning",
+                                       function(cmp) {
+                                           // do some stuff
+                                       });
+        });
+    }
+    
+    </script>
+</apex:page>

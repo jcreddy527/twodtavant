@@ -1,0 +1,52 @@
+<apex:page standardController="Claim__c" extensions="ValidateClaimCtrl">
+    <!--====================================================================-->
+    <!--Name: CoreValidateClaim                                          -->
+    <!--Copyright © 2014 Tavant Technology Inc                                        -->
+    <!--====================================================================-->
+    <!--====================================================================-->
+    <!-- Purpose:                                                           -->
+    <!--                                                                    -->
+    <!--====================================================================-->
+    <!--====================================================================-->
+    <!-- History                                                            -->
+    <!-- -------                                                            -->
+    <!-- VERSION  AUTHOR           DATE              DETAIL                 -->
+    <!--   1.0 -  Susmita           04/11/2014              INITIAL DEVELOPMENT    -->
+    <!--====================================================================-->
+    <apex:pageMessages />
+    <apex:sectionHeader subtitle="Validate Claim" title="Claim" />
+    <apex:form >
+
+        <apex:pageBlock >
+
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton value="Submit Claim" action="{!cancel}" />
+                <apex:commandButton value="Cancel" action="{!cancel}" />
+            </apex:pageBlockButtons>
+
+            <apex:pageBlockSection title="Claim Information" collapsible="false">
+                <apex:repeat value="{!$ObjectType.Claim__c.FieldSets.ClaimFieldSet}"
+                    var="objClaim">
+                    <apex:outputField value="{!Claim__c[objClaim]}" />
+                </apex:repeat>
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection title="Policy Definitions" collapsible="false"
+                columns="1">
+                <apex:pageBlockTable value="{!PolicyDefinitionList}" var="objPolicy"
+                    rendered="{!IF(PolicyDefinitionList.size > 0,true,false)}">
+                    <apex:repeat value="{!$ObjectType.Policy_Definition__c.FieldSets.PolicyFields}"
+                        var="f">
+                        <apex:column headerValue="{!f.Label}">
+                            <apex:outPutField value="{!objPolicy[f]}" />
+                        </apex:column>
+                    </apex:repeat>
+                </apex:pageBlockTable>
+                <apex:outputLabel value="{!$Label.No_Policy_Definition_Message}"
+                    rendered="{!IF(PolicyDefinitionList.size > 0,false,true)}"></apex:outputLabel>
+            </apex:pageBlockSection>
+
+        </apex:pageBlock>
+
+    </apex:form>
+</apex:page>

@@ -1,0 +1,153 @@
+<!--///////////////////////////
+
+Copyright � 2016  Tavant Technology Inc
+Name - NewCampaignMember
+Purpose - New campaign member Creation
+Date - 12/27/2016
+Last Edited by - AMAN SAWHNEY
+
+//////////////////////////////-->
+
+<aura:component implements="force:appHostable" controller="CampaignMember">
+    <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" />
+	<aura:attribute name="newCampaign" type="Service_Campaign__c"
+         default="{ 'sobjectType': 'Service_Campaign__c',
+                         'Name': '',
+                         'Start_Date__c':'',
+                         'End_Date__c': '',                 		 
+                  		 'Status__c': '', 
+                  		 'Campaign_Type__c': '',                  		 
+                       }"/>
+    <aura:attribute name="objectName" type="string"/>
+    <aura:attribute name="recordIds" type="string"/>
+    <!--<aura:attribute name="startDate" type="Date"/>
+    <aura:attribute name="endDate" type="Date"/>
+    <aura:attribute name="claimTemplate" type="string"/>
+    <aura:attribute name="status" type="String"/>
+    <aura:attribute name="paymentDefinitions" type="string"/>-->
+    <aura:attribute name="showTable" type="boolean" default="true"/>
+    <aura:attribute name="showSpinner" type="boolean" default="true"/>
+    <aura:attribute name="showError" type="boolean" default="false"/>
+    <aura:attribute name="errors" type="string"/>
+    <aura:attribute name="message" type="String" description="Message displayed in case of any errors of warnings" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="errorName" type="string[]" default="{'sobjectType': 'Product__c'}"/>
+    <aura:attribute name="errorMessagePayDef" type="String" />
+    <aura:attribute name="errorMessageClaTem" type="String" />
+
+<style>
+input[type=text], select {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+input[type=submit] {
+    width: 100%;
+    background-color: #4CAF50;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    
+}
+
+input[type=submit]:hover {
+    background-color: #45a049;
+}
+
+#group{
+    border-radius: 5px;
+    background-color: #f2f2f2;
+    padding: 20px;
+    margin-left:20%;
+    margin-right:20%;
+    width:50%;   
+}
+.slds-scope .slds-pill__container, .slds-scope .slds-pill-container, .slds-scope .slds-pill_container {
+    padding:0rem; 
+    border: 0px solid rgb(216, 221, 230); 
+    border-radius:.25rem; 
+    min-height:calc(1.875rem + 2px); 
+}
+.CampNeme::after {  
+    content: "*"; 
+    font-size: 1.5em; 
+    font-weight: bold;  
+    color: #c00; 
+    margin-left: -4px; 
+    margin-top: -2px; 
+    display:inline;
+}
+    
+</style>
+
+   <aura:if isTrue="{!v.showSpinner}">
+      <!--<center><ui:spinner aura:id="spinner"/></center>-->
+   </aura:if>
+	<aura:if isTrue="{!v.showTable}">   
+		<div id="group">
+			<div align="center"><h3><b>{!$Label.c.New_Campaign}</b></h3></div><br/>            
+        		<label for="lname" class = "CampNeme" >{!$Label.c.Name}</label>           
+    				<ui:inputText value="{!v.newCampaign.Name}" aura:id="Cam_Name"  errors="{!v.errorName[0]}"/>               
+    			<label for="lname" class = "CampNeme">{!$Label.c.Start_Date}</label>
+        			<ui:inputDate value="{!v.newCampaign.Start_Date__c}" displayDatePicker="true" required="true" format="MM-dd-yyyy" aura:id="Cam_StartDate"/>                                                                                    
+    			<label for="lname" class = "CampNeme">{!$Label.c.End_Date}</label>
+        			<ui:inputDate value="{!v.newCampaign.End_Date__c}" displayDatePicker="true" required="true" format="MM-dd-yyyy" aura:id="Cam_Enddate"/>        	
+        		<label for="lname" class = "CampNeme">{!$Label.c.Campaign_Type}</label>
+        			<ui:inputSelect class="dynamic" aura:id="InputSelectDynamicType" required="true" value="{!v.newCampaign.Campaign_Type__c}"/><br/><br/>
+        		<label for="lname" class = "CampNeme">{!$Label.c.Status}</label>
+        			<ui:inputSelect class="dynamic" aura:id="InputSelectDynamic" required="true" value="{!v.newCampaign.Status__c}"/><br/><br/>       
+    		<div>
+                <label for="lname" class = "CampNeme">{!$Label.c.Payment_Definitions}</label>
+        			<c:LookupWithoutSpinner selectedId="{!v.newCampaign.Payment_Definitions__c}" aura:id="Cam_PayDef" selSobject="Service_Campaign__c" QuerySOQL="Select Id,Name from Payment_Definitions__c" /><br/>
+        		<ul class="has-error uiInputDefaultError uiInput uiInputText uiInput--default uiInput--input " id="40:c" data-aura-rendered-by="1:1;0">
+                	<li class="form-element__help" data-aura-rendered-by="4:1;0">
+                    	<ui:outputText class="form-element__help" value="{!v.errorMessagePayDef}"/>
+                    </li>
+                </ul>
+           </div>          
+           <div>
+		   		<label for="lname" class = "CampNeme">{!$Label.c.Claim_Template}</label> 
+                	<c:LookupWithoutSpinner selectedId="{!v.newCampaign.Claim_Template__c}" aura:id="Cam_ClaimTem" selSobject="Service_Campaign__c" QuerySOQL="Select Id,Name,RecordType.Name from Claim__c " condition=" RecordType.Name = 'Claim Template'"/>
+        			<ul class="has-error uiInputDefaultError uiInput uiInputText uiInput--default uiInput--input " id="40:c" data-aura-rendered-by="1:1;0">
+                		<li class="form-element__help" data-aura-rendered-by="4:1;0">
+                    		<ui:outputText class="form-element__help" value="{!v.errorMessageClaTem}"/>
+                    	</li>
+                	</ul>
+          </div><br/>                  						       
+			<table>
+			 	<center>
+                    <button class="slds-button slds-button--brand" onclick = "{!c.createNewGroup}">{!$Label.c.Submit}</button>&nbsp;&nbsp;
+                    <button class="slds-button slds-button--brand" onclick = "{!c.cancel}">{!$Label.c.Cancel}</button>
+            	</center>
+        	</table>
+		</div>
+	</aura:if> 
+    <aura:if isTrue="{!v.showError}">
+    <div>
+  	<div aria-hidden="false" aria-labelledby="prompt-heading-id" aria-describedby="prompt-message-wrapper" role="alertdialog" class="slds-modal slds-modal--prompt slds-fade-in-open">
+    <div class="slds-modal__container slds-modal--prompt" role="document" id="prompt-message-wrapper" tabindex="0">
+      <div class="slds-modal__header slds-theme--error slds-theme--alert-texture">
+        <h2 class="slds-text-heading--medium" id="prompt-heading-id">{!$Label.c.Error}</h2>
+      </div>
+      <div class="slds-modal__content slds-p-around--medium">
+        <div>
+            <p>{!$Label.c.Enter_All_Mandatory_Field_Error}</p>
+        </div>
+      </div>
+      <div class="slds-modal__footer slds-theme--default">
+        <button class="slds-button slds-button--neutral" onclick="{!c.gotoListView}">{!$Label.c.Okay}</button>
+      </div>
+    </div>
+  </div>
+  <div class="slds-backdrop slds-backdrop--open"></div>
+	</div>
+    </aura:if>
+</aura:component>

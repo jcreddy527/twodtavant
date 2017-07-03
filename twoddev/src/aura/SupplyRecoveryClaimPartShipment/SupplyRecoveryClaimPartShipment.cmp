@@ -1,0 +1,192 @@
+<aura:component extends="c:GenericCrudComponent">
+  <ltng:require styles="/resource/slds040/assets/styles/salesforce-lightning-design-system.min.css"/>
+  <aura:attribute name="ShipmentRecordID" type="String"></aura:attribute>
+  <aura:attribute name="supplyRecoveryClaimLineItem"
+    type="sobject"
+    default="{'sobjectType':'Supply_Recovery_Claim_Line_Items__c',
+                                                              	'Id' : null
+                                                            	}"/>
+
+  <aura:attribute name="supplyRecoveryClaimLineItemArr" type="sobject[]"/>
+  <aura:attribute name="dmlErrors" type="String[]"/>
+  <aura:attribute name="TableContainRecords" type="Boolean" default="false"/>
+  <aura:attribute name="offset" type="Integer" default="1"/>  
+  <aura:attribute name="shipmentURL" type="String"/>
+  <aura:attribute name="baseURL" type="String"/>
+  <aura:attribute name="limit" type="Integer" default="5"/>
+  <aura:attribute name="offsetLimit" type="Integer" default="5"/>  
+  <aura:attribute name="totalRowsOriginal" type="Map" default=""/>
+  <aura:attribute name="showPrevious" type="String" default="No"/>
+  <aura:attribute name="showNext" type="String" default="No"/>
+  <aura:attribute name="totalRowsOriginalCount" type="Integer" default="0"/>
+  <aura:attribute name="totalRows" type="Map" default=""/>
+  <aura:attribute name="visibleRowsIndex" type="Integer[]" default=""/>  
+  <aura:attribute name="PartType" type="String" default="Removed"/>  
+  <aura:attribute name="RefreshSymbolURL" type="String" default=""/>   
+  <aura:attribute name="DeleteSymbolURL" type="String" default=""/>  
+  <aura:attribute name="PartReturnLocation" type="String"/>  
+  <aura:attribute name="shipmentDetail" type="sObject" default="{'sobjectType':'Shipment_Detail__c', 'Id' : null ,'Name' : '','Return_Location__c': '' }"/>
+
+  <aura:attribute name="supplyRecoveryClaimShipment" type="sObject" default="{'sobjectType':'twod__Recovery_Claim_Shipment__c', 'Id' : null }"/>
+
+  <aura:attribute name="supplyRecoveryClaimShipmentArr" type="sobject[]" default="[]"/>
+  <aura:registerEvent name="ShipmentAddMethod" type="c:AddRecordToshipEvent"/>
+  <aura:handler event="c:AddRecordToshipEvent" action="{!c.AddLineItemToShipment}"/>
+  <aura:handler name="init" value="{!this}" action="{!c.doInit}"></aura:handler>
+    
+  <div class="slds-container--center slds-spinner--large slds-show" aura:id="SpinnerId">
+    <img src="/resource/slds040/assets/images/spinners/slds_spinner_brand.gif" alt="Loading..."/>
+  </div>
+  
+    
+  <c:container class="demo-container" size="large" align="center">	
+  <div class="slds-box claim-grid"> 
+    <div class="slds-card cardCss">
+    <div class="slds-card__header slds-grid slds-wrap">
+      <div class="slds-media slds-media--center slds-has-flexi-truncate">
+        <div class="slds-media__figure slds-size--1-of-2">
+          {!$Label.c.Shipment_Detail}
+        </div>
+ 
+      </div>
+      <div class="slds-no-flex">
+        <div class="slds-button-group slds-size--1-of-2">
+        <ui:button class="ButtonCss" >  <a  href="{!v.shipmentURL}"><h1>Cancel</h1></a></ui:button>
+       
+        </div>
+      </div>
+    </div>
+    <div class="slds-card__body">
+      <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal slds-no-row-hover">
+        <thead>
+          <tr>
+            <th class="slds-text-heading--label slds-size--1-of-4" scope="col"> {!$Label.c.Name}</th>
+            <th class="slds-text-heading--label slds-size--1-of-4" scope="col"> {!$Label.c.Carrier}</th>
+            <th class="slds-text-heading--label slds-size--1-of-4" scope="col"> {!$Label.c.ReturnLocation}</th>
+            <th class="slds-text-heading--label slds-size--1-of-4" scope="col"> {!$Label.c.TrackingNumber}</th>	
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="slds-hint-parent">
+            <td class="slds-size--1-of-4" data-label="Name - ">
+            	<div>
+                <ui:outputText value="{!v.shipmentDetail.Name}" />
+                </div>	
+            </td>    
+            <td class="slds-size--1-of-4" data-label="Company - "><ui:outputText value="{!v.shipmentDetail.Carrier__c}"/></td>
+            <td class="slds-size--1-of-4" data-label="Title - "><ui:outputText value="{!v.shipmentDetail.Return_Location__r.Name}"/></td>
+            <td class="slds-size--1-of-4" data-label="Email - ">
+				<ui:outputText value="{!v.shipmentDetail.Tracking_Number__c}"/>
+            </td>
+       
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="slds-card__footer">
+      <ui:button class="ButtonCss" >  <a href="{!v.shipmentURL}"><h1>View Shipment</h1> </a> </ui:button>
+        <span class="slds-assistive-text">entity type</span>
+    </div>
+  </div>
+ </div>
+    
+  
+  <div class="slds-grid slds-wrap slds-grid--pull-padded">
+    <div class="slds-col--padded slds-size--1-of-1 claim-grid">
+    <div class="slds-container--center slds-container--medium claim-form">
+      <div class="slds-text-heading--small">
+           {!$Label.c.To_Be_Shipped}
+      </div>
+       
+	  <!--<c:TablePagination >-->
+           
+      <table aura:id="supplyRecoveryClaimLineItemTableId" class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal" width="100%">
+    
+          <thead>
+                <tr class = "slds-text-heading--label">
+
+                    <th class="slds-cell-wrap TabResponse slds-truncate slds-is-sortable TabResponseWidth" scope="col">
+                        {!$Label.c.Returned_Parts}
+
+                    </th>
+                    <th class="slds-cell-wrap TabResponse slds-truncate slds-is-sortable TabResponseWidth" scope="col">{!$Label.c.Supply_Recovery_Claim}</th>
+
+                    <th class="slds-cell-wrap TabResponse slds-truncate slds-is-sortable TabResponseWidth" scope="col">{!$Label.c.Part_Return_Location}</th>
+                    <th class="slds-cell-wrap TabResponse slds-truncate slds-is-sortable TabResponseWidth" scope="col">{!$Label.c.Product_Name}</th>
+                    <th class="slds-cell-wrap TabResponse slds-truncate slds-is-sortable TabResponseWidth" scope="col">{!$Label.c.Pending}</th>
+                    <th class="slds-cell-wrap TabResponse slds-truncate slds-is-sortable TabResponseWidth" scope="col">{!$Label.c.Add}</th>
+                    <th class="slds-cell-wrap TabResponse slds-truncate slds-is-sortable TabResponseWidth" scope="col">
+                        <div aura:id="refreshicon" >
+                        <span class="slds-icon__container" onclick = "{!c.RefreshRecoveryLineItems}">
+                            <c:svg ariahidden="true" class="slds-icon slds-icon--small slds-icon-text-default"
+                                   xlinkHref="{!v.RefreshSymbolURL}"/>
+                        </span>
+                    	</div>
+                    </th>
+                </tr>
+            </thead>
+          <tbody>
+          <aura:iteration items="{!v.supplyRecoveryClaimLineItemArr}" var="Item" indexVar="j">
+              <c:RecoveryLineItemRecordComponent ShipmentRecordIdComp="{!v.ShipmentRecordID}"  RecoveryLineItemShippedList="{!v.supplyRecoveryClaimShipmentArr}" ShipmentRecordIdRowComp="{!v.ShipmentRecordID}" RecoveryClaimLineItem="{!Item}" baseURL="{!v.baseURL}"/>
+          </aura:iteration>
+          </tbody>
+
+      </table>
+          
+      <!--</c:TablePagination>	-->
+      </div>	
+    </div>
+    <div class="slds-col--padded slds-size--1-of-1 claim-grid">
+    <div class="slds-container--center slds-container--medium claim-form">  
+        <div class="slds-text-heading--small">
+            {!$Label.c.Parts_Added} 
+        </div> 
+      <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal">
+
+              <thead>
+                  <tr class="slds-text-heading--label">
+                      <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+                          <span class="slds-truncate">{!$Label.c.Recovery_Claim_LineItem}</span>
+                      </th>
+                      <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+                          <span class="slds-truncate">{!$Label.c.Quantity}</span>
+                      </th>
+                      <th></th>
+                  </tr>
+              </thead>
+
+        <aura:iteration items="{!v.supplyRecoveryClaimShipmentArr}" var="Item1" indexVar="i">
+                <tbody>
+                    <tr class="slds-hint-parent">
+                        
+                        <td class="slds-truncate slds-cell-wrap" scope="row" data-label="Recovery Claim LineItem">
+                            <span class="slds-truncate">
+                                {!Item1.Supply_Recovery_Claim_Line_Item__r.Name}
+                            </span>
+                        </td>
+                        <td class="slds-truncate slds-cell-wrap" scope="row" data-label="Quantity">
+                            <span class="slds-truncate">
+                                {!Item1.Quantity__c }
+                            </span>
+                        </td>
+                        <td class="slds-truncate slds-cell-wrap" scope="row" data-label="Delete">
+                            <div aura:id="deleteicon" >
+                                <span class="slds-icon__container" onclick = "{!c.DeleteSelectedRecords}" value="{!i}" tabIndex="{!i}">
+                                    <c:svg ariahidden="true" class="slds-icon slds-icon--small slds-icon-text-default"
+                                                  xlinkHref="{!v.DeleteSymbolURL}"/>
+                                </span>
+                            </div>
+                            
+                        </td>
+                        
+                    </tr>
+                    
+                </tbody>
+        </aura:iteration>
+      </table>
+      </div>  
+    </div>
+
+  </div>
+  </c:container>    
+</aura:component>

@@ -1,0 +1,170 @@
+<aura:component controller="CustomSettingLightningAppCmpContr">
+    <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" scripts="{!$Resource.JQuery}" />
+    
+    <aura:attribute name="customSettingsName" type="string[]" />
+    <aura:attribute name="customSettingsAll" type="string[]" />
+    <aura:attribute name="customSettingsMap" type="Map" />
+    <aura:attribute name="CSRecords" type="customSettingsWrapper" />
+    <aura:attribute name="fieldsApi" type="customSettingsWrapper" />
+    <aura:attribute name="fieldsLabelMap" type="map" />
+    <aura:attribute name="showSpinner" type="Boolean" />
+    <aura:attribute name="recordsFound" type="Boolean" default="true" />
+    <aura:attribute name="cSRecordsWrapper" type="customSettingsRecordsWrapper" />
+    <aura:attribute name="csName" type="string" />
+    <style>
+        #group {
+        background-color: #f2f2f2;
+        width: 100%;
+        }
+        
+        #spinner {
+        background-color: #333;
+        opacity: 0.9;
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        z-index: 100;
+        height: 200%;
+        width: 100%;
+        overflow: hidden;
+        background-position: center;
+        background-repeat: no-repeat;
+        }
+    </style>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler event="c:SearchKeyChange" action="{!c.searchKeyChange}"/>  
+    <!-- spinner -->
+    <aura:if isTrue="{!v.showSpinner}">
+        <div class="slds-form-element  spinner" id="spinner">
+            <center>
+                <ui:spinner aura:id="spinner" />
+            </center>
+        </div>
+    </aura:if>
+    <header class="slds-text-heading--large slds-align--absolute-center heading">
+        {!$Label.c.Custom_Settings}
+    </header>
+    
+    <center>
+        <div class="main-body" aura:id="group" id="group">
+            <div class="slds-box slds-theme--default slds-container--large main-body form">
+                <!--<div class="">
+                    <label class="slds-form-element__label" for="customSetting">{!$Label.c.Custom_Setting + ' : '}</label>
+                    <ui:inputSelect aura:id="customSetting" change="{!c.customSettingChange}" class="slds-select">
+                        <aura:iteration items="{!v.customSettingsName}" var="at">
+                            <ui:inputSelectOption text="{!at}" label="{!at}" />
+                        </aura:iteration>
+                    </ui:inputSelect>
+                </div>-->
+                
+                <br />
+                <label class="slds-form-element__label leftAlign"   >{!$Label.c.Custom_Setting}</label><br />
+                <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon--right slds-float--left slds-size--1-of-2 leftAlign"  >                            
+                    <div  aura:id="lookup_input" class="slds-pill-container slds-show" >
+                        <div onclick="{!c.showPopupHelper}">
+                            <c:svg class="slds-input__icon" xlinkHref="{!('/'+'resource/SLDS0122/assets/icons/utility-sprite/svg/symbols.svg#search')}" />
+                        </div>                        
+                        <ui:inputText aura:id="lookup" value="{!v.csName}" class="slds-input" />   
+                    </div>                    
+                </div>
+                <div class="slds-size--1-of-2">
+                    <button type="button" class="slds-button slds-button--brand slds-open slds-m-left--xx-large" onclick="{!c.createNew}" name="Edit">New</button>
+                </div>
+                <br/>
+                <br/>
+                
+                <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                    <aura:if isTrue="{!v.recordsFound}">
+                        <thead>
+                            <tr class="">
+                                <aura:iteration items="{!v.fieldsApi}" var="fName">
+                                    <th scope="col">
+                                        <c:getSobjectFieldValue fieldNameMap="{!v.fieldsLabelMap}" fieldName="{!fName}" />
+                                    </th>
+                                </aura:iteration>
+                                <th scope="col"><br/>
+                                    <ui:outputText class="slds-output" value="Edit/Save" />
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <aura:iteration items="{!v.cSRecordsWrapper}" var="sObjct" indexVar="idx">
+                                <tr id="xyz">
+                                    <aura:iteration items="{!v.fieldsApi}" var="fName">
+                                        <td class="cell">
+                                            <c:getSobjectFieldValue SObject="{!sObjct.sObjectrecord}" fieldName="{!fName}" />
+                                        </td>
+                                    </aura:iteration>
+                                    <td class="cell" width="25%">
+                                        <button type="button" class="slds-button slds-button--brand slds-open" onclick="{!c.goSelceted}" name="Edit">Edit</button>
+                                        <button type="button" class="slds-button slds-button--brand slds-hide" onclick="{!c.saveSelceted}" name="Save">Save</button>
+                                        <button type="button" class="slds-button slds-button--brand slds-hide" onclick="{!c.cancel}" name="Cancel">Cancel</button>
+                                        <div class="slds-hide">
+                                            <c:getSobjectFieldValue SObject="{!sObjct.sObjectrecord}" fieldName="Id" />
+                                        </div>
+                                    </td>
+                                </tr>
+                            </aura:iteration>
+                        </tbody>
+                        <aura:set attribute="else">
+                            <div class="slds-box slds-theme--shade">
+                                <p> No records found....</p>
+                            </div>
+                        </aura:set>
+                    </aura:if>
+                    
+                </table>
+                
+            </div>
+            <div style="clear: both;"></div>
+            <div aria-hidden="true" role="dialog" class="slds-modal slds-modal--prompt slds-fade-in-hide" aura:id="modaldialog">
+                <div class="slds-modal__container">
+                    <center>
+                        <h2 class="slds-text-heading--medium Lookup">LookUp</h2>
+                    </center>
+                    <div class="slds-modal__header ">
+                        <label class="slds-form-element__label" for="customSettingLU">{!$Label.c.Custom_Setting}</label>
+                        <c:SearchBar />
+                        
+                    </div>
+                    <div class="slds-modal__content slds-p-around--medium">
+                        <div class="slds-box slds-theme--default slds-container--large main-body">
+                            <div class="">                                
+                                <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                                    <aura:if isTrue="true">
+                                        <thead>
+                                            <tr class="">
+                                                <th scope="col"><br/>									                    
+                                                    <div class="slds-text-heading--small">Custom Setting Name</div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <aura:iteration items="{!v.customSettingsName}" var="cs" indexVar="idx">
+                                                <tr id="xyz">
+                                                    <td class="cell" width="25%">
+                                                        <a onclick="{!c.hidePopup}"><ui:outputText class="slds-output" value="{!cs}" /></a>
+                                                    </td>
+                                                </tr>
+                                            </aura:iteration>
+                                        </tbody>
+                                        <aura:set attribute="else">
+                                            <div class="slds-box slds-theme--shade">
+                                                <p> No records found....</p>
+                                            </div>
+                                        </aura:set>
+                                    </aura:if>									
+                                </table>                               
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-backdrop slds-backdrop--hide" aura:id="backdrop">
+            </div>
+        </div>
+        <br />
+    </center>
+    
+</aura:component>

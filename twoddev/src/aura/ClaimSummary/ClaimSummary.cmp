@@ -1,0 +1,161 @@
+<aura:component controller="UpdatingPolicyDefinition" extends="c:GenericCrudComponent" implements="flexipage:availableForAllPageTypes,force:hasRecordId">
+    <ltng:require styles="/resource/slds/assets/styles/salesforce-lightning-design-system.css" />
+    <aura:attribute name="claimId" type="String" />
+    <aura:attribute name="refreshSummary" type="boolean" default="false"/>
+    <aura:attribute name="isDealer" type="boolean"/>
+    <aura:attribute name="dmlErrors" type="String[]"/>
+    <aura:attribute name="BaseURL" type="String" />
+    <aura:attribute name="claimRecord" type="sObject" default="{ 'sobjectType': 'Claim__c',
+                                                               'id' : null,
+                                                               'Name': '',
+                                                               'Account__c':'',
+                                                               'Inventory__c':'',
+                                                               'Total_Labor_Cost__c':0.00,
+                                                               'Final_Labor_Cost__c':0.00,
+                                                               'Removed_Claim_Parts__r' : [{}]
+                                                               }"	/>
+    <aura:attribute name="removedParts" type="sObject[]" />
+    <aura:attribute name="validateClicked" type="Boolean" default="true"/>
+    
+    <aura:handler name="init" 	value="{!this}" action="{!c.doInit}"/>
+    <aura:handler name="change" value="{!v.claimId}" action="{!c.claimchanged}"/>
+    <aura:handler name="change" value="{!v.validateClicked}" action="{!c.claimchanged}"/>
+    <aura:handler name="change" value="{!v.refreshSummary}" action="{!c.claimchanged}"/>
+    
+    <center>
+        <div class="slds-spinner--large slds-hide" aura:id="SpinnerDiv">
+            <img src="{!v.BaseURL + '/resource/slds/assets/images/spinners/slds_spinner_brand.gif'}" alt="Loading...'}" />
+        </div>
+    </center>
+    
+    <div class="slds-grid" aura:id="GridDiv">
+        <div class="slds-col--padded slds-size--1-of-1 ">
+            <div class="slds-container--center slds-container--small">
+                <aura:If isTrue='{!v.claimRecord.Applicable_Policy__r != null}'>
+                    <div class="slds-form-element">
+                        <fieldset class="slds-box slds-theme--default slds-container--medium " >
+                            <legend class="slds-text-heading--small ">{!$Label.c.ClaimPageTab1}</legend>
+                            <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+                                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--1">
+                                    <label class="slds-form-element__helper">{!$Label.c.Policy_Selected}</label>
+                                </div>
+                                <div class="slds-col slds-size--1-of-4 slds-small-order--1 slds-medium-order--2">
+                                    <ui:outputText class="form-element__help" value="{!v.claimRecord.Applicable_Policy__r.Name}"/>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                </aura:If>            
+                <aura:if isTrue='{!v.claimRecord.Applicable_Policy__r == null}'>
+                    <fieldset class="slds-box slds-theme--default slds-container--medium " >
+                        <legend class="slds-text-heading--small ">{!$Label.c.ClaimPageTab1}</legend>
+                        <div class="slds-grid slds-wrap" style="padding-bottom: 1%;">
+                            No Policy Selected
+                        </div>
+                    </fieldset>
+                </aura:if>
+                
+                <br/>
+                <div class="slds-text-heading--small  slds-theme--shade" style="width:100%">{!$Label.c.Cost_Category}</div>
+                <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal" >
+                    <thead>
+                        <tr class="slds-text-heading--label">
+                            <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+                                <div class="slds-truncate"></div>
+                            </th>
+                            <th  class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+                                <div class="slds-truncate">{!$Label.c.Total}</div>
+                            </th>
+                            <th  class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+                                <div class="slds-truncate">{!$Label.c.Final}</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="slds-hint-parent">
+                            <td class="slds-truncate" scope="row"><label class="slds-form-element__helper">{!$Label.c.Labor} Cost</label></td>
+                            <td class="slds-truncate" scope="row" data-label="{!$Label.c.Total}"><ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Total_Labor_Cost__c}"/></td>
+                            <td class="slds-truncate" scope="row" data-label="{!$Label.c.Final}"><ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Final_Labor_Cost__c}"/></td>
+                        </tr>
+                        <tr class="slds-hint-parent">
+                            <td class="slds-truncate" scope="row"><label class="slds-form-element__helper">{!$Label.c.Travel_Distance} Cost</label></td>
+                            <td class="slds-truncate" scope="row" data-label="{!$Label.c.Total}"><ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Total_TravelByDistance_Cost__c}"/></td>
+                            <td class="slds-truncate" scope="row" data-label="{!$Label.c.Final}"><ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Final_TravelByDistance_Cost__c}"/></td>
+                        </tr>
+                        <tr class="slds-hint-parent">
+                            <td class="slds-truncate" scope="row"><label class="slds-form-element__helper">{!$Label.c.Travel_Hours} Cost</label></td>
+                            <td class="slds-truncate" scope="row" data-label="{!$Label.c.Total}"><ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Total_TravelByHours_Cost__c}"/></td>
+                            <td class="slds-truncate" scope="row" data-label="{!$Label.c.Final}"><ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Final_TravelByHours_Cost__c}"/></td>
+                        </tr>
+                        <tr class="slds-hint-parent">
+                            <td class="slds-truncate" scope="row"><label class="slds-form-element__helper">{!$Label.c.Parts} Cost</label></td>
+                            <td class="slds-truncate" scope="row" data-label="{!$Label.c.Total}"><ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Total_Parts_Cost__c}"/></td>
+                            <td class="slds-truncate" scope="row" data-label="{!$Label.c.Final}"><ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Final_Parts_Cost__c}"/></td>
+                        </tr>
+                        <tr class="slds-hint-parent">
+                            <td class="slds-truncate" scope="row"><label class="slds-form-element__helper">{!$Label.c.Meals} Cost</label></td>
+                            <td class="slds-truncate" scope="row" data-label="{!$Label.c.Total}"><ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Total_Meals_Cost__c}"/></td>
+                            <td class="slds-truncate" scope="row" data-label="{!$Label.c.Final}"><ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Final_Meals_Cost__c}"/></td>
+                        </tr>
+                        <tr class="slds-hint-parent">
+                            <td class="slds-truncate" scope="row"><label class="slds-form-element__helper">{!$Label.c.Parking} Cost</label></td>
+                            <td class="slds-truncate" scope="row" data-label="{!$Label.c.Total}"><ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Total_Parking_Cost__c}"/></td>
+                            <td class="slds-truncate" scope="row" data-label="{!$Label.c.Final}"><ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Final_Parking_Cost__c}"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br/>
+                <div class="slds-text-heading--small  slds-theme--shade" style="width:100%">{!$Label.c.RefundSummary}</div>
+                <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal" >
+                    <thead>
+                        <tr class="slds-text-heading--label">
+                            <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+                                <div class="slds-truncate"></div>
+                            </th>
+                            <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+                                <div class="slds-truncate">{!$Label.c.Final}</div>
+                            </th>
+                            <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+                                <div class="slds-truncate">{!$Label.c.Approved}</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="slds-truncate" scope="row"><label class="slds-form-element__helper">{!$Label.c.Claim_Amount}</label></td>
+                            <td class="slds-truncate" scope="row" data-label="{!$Label.c.Final}"><ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Final_Claim_Cost__c}"/></td>
+                            <td class="slds-truncate" scope="row" data-label="{!$Label.c.Approved}"><ui:outputCurrency class="form-element__help" value="{!v.claimRecord.Approved_Claim_Cost__c}"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br/>
+                <div class="slds-text-heading--small  slds-theme--shade" style="width:100%">{!$Label.c.PartReturnSummary}</div>
+                <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal">
+                    <thead>
+                        <tr class="slds-text-heading--label">
+                            <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+                                <div class="slds-truncate">{!$Label.c.Part_Number}</div>
+                            </th>
+                            <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+                                <div class="slds-truncate">{!$Label.c.Return_Location}</div>
+                            </th>
+                            <th class="slds-cell-wrap slds-truncate slds-is-sortable" scope="col">
+                                <div class="slds-truncate">{!$Label.c.Due_Days}</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.claimRecord.Removed_Claim_Parts__r}" var="removedPart">
+                            <tr class="slds-hint-parent">
+                                <td class="slds-truncate"  scope="row" data-label="{!$Label.c.Part_Number}">{!removedPart.Name}</td>
+                                <td class="slds-truncate"  scope="row" data-label="{!$Label.c.Return_Location}">{!removedPart.Return_Location__r.Name}</td>
+                                <td class="slds-truncate"  scope="row" data-label="{!$Label.c.Due_Days}">{!removedPart.Shipment_Due_Days__c}</td>
+                            </tr>
+                            
+                        </aura:iteration>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</aura:component>
